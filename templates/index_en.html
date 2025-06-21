@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>AI Mimakun Chat</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+    #chatbox {
+      height: 400px;
+      overflow-y: auto;
+      border: 1px solid #ccc;
+      margin: 1rem;
+      padding: 1rem;
+      background-color: #f9f9f9;
+    }
+    .message {
+      margin-bottom: 1rem;
+    }
+    .user {
+      color: blue;
+    }
+    .bot {
+      color: green;
+    }
+    #controls {
+      display: flex;
+      margin: 1rem;
+    }
+    #inputText {
+      flex: 1;
+      padding: 0.5rem;
+      font-size: 1rem;
+    }
+    button {
+      padding: 0.5rem 1rem;
+      margin-left: 0.5rem;
+    }
+  </style>
+</head>
+<body>
+  <h1 style="text-align:center;">AI Mimakun Chat</h1>
+  <div id="chatbox"></div>
+  <div id="controls">
+    <input type="text" id="inputText" placeholder="Type your message...">
+    <button onclick="sendMessage()">Send</button>
+    <button onclick="startListening()">🎤</button>
+  </div>
+
+  <script>
+    const chatbox = document.getElementById("chatbox");
+    const inputText = document.getElementById("inputText");
+
+    function appendMessage(sender, text) {
+      const msg = document.createElement("div");
+      msg.className = "message " + sender;
+      msg.textContent = `${sender === "user" ? "You" : "Mimakun"}: ${text}`;
+      chatbox.appendChild(msg);
+      chatbox.scrollTop = chatbox.scrollHeight;
+    }
+
+    async function sendMessage() {
+      const text = inputText.value;
+      if (!text) return;
+      appendMessage("user", text);
+      inputText.value = "";
+
+      const response = await fetch("/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: text, lang: "en" })  // 英語を指定
+      });
+      const data = await response.json();
+      appendMessage("bot", data.response);
+
+      const audio = new Audio("data:audio/mp3;base64," + data.audioContent);
+      audio.play();
+    }
+
+    function startListening() {
+      const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+      recognition.lang = "en-US";
+      recognition.start();
+      recognition.onresult = function (event) {
+        inputText.value = event.results[0][0].transcript;
+      };
+    }
+  </script>
+</body>
+</html>

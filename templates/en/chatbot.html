@@ -1,0 +1,100 @@
+<!-- 英語版も同様にボタン追加 -->
+<!-- templates/en/chatbot.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Chatbot (English)</title>
+  <style>
+    body { font-size: 1.3rem; color: #222; background: #fff; margin: 0; padding: 0; }
+    .chat-container { max-width: 500px; margin: 2rem auto; padding: 1rem; }
+    .controls, .audio-controls { display: flex; gap: 0.5rem; margin-bottom: 1rem; }
+    input[type=text] { flex: 1; padding: 0.8rem; font-size: 1.1rem; }
+    button { padding: 0.8rem 1rem; font-size: 1.1rem; border: none; border-radius: 0.5rem; background: #0055aa; color: #fff; cursor: pointer; }
+    #micBtn { background: #008800; }
+    .audio-controls button { background: #444; }
+    .message { background: #f0f8ff; border-radius: 0.5rem; padding: 0.8rem; margin: 0.5rem 0; }
+    .user { text-align: right; }
+    .bot { text-align: left; }
+  </style>
+</head>
+<body>
+  <div class="chat-container">
+    <div class="controls">
+      <input type="text" id="inputBox" placeholder="Type your message...">
+      <button id="micBtn">🎤</button>
+      <button id="sendBtn">Send</button>
+    </div>
+    <div class="audio-controls">
+      <button id="volDown">Vol -</button>
+      <button id="volUp">Vol +</button>
+      <button id="spdDown">Speed -</button>
+      <button id="spdUp">Speed +</button>
+    </div>
+    <div id="chatArea"></div>
+    <audio id="audioPlayer" controls style="width:100%; margin-top:1rem;"></audio>
+  </div>
+
+  <script>
+    const inputBox = document.getElementById('inputBox');
+    const micBtn = document.getElementById('micBtn');
+    const sendBtn = document.getElementById('sendBtn');
+    const chatArea = document.getElementById('chatArea');
+    const audioPlayer = document.getElementById('audioPlayer');
+    const volUp = document.getElementById('volUp');
+    const volDown = document.getElementById('volDown');
+    const spdUp = document.getElementById('spdUp');
+    const spdDown = document.getElementById('spdDown');
+
+    let volume = 1.0;
+    let speed = 1.0;
+
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (SpeechRecognition) {
+      const recog = new SpeechRecognition();
+      recog.lang = 'en-US'; recog.interimResults = false;
+      micBtn.addEventListener('click', () => { recog.start(); micBtn.textContent = '🔴'; });
+      recog.addEventListener('result', e => {
+        const text = Array.from(e.results).map(r=>r[0].transcript).join('');
+        inputBox.value = text;
+      });
+      recog.addEventListener('end', () => { micBtn.textContent = '🎤'; });
+    } else { micBtn.disabled = true; }
+
+    sendBtn.addEventListener('click', () => {
+      const user_input = inputBox.value.trim();
+      if (!user_input) return;
+      appendMessage(user_input, 'user');
+      inputBox.value = '';
+      fetch('/chat', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user_input, lang: 'en' })
+      })
+      .then(res => res.json())
+      .then(data => {
+        appendMessage(data.reply, 'bot');
+        if (data.audio_url) {
+          audioPlayer.src = data.audio_url.startsWith('/')? data.audio_url : '/' + data.audio_url;
+          audioPlayer.volume = volume;
+          audioPlayer.playbackRate = speed;
+          audioPlayer.play().catch(() => {});
+        }
+      })
+      .catch(err => console.error(err));
+    });
+
+    volUp.addEventListener('click', () => { volume = Math.min(1.0, volume + 0.1); audioPlayer.volume = volume; });
+    volDown.addEventListener('click', () => { volume = Math.max(0.0, volume - 0.1); audioPlayer.volume = volume; });
+    spdUp.addEventListener('click', () => { speed = Math.min(2.0, speed + 0.1); audioPlayer.playbackRate = speed; });
+    spdDown.addEventListener('click', () => { speed = Math.max(0.5, speed - 0.1); audioPlayer.playbackRate = speed; });
+
+    function appendMessage(text, who) {
+      const div = document.createElement('div');
+      div.className = 'message ' + (who==='user'?'user':'bot');
+      div.textContent = (who==='user'?'You: ':'Mima-kun: ') + text;
+      chatArea.appendChild(div);
+    }
+  </script>
+</body>
+</html>
