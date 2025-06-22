@@ -101,3 +101,31 @@ body {
 #tts-bar.hidden {
   display: none;
 }
+
+/* モバイル：送信エリアを固定 */
+#input-area {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  display: flex;
+  gap: 8px;
+  padding: 8px;
+  background: #fff;
+  box-shadow: 0 -2px 6px rgba(0,0,0,0.1);
+  box-sizing: border-box;
+  z-index: 100;
+}
+
+/* チャット領域：下部固定エリア分の余白 */
+#chat-container {
+  padding-bottom: 60px;
+}
+
+/* 送信ボタンを大きく */
+#send-btn {
+  flex-shrink: 0;
+  width: 60px;
+  font-size: 16px;
+}
+
