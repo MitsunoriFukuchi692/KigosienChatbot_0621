@@ -2,32 +2,32 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-　<meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>介護支援チャットボット</title>
   <link rel="stylesheet" href="/static/css/style.css">
-
 </head>
-
 <body>
   <header>
     <h1>介護支援チャットボット</h1>
   </header>
 
-  <section id="template-section">
-    <div id="template-categories"></div>
-    <div id="template-phrases"></div>
+  <!-- チャット表示領域 -->
+  <section id="chat-container">
+    <div id="chatWindow"></div>
   </section>
-
-  <section id="chat-container"></section>
-
-  <!-- 音声読み上げバー -->
-  <div id="tts-bar" class="hidden">🔊 読み上げ中...</div>
 
   <!-- チャット入力エリア -->
   <div id="input-area">
-    <input id="chat-input" type="text" placeholder="メッセージを入力">
-    <button id="send-btn">送信</button>
+    <!-- マイク入力ボタン -->
+    <button id="micBtn" type="button">🎤</button>
+    <!-- テキスト入力欄 -->
+    <input id="chatInput" type="text" placeholder="音声またはテキストを入力" autocomplete="off">
+    <!-- 送信ボタン -->
+    <button id="sendBtn" type="button">送信</button>
   </div>
+
+  <!-- 音声読み上げバー -->
+  <div id="tts-bar" class="hidden">🔊 読み上げ中...</div>
 
   <!-- 外部スクリプト読み込み -->
   <script src="/static/js/chatbot.js"></script>
