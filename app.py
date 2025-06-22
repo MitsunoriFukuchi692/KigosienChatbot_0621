@@ -1,70 +1,106 @@
-import os
-import sqlite3
-from datetime import datetime
-from flask import Flask, request, jsonify
-from flask_cors import CORS
-import openai
+from flask import Flask, jsonify, render_template, request, redirect
 
-# --- Configuration ---
-openai.api_key = os.getenv('OPENAI_API_KEY')
-app = Flask(__name__)
-CORS(app)
+app = Flask(__name__, static_folder='static', template_folder='templates')
 
-# --- SQLite setup ---
-DB_PATH = os.path.join(app.root_path, 'care_logs.db')
-conn = sqlite3.connect(DB_PATH, check_same_thread=False)
-cursor = conn.cursor()
-cursor.execute(
-    '''
-    CREATE TABLE IF NOT EXISTS care_logs (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        timestamp TEXT,
-        category TEXT,
-        phrase TEXT
-    )
-    '''
-)
-conn.commit()
-
-# --- Templates data (static) ---
-TEMPLATES = [
-    {"category": "体調", "phrases": ["今日の調子はいかがですか？", "痛みはありますか？"]},
-    {"category": "服薬", "phrases": ["お薬はもう飲みましたか？", "飲み忘れはありませんか？"]},
-    {"category": "排泄", "phrases": ["トイレに行きましょうか？", "お手伝いが必要ですか？"]}
+# サンプルのテンプレートデータ
+# 実際にはデータベースやファイルからロードしてください
+template_data = [
+    {
+        "category": "体調",
+        "phrases": [
+            "今日の調子はいかがですか？",
+            "痛みはありますか？"
+        ]
+    },
+    {
+        "category": "服薬",
+        "phrases": [
+            "お薬はもう飲みましたか？",
+            "飲み忘れはありませんか？"
+        ]
+    }
 ]
 
-@app.route('/templates', methods=['GET'])
+@app.route('/templates')
 def get_templates():
-    return jsonify(TEMPLATES)
+    return jsonify(template_data)
 
-@app.route('/log', methods=['POST'])
-def log_phrase():
-    data = request.get_json(force=True)
-    category = data.get('category')
-    phrase = data.get('phrase')
-    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    cursor.execute(
-        'INSERT INTO care_logs (timestamp, category, phrase) VALUES (?, ?, ?)',
-        (timestamp, category, phrase)
-    )
-    conn.commit()
-    return jsonify({'status': 'ok', 'timestamp': timestamp})
+@app.route('/')
+def index():
+    # 語種切替などを実装したい場合に
+    return redirect('/ja/chatbot/')
 
-@app.route('/summary', methods=['GET'])
-def generate_summary():
-    # get today's logs
-    rows = cursor.execute(
-        "SELECT timestamp, category, phrase FROM care_logs WHERE date(timestamp)=date('now','localtime')"
-    ).fetchall()
-    text = "\n".join([f"[{r[1]}]{r[2]}" for r in rows])
-    prompt = f"以下の介護ログを要約してください。\n{text}"
-    resp = openai.ChatCompletion.create(
-        model='gpt-3.5-turbo',
-        messages=[{'role':'user','content': prompt}],
-        temperature=0.2
-    )
-    summary = resp.choices[0].message.content.strip()
-    return jsonify({'summary': summary})
+@app.route('/ja/chatbot/')
+def chatbot_ja():
+    return render_template('ja/chatbot.html')
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=int(os.getenv('PORT', 5000)))
+    app.run(debug=True)
+```
+
+---
+
+## templates/ja/chatbot.html
+
+```html
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>介護支援チャットボット</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <header>
+    <h1>介護支援チャットボット</h1>
+  </header>
+
+  <!-- テンプレート操作エリア -->
+  <section id="template-section">
+    <!-- カテゴリ一覧を表示する領域 -->
+    <div id="template-categories"></div>
+    <!-- フレーズ一覧を表示する領域 -->
+    <div id="template-phrases"></div>
+  </section>
+
+  <!-- チャットUIエリア -->
+  <section id="chat-container">
+    <!-- 既存のチャット要素をここに配置 -->
+  </section>
+
+  <script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const catDiv = document.getElementById('template-categories');
+    const phraseDiv = document.getElementById('template-phrases');
+
+    // /templates からカテゴリ・フレーズを取得
+    fetch('/templates')
+      .then(response => response.json())
+      .then(data => {
+        data.forEach(item => {
+          const btn = document.createElement('button');
+          btn.textContent = item.category;
+          btn.addEventListener('click', () => {
+            // フレーズ領域をクリア
+            phraseDiv.innerHTML = '';
+            // 該当カテゴリのフレーズをボタン化
+            item.phrases.forEach(phrase => {
+              const pBtn = document.createElement('button');
+              pBtn.textContent = phrase;
+              pBtn.addEventListener('click', () => {
+                // チャット入力欄に挿入する処理例
+                const input = document.querySelector('#chat-input');
+                if (input) input.value = phrase;
+              });
+              phraseDiv.appendChild(pBtn);
+            });
+          });
+          catDiv.appendChild(btn);
+        });
+      })
+      .catch(err => console.error('テンプレート取得エラー:', err));
+  });
+  </script>
+</body>
+</html>
+```
