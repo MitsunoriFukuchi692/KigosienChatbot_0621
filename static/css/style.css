@@ -89,3 +89,15 @@ body {
 #send-btn:hover {
   background: #0056b3;
 }
+
+/* 音声読み上げバー */
+#tts-bar {
+  text-align: center;
+  padding: 4px;
+  background: #fffae6;
+  border-top: 1px solid #ffe58f;
+  font-size: 14px;
+}
+#tts-bar.hidden {
+  display: none;
+}

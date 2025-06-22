@@ -4,6 +4,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const chatContainer = document.getElementById('chat-container');
   const input = document.getElementById('chat-input');
   const sendBtn = document.getElementById('send-btn');
+  const ttsBar = document.getElementById('tts-bar');
 
   // テンプレート取得
   fetch('/templates')
@@ -54,11 +55,14 @@ document.addEventListener('DOMContentLoaded', () => {
       chatContainer.appendChild(botBubble);
       chatContainer.scrollTop = chatContainer.scrollHeight;
 
-      // ここから読み上げ機能
+      // 読み上げ機能
       if ('speechSynthesis' in window) {
         const utter = new SpeechSynthesisUtterance(json.reply);
-        utter.lang = 'ja-JP';         // 日本語設定
-        window.speechSynthesis.speak(utter);
+        utter.lang = 'ja-JP';
+        // 読み上げ開始・終了イベントでバーを表示/非表示
+        utter.onstart = () => { ttsBar.classList.remove('hidden'); };
+        utter.onend   = () => { ttsBar.classList.add('hidden'); };
+        speechSynthesis.speak(utter);
       }
     })
     .catch(err => console.error(err));

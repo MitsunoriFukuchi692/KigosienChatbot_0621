@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title>介護支援チャットボット</title>
-  <link rel="stylesheet" href="/static/style.css">
+  <link rel="stylesheet" href="/static/css/style.css">
 </head>
 <body>
   <header>
@@ -17,9 +17,12 @@
 
   <section id="chat-container"></section>
 
+  <!-- 音声読み上げバー -->
+  <div id="tts-bar" class="hidden">🔊 読み上げ中...</div>
+
   <!-- チャット入力エリア -->
   <div id="input-area">
-    <input id="chat-input" type="text" placeholder="メッセージを入力">  
+    <input id="chat-input" type="text" placeholder="メッセージを入力">
     <button id="send-btn">送信</button>
   </div>
 
