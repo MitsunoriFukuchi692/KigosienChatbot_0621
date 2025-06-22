@@ -7,24 +7,27 @@
   <link rel="stylesheet" href="/static/css/style.css">
 </head>
 <body>
-  <div id="chat-container" class="chat-container">
-    <!-- メッセージはここに JavaScript で追加 -->
-  </div>
+  <!-- メッセージ表示領域 -->
+  <div id="chat-container" class="chat-container"></div>
 
+  <!-- タイピングインジケーター -->
   <div id="typing-indicator" class="typing-indicator hidden">
     <span class="dot"></span><span class="dot"></span><span class="dot"></span>
   </div>
 
+  <!-- 入力エリア -->
   <div class="input-area">
-    <input id="chatInput" type="text" placeholder="メッセージを入力" autocomplete="off">
-    <button id="sendBtn">送信</button>
-    <button id="micBtn">🎤</button>
+    <input id="user-input" type="text" placeholder="メッセージを入力" autocomplete="off">
+    <button id="send-button">送信</button>
+    <button id="mic-button">🎤</button>
   </div>
 
+  <!-- 定型文ボタンエリア -->
   <div id="template-container" class="template-container">
     <!-- <button class="template-btn" data-msg="こんにちは">こんにちは</button> -->
   </div>
 
+  <!-- チャット用スクリプト -->
   <script src="/static/js/chat_interface.js"></script>
 </body>
 </html>
