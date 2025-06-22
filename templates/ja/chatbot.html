@@ -1,35 +1,90 @@
-<!DOCTYPE html>
-<html lang="ja">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>介護支援チャットボット</title>
-  <link rel="stylesheet" href="/static/css/style.css">
-</head>
-<body>
-  <header>
-    <h1>介護支援チャットボット</h1>
-  </header>
+document.addEventListener('DOMContentLoaded', () => {
+  // DOM 要素取得
+  const micBtn = document.getElementById('micBtn');
+  const chatInput = document.getElementById('chatInput');
+  const sendBtn = document.getElementById('sendBtn');
+  const chatWindow = document.getElementById('chatWindow');
+  const templateButtons = document.querySelectorAll('.template-btn');
 
-  <!-- チャット表示領域 -->
-  <section id="chat-container">
-    <div id="chatWindow"></div>
-  </section>
+  // Speech Recognition 初期化
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  let recognition, recognizing = false;
+  if (SpeechRecognition) {
+    recognition = new SpeechRecognition();
+    recognition.lang = 'ja-JP';
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 1;
 
-  <!-- チャット入力エリア -->
-  <div id="input-area">
-    <!-- マイク入力ボタン -->
-    <button id="micBtn" type="button">🎤</button>
-    <!-- テキスト入力欄 -->
-    <input id="chatInput" type="text" placeholder="音声またはテキストを入力" autocomplete="off">
-    <!-- 送信ボタン -->
-    <button id="sendBtn" type="button">送信</button>
-  </div>
+    recognition.addEventListener('start', () => {
+      recognizing = true;
+      micBtn.textContent = '🎙️…';
+    });
 
-  <!-- 音声読み上げバー -->
-  <div id="tts-bar" class="hidden">🔊 読み上げ中...</div>
+    recognition.addEventListener('end', () => {
+      recognizing = false;
+      micBtn.textContent = '🎤';
+    });
 
-  <!-- 外部スクリプト読み込み -->
-  <script src="/static/js/chatbot.js"></script>
-</body>
-</html>
+    recognition.addEventListener('result', (event) => {
+      const transcript = event.results[0][0].transcript.trim();
+      chatInput.value = transcript;
+      chatInput.focus();
+    });
+
+    micBtn.addEventListener('click', () => {
+      if (recognizing) {
+        recognition.stop();
+      } else {
+        recognition.start();
+      }
+    });
+  } else {
+    micBtn.disabled = true;
+    console.warn('このブラウザは Speech Recognition API に対応していません');
+  }
+
+  // テンプレートボタン処理
+  templateButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const msg = btn.dataset.msg;
+      chatInput.value = msg;
+      chatInput.focus();
+    });
+  });
+
+  // メッセージ送信処理
+  async function sendMessage() {
+    const userText = chatInput.value.trim();
+    if (!userText) return;
+
+    appendMessage('user', userText);
+    chatInput.value = '';
+
+    try {
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ message: userText })
+      });
+      const data = await response.json();
+      appendMessage('bot', data.reply);
+    } catch (err) {
+      console.error(err);
+      appendMessage('bot', 'エラーが発生しました。');
+    }
+  }
+
+  sendBtn.addEventListener('click', sendMessage);
+  chatInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') sendMessage();
+  });
+
+  // メッセージ表示
+  function appendMessage(who, text) {
+    const msg = document.createElement('div');
+    msg.className = `message ${who}`;
+    msg.innerHTML = `<p>${text}</p>`;
+    chatWindow.appendChild(msg);
+    chatWindow.scrollTop = chatWindow.scrollHeight;
+  }
+});
