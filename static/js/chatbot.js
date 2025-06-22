@@ -47,11 +47,19 @@ document.addEventListener('DOMContentLoaded', () => {
     })
     .then(res => res.json())
     .then(json => {
+      // ボットメッセージ表示
       const botBubble = document.createElement('div');
       botBubble.className = 'bubble bot';
       botBubble.textContent = json.reply;
       chatContainer.appendChild(botBubble);
       chatContainer.scrollTop = chatContainer.scrollHeight;
+
+      // ここから読み上げ機能
+      if ('speechSynthesis' in window) {
+        const utter = new SpeechSynthesisUtterance(json.reply);
+        utter.lang = 'ja-JP';         // 日本語設定
+        window.speechSynthesis.speak(utter);
+      }
     })
     .catch(err => console.error(err));
 
