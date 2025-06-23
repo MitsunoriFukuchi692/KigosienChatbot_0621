@@ -1,19 +1,14 @@
-// chat_interface.js
-
-// This script handles speech recognition, template buttons, and chat interactions.
 document.addEventListener("DOMContentLoaded", () => {
-  // Chat container
+  // 要素取得
   const chatContainer = document.getElementById("chat-container");
-
-  // Template buttons container
   const templateContainer = document.getElementById("template-container");
-
-  // Input elements
   const inputField = document.getElementById("user-input");
   const sendButton = document.getElementById("send-button");
   const micButton = document.getElementById("mic-button");
 
-  // Load templates from server and render buttons
+  console.log("✅ chat_interface.js loaded!", new Date().toISOString());
+
+  // 1. テンプレート取得・描画
   console.log("▶️ Fetching templates...");
   fetch("/templates")
     .then(res => res.json())
@@ -34,47 +29,57 @@ document.addEventListener("DOMContentLoaded", () => {
     })
     .catch(err => console.error("❌ templates fetch error:", err));
 
-  // Speech Recognition setup
-  let recognition;
-  if (window.SpeechRecognition || window.webkitSpeechRecognition) {
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    recognition = new SpeechRecognition();
-    recognition.lang = 'ja-JP';
-    recognition.interimResults = false;
-    recognition.continuous = false;
+  // 2. SpeechRecognition セットアップ
+  let recognition = null;
+  const SR = (typeof window.SpeechRecognition === 'function'
+    ? window.SpeechRecognition
+    : (typeof window.webkitSpeechRecognition === 'function'
+      ? window.webkitSpeechRecognition
+      : null));
 
-    recognition.onstart = () => {
-      micButton.classList.add('listening');
-    };
-    recognition.onend = () => {
-      micButton.classList.remove('listening');
-    };
-    recognition.onresult = (event) => {
-      const transcript = event.results[0][0].transcript;
-      inputField.value = transcript;
-      sendMessage();
-    };
+  if (SR) {
+    try {
+      recognition = new SR();
+      recognition.lang = 'ja-JP';
+      recognition.interimResults = false;
+      recognition.continuous = false;
+      recognition.onstart = () => micButton.classList.add('listening');
+      recognition.onend = () => micButton.classList.remove('listening');
+      recognition.onresult = event => {
+        const transcript = event.results[0][0].transcript;
+        inputField.value = transcript;
+        sendMessage();
+      };
+    } catch (err) {
+      console.warn('SpeechRecognition 初期化失敗:', err);
+      recognition = null;
+    }
   } else {
-    micButton.disabled = true;
-    console.warn("Speech Recognition API not supported in this browser.");
+    console.warn('SpeechRecognition API がサポートされていません');
   }
 
-  // Toggle mic on/off
-  micButton.addEventListener('click', () => {
-    if (!recognition) return;
-    recognition[recognition.recognizing ? 'stop' : 'start']();
-  });
+  // マイクボタンの有効/無効設定
+  if (!recognition) {
+    micButton.disabled = true;
+  } else {
+    micButton.addEventListener('click', () => {
+      if (micButton.classList.contains('listening')) {
+        recognition.stop();
+      } else {
+        recognition.start();
+      }
+    });
+  }
 
-  // Send message on button click or Enter press
+  // 3. 送信処理
   sendButton.addEventListener('click', sendMessage);
-  inputField.addEventListener('keydown', (e) => {
+  inputField.addEventListener('keydown', e => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       sendMessage();
     }
   });
 
-  // Send message function
   function sendMessage() {
     const text = inputField.value.trim();
     if (!text) return;
@@ -82,50 +87,52 @@ document.addEventListener("DOMContentLoaded", () => {
     appendMessage('user', text);
     inputField.value = '';
 
-    // Typing indicator
-    const loadingElem = document.createElement('div');
-    loadingElem.className = 'message bot loading';
-    loadingElem.innerHTML = '<span class="dot"></span><span class="dot"></span><span class="dot"></span>';
-    chatContainer.appendChild(loadingElem);
+    // タイピングインジケーター
+    const loading = document.createElement('div');
+    loading.className = 'message bot loading';
+    loading.innerHTML = '<span class="dot"></span><span class="dot"></span><span class="dot"></span>';
+    chatContainer.appendChild(loading);
     chatContainer.scrollTop = chatContainer.scrollHeight;
 
-    console.log("▶️ fetch -> /api/chat", text);
+    console.log('▶️ fetch -> /api/chat', text);
     fetch('/api/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ message: text })
     })
     .then(res => {
-      console.log("◀️ status:", res.status);
+      console.log('◀️ status:', res.status);
       return res.json();
     })
     .then(data => {
       console.log('★ reply:', data.reply);
-      chatContainer.removeChild(loadingElem);
+      chatContainer.removeChild(loading);
       appendMessage('bot', data.reply);
 
-      // If audioUrl is provided, render audio element with controls
+      // audioUrl があれば <audio> 要素で再生バー付きで追加
       if (data.audioUrl) {
+        console.log('★ audioUrl:', data.audioUrl);
         const audioElem = document.createElement('audio');
         audioElem.src = data.audioUrl;
         audioElem.controls = true;
         audioElem.autoplay = true;
         chatContainer.appendChild(audioElem);
+        chatContainer.scrollTop = chatContainer.scrollHeight;
       }
     })
     .catch(err => {
       console.error('❌ fetch error:', err);
-      chatContainer.removeChild(loadingElem);
+      chatContainer.removeChild(loading);
       appendMessage('bot', '申し訳ありません。エラーが発生しました。');
     });
   }
 
-  // Helper to append message element
+  // 4. メッセージ要素を追加するヘルパー
   function appendMessage(role, text) {
-    const elem = document.createElement('div');
-    elem.className = `message ${role}`;
-    elem.textContent = text;
-    chatContainer.appendChild(elem);
+    const el = document.createElement('div');
+    el.className = `message ${role}`;
+    el.textContent = text;
+    chatContainer.appendChild(el);
     chatContainer.scrollTop = chatContainer.scrollHeight;
   }
 });
