@@ -1,14 +1,41 @@
 // chat_interface.js
 
+// This script handles speech recognition, template buttons, and chat interactions.
 document.addEventListener("DOMContentLoaded", () => {
+  // Chat container
   const chatContainer = document.getElementById("chat-container");
+
+  // Template buttons container
+  const templateContainer = document.getElementById("template-container");
+
+  // Input elements
   const inputField = document.getElementById("user-input");
   const sendButton = document.getElementById("send-button");
   const micButton = document.getElementById("mic-button");
-  let recognition;
-  let recognizing = false;
 
-  // Web Speech API 初期化
+  // Load templates from server and render buttons
+  console.log("▶️ Fetching templates...");
+  fetch("/templates")
+    .then(res => res.json())
+    .then(templates => {
+      console.log("★ templates loaded:", templates);
+      templates.forEach(group => {
+        group.phrases.forEach(phrase => {
+          const btn = document.createElement("button");
+          btn.className = "template-btn";
+          btn.textContent = phrase;
+          btn.addEventListener("click", () => {
+            inputField.value = phrase;
+            inputField.focus();
+          });
+          templateContainer.appendChild(btn);
+        });
+      });
+    })
+    .catch(err => console.error("❌ templates fetch error:", err));
+
+  // Speech Recognition setup
+  let recognition;
   if (window.SpeechRecognition || window.webkitSpeechRecognition) {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     recognition = new SpeechRecognition();
@@ -17,15 +44,11 @@ document.addEventListener("DOMContentLoaded", () => {
     recognition.continuous = false;
 
     recognition.onstart = () => {
-      recognizing = true;
       micButton.classList.add('listening');
     };
-
     recognition.onend = () => {
-      recognizing = false;
       micButton.classList.remove('listening');
     };
-
     recognition.onresult = (event) => {
       const transcript = event.results[0][0].transcript;
       inputField.value = transcript;
@@ -36,13 +59,13 @@ document.addEventListener("DOMContentLoaded", () => {
     console.warn("Speech Recognition API not supported in this browser.");
   }
 
-  // マイクのオン/オフ
+  // Toggle mic on/off
   micButton.addEventListener('click', () => {
     if (!recognition) return;
-    recognizing ? recognition.stop() : recognition.start();
+    recognition[recognition.recognizing ? 'stop' : 'start']();
   });
 
-  // メッセージ送信（ボタンクリック or Enter）
+  // Send message on button click or Enter press
   sendButton.addEventListener('click', sendMessage);
   inputField.addEventListener('keydown', (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -51,7 +74,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // メッセージ送信処理
+  // Send message function
   function sendMessage() {
     const text = inputField.value.trim();
     if (!text) return;
@@ -59,39 +82,42 @@ document.addEventListener("DOMContentLoaded", () => {
     appendMessage('user', text);
     inputField.value = '';
 
-    // タイピングインジケーター
+    // Typing indicator
     const loadingElem = document.createElement('div');
     loadingElem.className = 'message bot loading';
     loadingElem.innerHTML = '<span class="dot"></span><span class="dot"></span><span class="dot"></span>';
     chatContainer.appendChild(loadingElem);
     chatContainer.scrollTop = chatContainer.scrollHeight;
 
-    // バックエンドへ送信
+    console.log("▶️ fetch -> /api/chat", text);
     fetch('/api/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ message: text })
     })
-    .then(res => res.json())
+    .then(res => {
+      console.log("◀️ status:", res.status);
+      return res.json();
+    })
     .then(data => {
-      console.log('★ reply from server:', data.reply);
+      console.log('★ reply:', data.reply);
       chatContainer.removeChild(loadingElem);
       appendMessage('bot', data.reply);
 
-      // 音声URLがあれば再生
+      // Play audio if available
       if (data.audioUrl) {
         const audio = new Audio(data.audioUrl);
         audio.play().catch(err => console.warn('Audio playback failed', err));
       }
     })
     .catch(err => {
-      console.error('Error:', err);
+      console.error('❌ fetch error:', err);
       chatContainer.removeChild(loadingElem);
       appendMessage('bot', '申し訳ありません。エラーが発生しました。');
     });
   }
 
-  // メッセージ表示ヘルパー
+  // Helper to append message element
   function appendMessage(role, text) {
     const elem = document.createElement('div');
     elem.className = `message ${role}`;
