@@ -104,10 +104,13 @@ document.addEventListener("DOMContentLoaded", () => {
       chatContainer.removeChild(loadingElem);
       appendMessage('bot', data.reply);
 
-      // Play audio if available
+      // If audioUrl is provided, render audio element with controls
       if (data.audioUrl) {
-        const audio = new Audio(data.audioUrl);
-        audio.play().catch(err => console.warn('Audio playback failed', err));
+        const audioElem = document.createElement('audio');
+        audioElem.src = data.audioUrl;
+        audioElem.controls = true;
+        audioElem.autoplay = true;
+        chatContainer.appendChild(audioElem);
       }
     })
     .catch(err => {
