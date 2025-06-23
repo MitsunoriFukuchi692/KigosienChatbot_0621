@@ -74,6 +74,7 @@ document.addEventListener("DOMContentLoaded", () => {
     })
     .then(res => res.json())
     .then(data => {
+      console.log('★ reply from server:', data.reply);
       chatContainer.removeChild(loadingElem);
       appendMessage('bot', data.reply);
 
