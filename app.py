@@ -32,5 +32,13 @@ def chat():
     reply = f"あなた: {user_msg}"
     return jsonify({'reply': reply})
 
+@app.route('/api/chat', methods=['POST'])
+def api_chat():
+    # /chat と同じ処理をコピー
+    data = request.get_json() or {}
+    user_msg = data.get('message', '').strip()
+    reply = f"あなた: {user_msg}"
+    return jsonify({'reply': reply})
+
 if __name__ == '__main__':
     app.run(debug=True)
