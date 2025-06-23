@@ -4,3 +4,4 @@ openai
 gTTS
 python-dotenv
 gunicorn
+google-cloud-texttospeech
