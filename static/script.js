@@ -1,57 +1,54 @@
-document.getElementById("chat-form").addEventListener("submit", async function (e) {
-  e.preventDefault();
-  const input = document.getElementById("message");
-  const message = input.value;
-  appendMessage("🧑", message);
-  input.value = "";
+// static/js/script.js for chatbot.html
 
-  const res = await fetch("/chat", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ message: message }),
-  });
+async function callTTS(text, lang = 'ja') {
+  try {
+    const res = await fetch('/tts', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text, lang })
+    });
+    if (!res.ok) throw new Error(`TTS API error ${res.status}`);
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const audio = new Audio(url);
+    audio.play();
+  } catch (e) {
+    console.error('TTS再生エラー:', e);
+  }
+}
 
-  const data = await res.json();
-  appendMessage("🤖", data.reply);
+async function sendChat(message, lang = 'ja') {
+  try {
+    const res = await fetch('/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message, lang })
+    });
+    const body = await res.json();
+    if (!res.ok || !body.reply) {
+      console.error('Chat API エラー:', body);
+      return null;
+    }
+    return body.reply;
+  } catch (e) {
+    console.error('Fetch エラー:', e);
+    return null;
+  }
+}
+
+document.getElementById('send-button')?.addEventListener('click', async () => {
+  const inputEl = document.getElementById('user-input');
+  const container = document.getElementById('chat-container');
+  const text = inputEl.value.trim();
+  if (!text) return;
+
+  container.innerHTML += `<div class="user-msg">👤 ${text}</div>`;
+  inputEl.value = '';
+
+  const reply = await sendChat(text, 'ja');
+  if (reply) {
+    container.innerHTML += `<div class="bot-msg">🤖 ${reply}</div>`;
+    container.scrollTop = container.scrollHeight;
+    callTTS(reply, 'ja');
+  }
 });
-
-function appendMessage(sender, message) {
-  const box = document.getElementById("chat-box");
-  const msg = document.createElement("div");
-  msg.textContent = `${sender}：${message}`;
-  box.appendChild(msg);
-  box.scrollTop = box.scrollHeight;
-}
-
-// 音声入力機能の追加
-const micBtn = document.getElementById("mic-btn");
-const recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-
-if (recognition) {
-  const recog = new recognition();
-  recog.lang = "ja-JP";
-  recog.continuous = false;
-
-  micBtn.addEventListener("click", () => {
-    recog.start();
-    micBtn.textContent = "🎙️ 聞き取り中...";
-  });
-
-  recog.onresult = (event) => {
-    const transcript = event.results[0][0].transcript;
-    document.getElementById("message").value = transcript;
-    micBtn.textContent = "🎤";
-  };
-
-  recog.onerror = (event) => {
-    console.error("音声認識エラー:", event.error);
-    micBtn.textContent = "🎤";
-  };
-
-  recog.onend = () => {
-    micBtn.textContent = "🎤";
-  };
-} else {
-  micBtn.disabled = true;
-  micBtn.textContent = "🎤(非対応)";
-}
