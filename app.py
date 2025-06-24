@@ -30,3 +30,7 @@ def chat():
         return jsonify({'reply': reply})
     except Exception as e:
         return jsonify({'reply': f"エラーが発生しました: {e}"}), 500
+
+@app.route('/ja/chatbot/')
+def chatbot_ja():
+    return render_template('ja/chatbot.html')
