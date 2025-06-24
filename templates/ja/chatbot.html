@@ -1,33 +1,23 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>AIみまくん チャットボット</title>
-  <link rel="stylesheet" href="/static/css/style.css">
+  <link rel="stylesheet" href="/static/css/style.css" />
 </head>
 <body>
-  <!-- メッセージ表示領域 -->
   <div id="chat-container" class="chat-container"></div>
 
-  <!-- タイピングインジケーター -->
-  <div id="typing-indicator" class="typing-indicator hidden">
-    <span class="dot"></span><span class="dot"></span><span class="dot"></span>
-  </div>
-
-  <!-- 入力エリア -->
   <div class="input-area">
-    <input id="user-input" type="text" placeholder="メッセージを入力" autocomplete="off">
+    <input id="user-input" type="text" placeholder="メッセージを入力" autocomplete="off" />
     <button id="send-button">送信</button>
     <button id="mic-button">🎤</button>
   </div>
 
-  <!-- 定型文ボタンエリア -->
-  <div id="template-container" class="template-container">
-    <!-- <button class="template-btn" data-msg="こんにちは">こんにちは</button> -->
-  </div>
+  <!-- テンプレート（定型文）表示 -->
+  <div id="template-container" class="template-container"></div>
 
-  <!-- チャット用スクリプト -->
-  <script src="/static/js/script.js"></script>
+  <script src="/static/script.js"></script>
 </body>
 </html>

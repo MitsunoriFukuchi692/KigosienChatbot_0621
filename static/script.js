@@ -1,4 +1,4 @@
-// static/js/script.js for chatbot.html
+// chatbot対応 script.js
 
 async function callTTS(text, lang = 'ja') {
   try {
@@ -52,3 +52,30 @@ document.getElementById('send-button')?.addEventListener('click', async () => {
     callTTS(reply, 'ja');
   }
 });
+
+async function loadTemplates() {
+  const container = document.getElementById('template-container');
+  if (!container) return;
+
+  try {
+    const res = await fetch('/templates');
+    const data = await res.json();
+
+    for (const group of data) {
+      for (const phrase of group.phrases) {
+        const btn = document.createElement('button');
+        btn.className = 'template-btn';
+        btn.textContent = phrase;
+        btn.dataset.msg = phrase;
+        btn.onclick = () => {
+          document.getElementById('user-input').value = phrase;
+        };
+        container.appendChild(btn);
+      }
+    }
+  } catch (e) {
+    console.error('テンプレート取得エラー:', e);
+  }
+}
+
+window.addEventListener('DOMContentLoaded', loadTemplates);
