@@ -3,6 +3,11 @@ from flask import Flask, render_template, request, jsonify
 app = Flask(__name__)
 
 # ルート（/）と日本語チャット（/ja, /ja/）に対応
+
+@app.route('/ping')
+def ping():
+    return "pong"
+
 @app.route('/')
 @app.route('/ja')
 @app.route('/ja/')
