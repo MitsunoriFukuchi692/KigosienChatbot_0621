@@ -2,22 +2,28 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>AIみまくん チャットボット</title>
-  <link rel="stylesheet" href="/static/css/style.css" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AIみまくん×多言語介護サポートボット（日本語）</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}" />
 </head>
 <body>
-  <div id="chat-container" class="chat-container"></div>
-
-  <div class="input-area">
-    <input id="user-input" type="text" placeholder="メッセージを入力" autocomplete="off" />
-    <button id="send-button">送信</button>
-    <button id="mic-button">🎤</button>
-  </div>
-
-  <!-- テンプレート（定型文）表示 -->
-  <div id="template-container" class="template-container"></div>
-
-  <script src="/static/script.js"></script>
+  <h1>AIみまくん × 多言語介護サポートボット</h1>
+  <section id="chat-section">
+    <div id="chat-window">
+      <div id="lower-chat" class="chat-window"></div>
+    </div>
+    <div id="controls">
+      <label for="lang-select">言語選択:</label>
+      <select id="lang-select">
+        <option value="ja" selected>日本語</option>
+        <option value="en">English</option>
+      </select>
+      <input id="lower-input" type="text" placeholder="メッセージを入力してください..." />
+      <button id="lower-send">送信</button>
+      <button id="lower-mic">🎤</button>
+    </div>
+  </section>
+  <audio id="audio-lower" hidden></audio>
+  <script src="{{ url_for('static', filename='js/script.js') }}"></script>
 </body>
 </html>
