@@ -1,6 +1,11 @@
 from flask import Flask, render_template, request, jsonify
 app = Flask(__name__)
 
+# 追加：ルートアクセスで日本語チャットを返す
+@app.route('/')
+def index():
+    return render_template('ja/chatbot.html')
+
 @app.route('/ja')
 def chat_ja():
     return render_template('ja/chatbot.html')
@@ -8,7 +13,6 @@ def chat_ja():
 @app.route('/en')
 def chat_en():
     return render_template('en/chatbot.html')
-
 @app.route('/chat', methods=['POST'])
 def chat_api():
     data = request.get_json()
