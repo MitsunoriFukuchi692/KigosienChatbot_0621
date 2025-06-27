@@ -1,5 +1,11 @@
 // static/js/chatbot.js
 
+console.log('available voices:', speechSynthesis.getVoices());
+
+window.speechSynthesis.onvoiceschanged = () => {
+  console.log('voices now loaded:', speechSynthesis.getVoices());
+};
+
 document.addEventListener('DOMContentLoaded', () => {
   const chatContainer = document.getElementById('chat-container');
   const input         = document.getElementById('chat-input');
@@ -47,7 +53,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // ユーザーのバブル（アイコン付き）
     const userDiv = document.createElement('div');
     userDiv.className = 'bubble user';
-    userDiv.innerHTML = '<img class="icon" src="/static/img/user-icon.png" alt="user"><span>' + msg + '</span>';
+    userDiv.innerHTML = '<img class="icon" src="/static/images/user-icon.png" alt="user"><span>' + msg + '</span>';
     chatContainer.appendChild(userDiv);
 
     // サーバーへ送信
@@ -63,7 +69,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const botMsg = reply || error;
     const botDiv = document.createElement('div');
     botDiv.className = 'bubble bot';
-    botDiv.innerHTML = '<img class="icon" src="/static/img/bot-icon.png" alt="bot"><span>' + botMsg + '</span>';
+    botDiv.innerHTML  = '<img class="icon" src="/static/images/bot-icon.png"  alt="bot"><span>' + botMsg + '</span>';
     chatContainer.appendChild(botDiv);
 
     chatContainer.scrollTop = chatContainer.scrollHeight;
