@@ -34,7 +34,7 @@ def chat():
 def chat_api():
     data = request.get_json()
     try:
-        reply = f"【テスト応答】「{data.get('text')}」を受け取りました。"
+        reply = data.get('text')
         return jsonify(reply=reply)
     except Exception as e:
         traceback.print_exc()
