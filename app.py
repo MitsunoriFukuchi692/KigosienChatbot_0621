@@ -7,6 +7,13 @@ app = Flask(
     static_folder='static'
 )
 
+@app.route('/routes')
+def list_routes():
+    routes = []
+    for rule in app.url_map.iter_rules():
+        routes.append(f"{rule.rule} → {','.join(rule.methods)}")
+    return "<br>".join(routes), 200, {'Content-Type': 'text/html'}
+
 # ─── キャッシュ無効化設定 ────────────────────────────
 app.config['TEMPLATES_AUTO_RELOAD'] = True
 app.jinja_env.auto_reload = True
