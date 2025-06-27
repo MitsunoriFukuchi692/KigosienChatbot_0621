@@ -6,26 +6,25 @@ app = Flask(
     static_folder='static'
 )
 
-# キャッシュ無効化
-app = Flask(__name__, template_folder='templates', static_folder='static')
+# キャッシュ無効化（既に設定済みなら不要）
 app.config['TEMPLATES_AUTO_RELOAD'] = True
+app.jinja_env.auto_reload = True
 app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0
 
-# ─── ここから追加 ────────────────────────────────
-# ヘルスチェック用エンドポイント
+# ヘルスチェック
 @app.route('/ping')
 def ping():
     return "pong"
 
-# ルートと日本語／英語パスをすべて同じテンプレートへ
+# ルート／言語パスを全部同じテンプレートに
 @app.route('/')
 @app.route('/ja')
 @app.route('/ja/')
 @app.route('/en')
 @app.route('/en/')
 def chat():
+    # すべて templates/chatbot.html を参照
     return render_template('chatbot.html')
-# ─── ここまで追加 ────────────────────────────────
 
 # チャット API
 @app.route('/chat', methods=['POST'])
@@ -39,7 +38,7 @@ def chat_api():
 def tts_api():
     data = request.get_json()
     audio = your_tts_function(data.get('text'), data.get('lang'))
-    return (audio, 200, {'Content-Type': 'audio/mpeg'})
+    return (audio, 200, {'Content-Type':'audio/mpeg'})
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
