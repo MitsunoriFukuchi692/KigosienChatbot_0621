@@ -1,0 +1,33 @@
+<!-- templates/ja/chatbot.html -->
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <title>介護支援チャットボット</title>
+  <link rel="stylesheet" href="/static/css/style.css" />
+</head>
+<body>
+  <!-- ▼ チャット画面 ▼ -->
+  <div id="chat-container"></div>
+
+  <!-- ▼ 入力エリア ▼ -->
+  <div id="input-area">
+    <textarea id="chat-input" placeholder="メッセージを入力してください…"></textarea>
+    <button id="send-btn">送信</button>
+  </div>
+
+  <!-- ▼ 入力支援テンプレート ▼ -->
+  <div id="template-area">
+    <h4>入力支援</h4>
+    <!-- カテゴリボタン -->
+    <div id="template-categories"></div>
+    <!-- フレーズボタン -->
+    <div id="template-phrases"></div>
+  </div>
+
+  <!-- 音声読み上げバー -->
+  <div id="tts-bar" class="hidden">🔊 再生中…</div>
+
+  <script src="/static/js/chatbot.js"></script>
+</body>
+</html>
