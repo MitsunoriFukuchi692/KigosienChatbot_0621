@@ -6,6 +6,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const chatContainer = document.getElementById('chat-container');
   const ttsPlayer     = document.getElementById('tts-player');
   const tplContainer  = document.getElementById('template-container');
+  const explainInput  = document.getElementById('explain-input');
+  const explainBtn    = document.getElementById('explain-btn');
 
   console.log(
     'voiceBtn=', voiceBtn,
@@ -13,7 +15,9 @@ document.addEventListener('DOMContentLoaded', () => {
     'inputField=', inputField,
     'chatContainer=', chatContainer,
     'ttsPlayer=', ttsPlayer,
-    'tplContainer=', tplContainer
+    'tplContainer=', tplContainer,
+    'explainInput=', explainInput,
+    'explainBtn=', explainBtn
   );
 
   // --------- テンプレート取得＆描画 ---------
@@ -56,17 +60,16 @@ document.addEventListener('DOMContentLoaded', () => {
   } else {
     voiceBtn.style.display = 'none';
   }
-
   voiceBtn.addEventListener('click', () => {
     if (recog) recog.start();
   });
 
-  // --------- メッセージ送信＆返信処理 ---------
+  // --------- チャット送信＆TTS ---------
   async function sendMessage() {
     const text = inputField.value.trim();
     if (!text) return;
 
-    // AudioContext 再開（自動再生制限対策）
+    // AudioContext 再開
     const AudioCtx = window.AudioContext || window.webkitAudioContext;
     if (AudioCtx) {
       try {
@@ -98,38 +101,46 @@ document.addEventListener('DOMContentLoaded', () => {
 
     appendMessage('bot', botReply);
 
-    // TTS 呼び出し＆再生
+    // TTS 再生
     try {
       console.log('TTS 呼び出し:', botReply);
       const audioUrl = await callTTS(botReply, 'ja');
       ttsPlayer.src = audioUrl;
-      ttsPlayer.load();
-      // エラーイベントリスナ追加
-      ttsPlayer.onerror = e => console.error('Audio Element Error:', e);
-      ttsPlayer.onstalled = () => console.warn('Audio stalled');
-      ttsPlayer.onwaiting = () => console.warn('Audio waiting');
-      const playPromise = ttsPlayer.play();
-      if (playPromise !== undefined) {
-        playPromise
-          .then(() => console.log('Audio playing? paused=', ttsPlayer.paused))
-          .catch(err => console.error('Play promise error:', err));
-      }
+      await ttsPlayer.play();
     } catch (err) {
       console.error('TTS再生エラー', err);
     }
   }
-
   sendBtn.addEventListener('click', sendMessage);
   inputField.addEventListener('keydown', e => {
     if (e.key === 'Enter') sendMessage();
   });
 
-  // --------- DOM にチャットを追加（アイコン付き） ---------
+  // --------- 用語説明 ---------
+  explainBtn.addEventListener('click', async () => {
+    const term = explainInput.value.trim();
+    if (!term) return alert('用語を入力してください');
+    try {
+      const res = await fetch('/explain', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({term})
+      });
+      const data = await res.json();
+      if (data.error) throw new Error(data.error);
+      appendMessage('bot', `［用語説明］「${term}」とは…\n${data.explanation}`);
+      explainInput.value = '';
+    } catch (e) {
+      console.error('用語説明エラー', e);
+      alert('説明取得に失敗しました');
+    }
+  });
+
+  // --------- DOM にメッセージを追加（アイコン付き） ---------
   function appendMessage(who, text) {
     const wrap = document.createElement('div');
     wrap.className = `chat ${who}`;
 
-    // アイコン
     const icon = document.createElement('span');
     icon.className = 'avatar';
     icon.textContent = who === 'user' ? '👩‍⚕️' : '👴';

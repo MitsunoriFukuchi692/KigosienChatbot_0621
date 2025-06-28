@@ -24,8 +24,20 @@
       <button id="voice-btn" class="btn">🎤</button>
     </div>
 
-    <!-- 音声再生用要素（デバッグ用 controls 付き） -->
-    <audio id="tts-player" controls></audio>
+    <!-- 用語説明エリア -->
+    <div id="explain-area" class="input-area" style="margin-top:8px;">
+      <input id="explain-input" type="text" placeholder="説明してほしい用語を入力" style="flex:1; padding:8px;" />
+      <button id="explain-btn" class="btn">用語を説明</button>
+    </div>
+
+    <!-- 音声再生用要素 -->
+    <audio
+    id="tts-player"
+    controls
+    playsinline
+    webkit-playsinline
+   ></audio>
+
   </main>
 
   <script src="/static/js/script.js"></script>
