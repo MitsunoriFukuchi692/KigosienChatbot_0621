@@ -3,7 +3,7 @@ import os
 import traceback
 from openai import OpenAI
 import io
-# from your_tts_module import synthesize_mp3  # 実際のTTS関数をインポート
+from gtts import gTTS  # Google Text-to-Speech
 
 # 環境変数からAPIキーを取得して設定
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
@@ -52,17 +52,22 @@ def chat_api():
         traceback.print_exc()
         return jsonify(error=str(e)), 500
 
-# TTS用APIエンドポイント
+# TTS用APIエンドポイント (gTTS使用)
 @app.route('/tts', methods=['POST'])
 def tts_api():
     data = request.get_json() or {}
     text = data.get('text', '')
     lang = data.get('lang', 'ja')
     try:
-        # 音声データ（mp3バイト列）を生成
-        audio_bytes = synthesize_mp3(text, lang=lang)
+        # gTTS で MP3 を生成
+        tts = gTTS(text=text, lang=lang)
+        buf = io.BytesIO()
+        tts.write_to_fp(buf)
+        buf.seek(0)
+
+        # クライアントに MP3 を返す
         return send_file(
-            io.BytesIO(audio_bytes),
+            buf,
             mimetype='audio/mpeg',
             as_attachment=False,
             download_name='tts.mp3'
