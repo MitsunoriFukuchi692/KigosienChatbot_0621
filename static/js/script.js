@@ -104,7 +104,16 @@ document.addEventListener('DOMContentLoaded', () => {
       const audioUrl = await callTTS(botReply, 'ja');
       ttsPlayer.src = audioUrl;
       ttsPlayer.load();
-      await ttsPlayer.play();
+      // エラーイベントリスナ追加
+      ttsPlayer.onerror = e => console.error('Audio Element Error:', e);
+      ttsPlayer.onstalled = () => console.warn('Audio stalled');
+      ttsPlayer.onwaiting = () => console.warn('Audio waiting');
+      const playPromise = ttsPlayer.play();
+      if (playPromise !== undefined) {
+        playPromise
+          .then(() => console.log('Audio playing? paused=', ttsPlayer.paused))
+          .catch(err => console.error('Play promise error:', err));
+      }
     } catch (err) {
       console.error('TTS再生エラー', err);
     }
