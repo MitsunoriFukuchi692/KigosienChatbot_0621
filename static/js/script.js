@@ -1,90 +1,91 @@
-// 完全一本化＆アイコン付き表示
-const chatWindow = document.getElementById('lower-chat');
-const sendBtn    = document.getElementById('lower-send');
-const inputField = document.getElementById('lower-input');
-const langSelect = document.getElementById('lang-select');
-const micBtn     = document.getElementById('lower-mic');
-const audioEl    = document.getElementById('audio-lower');
+document.addEventListener('DOMContentLoaded', () => {
+  // 要素取得
+  const voiceBtn      = document.getElementById('voice-btn');
+  const sendBtn       = document.getElementById('send-btn');
+  const inputField    = document.getElementById('chat-input');
+  const chatContainer = document.getElementById('chat-container');
 
-// HTMLエスケープ
-function escapeHtml(s) {
-  return s.replace(/&/g, '&amp;')
-          .replace(/</g, '&lt;')
-          .replace(/>/g, '&gt;');
-}
+  // 存在チェック（デバッグ用）
+  console.log('voiceBtn=', voiceBtn, 'sendBtn=', sendBtn, 'inputField=', inputField, 'chatContainer=', chatContainer);
 
-// メッセージ追加（👤 / 🤖）
-function appendMessage(sender, text) {
-  const p = document.createElement('p');
-  p.className = sender;
-  const icon = sender === 'user' ? '👤' : '🤖';
-  p.innerHTML = `${icon}: ${escapeHtml(text)}`;
-  chatWindow.appendChild(p);
-  chatWindow.scrollTop = chatWindow.scrollHeight;
-}
-
-// 最後のBOTメッセージを置換
-function replaceLastBotMessage(text) {
-  const msgs = chatWindow.getElementsByClassName('bot');
-  const last = msgs[msgs.length - 1];
-  last.innerHTML = `🤖: ${escapeHtml(text)}`;
-}
-
-// 送信ボタン・Enterキー
-sendBtn.addEventListener('click', () => {
-  const text = inputField.value.trim(); if (!text) return;
-  appendMessage('user', text);
-  inputField.value = '';
-  callChatAPI(text);
-});
-inputField.addEventListener('keydown', e => { if (e.key === 'Enter') sendBtn.click(); });
-
-// 音声認識→送信
-micBtn.addEventListener('click', () => {
-  startSpeechRecognition()
-    .then(t => { inputField.value = t; sendBtn.click(); })
-    .catch(console.error);
-});
-
-// チャットAPI呼び出し
-async function callChatAPI(text) {
-  appendMessage('bot', '…考え中…');
-  try {
-    const res = await fetch('/chat', {
-      method: 'POST', headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({ text, lang: langSelect.value })
-    });
-    const { reply } = await res.json();
-    replaceLastBotMessage(reply);
-    callTTS(reply, langSelect.value, audioEl);
-  } catch (e) {
-    console.error(e);
-    replaceLastBotMessage('エラーが発生しました');
+  // --------- 音声認識のセットアップ ---------
+  let recog = null;
+  if (window.SpeechRecognition || window.webkitSpeechRecognition) {
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    recog = new SR();
+    recog.lang = 'ja-JP';
+    recog.onresult = e => {
+      inputField.value = e.results[0][0].transcript;
+    };
+    recog.onerror = e => console.error('認識エラー', e);
+  } else {
+    // 非対応ブラウザでは非表示
+    voiceBtn.style.display = 'none';
   }
-}
 
-// TTS
-async function callTTS(text, lang, audioEl) {
-  try {
-    const res = await fetch('/tts', {
-      method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ text, lang })
-    }); if (!res.ok) throw new Error();
-    const blob = await res.blob();
-    audioEl.src = URL.createObjectURL(blob);
-    await audioEl.play();
-  } catch (err) {
-    console.error('Audio再生エラー:', err);
-  }
-}
-
-// 音声認識
-function startSpeechRecognition() {
-  return new Promise((resolve, reject) => {
-    const R = new (window.SpeechRecognition||window.webkitSpeechRecognition)();
-    R.lang = langSelect.value === 'ja' ? 'ja-JP' : 'en-US';
-    R.start();
-    R.onresult = e => resolve(e.results[0][0].transcript);
-    R.onerror  = e => reject(e.error);
+  voiceBtn.addEventListener('click', () => {
+    if (recog) recog.start();
   });
-}
+
+  // --------- メッセージ送信＆返信処理 ---------
+  async function sendMessage() {
+    const text = inputField.value.trim();
+    if (!text) return;
+
+    appendMessage('user', text);
+    inputField.value = '';
+
+    // Chat API 呼び出し
+    let botReply = '';
+    try {
+      const res = await fetch('/chat', {
+        method:  'POST',
+        headers: {'Content-Type':'application/json'},
+        body:    JSON.stringify({ message: text }),
+      });
+      const data = await res.json();
+      botReply = data.reply || '';
+    } catch (err) {
+      console.error('チャットAPIエラー', err);
+      botReply = 'すみません、エラーが発生しました。';
+    }
+
+    appendMessage('bot', botReply);
+
+    // TTS 呼び出し＆再生
+    try {
+      console.log('TTS 呼び出し:', botReply);
+      const audioUrl = await callTTS(botReply, 'ja');
+      const audio    = new Audio(audioUrl);
+      await audio.play();
+    } catch (err) {
+      console.error('TTS再生エラー', err);
+    }
+  }
+
+  sendBtn.addEventListener('click', sendMessage);
+  inputField.addEventListener('keydown', e => {
+    if (e.key === 'Enter') sendMessage();
+  });
+
+  // --------- DOM にチャットを追加 ---------
+  function appendMessage(who, text) {
+    const wrap = document.createElement('div');
+    wrap.className = `chat ${who}`;  // .chat.user, .chat.bot
+    wrap.textContent = text;
+    chatContainer.appendChild(wrap);
+    chatContainer.scrollTop = chatContainer.scrollHeight;
+  }
+
+  // --------- TTS 関数 ---------
+  async function callTTS(text, lang='ja') {
+    const res = await fetch('/tts', {
+      method:  'POST',
+      headers: {'Content-Type':'application/json'},
+      body:    JSON.stringify({ text, lang }),
+    });
+    if (!res.ok) throw new Error(`TTS API エラー ${res.status}`);
+    const blob = await res.blob();
+    return URL.createObjectURL(blob);
+  }
+});

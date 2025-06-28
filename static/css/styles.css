@@ -1,24 +1,12 @@
-body {
-  font-family: sans-serif;
-  margin: 20px;
+.bubble {
+  display: flex;
+  align-items: center;
+  margin: 8px 0;
 }
-#chat-window {
-  border: 1px solid #ccc;
-  height: 400px;
-  overflow-y: auto;
-  padding: 10px;
-  background: #f9f9f9;
+.bubble .icon {
+  width: 24px;
+  height: 24px;
+  margin-right: 8px;
 }
-#controls {
-  margin-top: 10px;
-}
-#lower-input {
-  width: 60%;
-  padding: 5px;
-}
-button {
-  margin-left: 5px;
-  padding: 5px 10px;
-}
-p.user { color: #0055aa; }
-p.bot  { color: #aa5500; }
+.bubble.user { justify-content: flex-end; }
+.bubble.bot  { justify-content: flex-start; }
