@@ -1,13 +1,20 @@
 document.addEventListener('DOMContentLoaded', () => {
   // 要素取得
-  const voiceBtn        = document.getElementById('voice-btn');
-  const sendBtn         = document.getElementById('send-btn');
-  const inputField      = document.getElementById('chat-input');
-  const chatContainer   = document.getElementById('chat-container');
-  const ttsPlayer       = document.getElementById('tts-player');
-  const tplContainer    = document.getElementById('template-container'); // テンプレート用コンテナ
+  const voiceBtn      = document.getElementById('voice-btn');
+  const sendBtn       = document.getElementById('send-btn');
+  const inputField    = document.getElementById('chat-input');
+  const chatContainer = document.getElementById('chat-container');
+  const ttsPlayer     = document.getElementById('tts-player');
+  const tplContainer  = document.getElementById('template-container');
 
-  console.log('voiceBtn=', voiceBtn, 'sendBtn=', sendBtn, 'inputField=', inputField, 'chatContainer=', chatContainer, 'ttsPlayer=', ttsPlayer, 'tplContainer=', tplContainer);
+  console.log(
+    'voiceBtn=', voiceBtn,
+    'sendBtn=', sendBtn,
+    'inputField=', inputField,
+    'chatContainer=', chatContainer,
+    'ttsPlayer=', ttsPlayer,
+    'tplContainer=', tplContainer
+  );
 
   // --------- テンプレート取得＆描画 ---------
   fetch('/templates')
@@ -77,12 +84,13 @@ document.addEventListener('DOMContentLoaded', () => {
     let botReply = '';
     try {
       const res = await fetch('/chat', {
-        method:  'POST',
-        headers: {'Content-Type':'application/json'},
-        body:    JSON.stringify({ message: text }),
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ message: text }),
       });
       const data = await res.json();
-      botReply = data.reply || '';
+      console.log('chat response:', data);
+      botReply = data.reply || data.message || data.choices?.[0]?.message?.content || '';
     } catch (err) {
       console.error('チャットAPIエラー', err);
       botReply = 'すみません、エラーが発生しました。';
@@ -95,7 +103,6 @@ document.addEventListener('DOMContentLoaded', () => {
       console.log('TTS 呼び出し:', botReply);
       const audioUrl = await callTTS(botReply, 'ja');
       ttsPlayer.src = audioUrl;
-      // 再生前にロード
       ttsPlayer.load();
       await ttsPlayer.play();
     } catch (err) {
@@ -118,11 +125,11 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // --------- TTS 関数 ---------
-  async function callTTS(text, lang='ja') {
+  async function callTTS(text, lang = 'ja') {
     const res = await fetch('/tts', {
-      method:  'POST',
-      headers: {'Content-Type':'application/json'},
-      body:    JSON.stringify({ text, lang }),
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ text, lang }),
     });
     if (!res.ok) throw new Error(`TTS API エラー ${res.status}`);
     const blob = await res.blob();

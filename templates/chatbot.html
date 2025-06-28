@@ -2,26 +2,32 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8" />
-  <title>チャットボット</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AIみまくん チャットボット</title>
   <link rel="stylesheet" href="/static/css/style.css" />
 </head>
 <body>
-  <div id="chat-container"></div>
+  <header>
+    <h1>AIみまくん チャットボット</h1>
+  </header>
+  <main>
+    <!-- チャット表示エリア -->
+    <div id="chat-container" class="chat-container"></div>
 
-  <!-- 送信ボタンの上あたりに -->
-  <div id="template-container"></div>
+    <!-- テンプレートボタン群 -->
+    <div id="template-container" class="template-container"></div>
 
-  <div id="input-area">
-    <textarea id="chat-input" placeholder="メッセージ…"></textarea>
-    <button id="send-btn">送信</button>
-    <!-- このボタンがマイク -->
-    <button id="voice-btn" style="font-size:1.5em;">🎤</button>
-  </div>
+    <!-- 入力エリア -->
+    <div id="input-area" class="input-area">
+      <textarea id="chat-input" placeholder="メッセージ..." rows="2"></textarea>
+      <button id="send-btn" class="btn">送信</button>
+      <button id="voice-btn" class="btn">🎤</button>
+    </div>
 
-  <!-- ボタン表示用領域は省略 -->
-  <audio id="tts-player"></audio>
-  <script src="/static/js/chatbot.js"></script>
+    <!-- 音声再生用要素 -->
+    <audio id="tts-player"></audio>
+  </main>
+
+  <script src="/static/js/script.js"></script>
 </body>
 </html>
-
-
