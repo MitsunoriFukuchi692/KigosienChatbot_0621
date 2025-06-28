@@ -7,17 +7,33 @@ import io
 from gtts import gTTS  # Google Text-to-Speech
 import sqlite3
 
+# データベース初期化
+DATABASE = os.path.join(os.getcwd(), 'chat_logs.db')
+def init_db():
+    conn = sqlite3.connect(DATABASE)
+    conn.execute('''
+    CREATE TABLE IF NOT EXISTS logs (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        role TEXT NOT NULL,
+        message TEXT NOT NULL,
+        timestamp INTEGER NOT NULL
+    );
+    ''')
+    conn.commit()
+    conn.close()
+
 # 環境変数からAPIキーを取得して設定
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+
+# Flask アプリ起動前に DB を初期化
+init_db()
 
 app = Flask(__name__, template_folder='templates', static_folder='static')
 app.config['TEMPLATES_AUTO_RELOAD'] = True
 app.jinja_env.auto_reload = True
 app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0
 
-# SQLite データベース設定
-DATABASE = os.path.join(os.getcwd(), 'chat_logs.db')
-
+# SQLite データベース接続取得
 def get_db():
     if 'db' not in g:
         conn = sqlite3.connect(DATABASE)
@@ -104,9 +120,13 @@ def tts_api():
 # 対話ログをJSONで取得するエンドポイント
 @app.route('/logs')
 def show_logs():
-    db = get_db()
-    rows = db.execute('SELECT * FROM logs ORDER BY timestamp').fetchall()
-    return jsonify([dict(r) for r in rows])
+    try:
+        db = get_db()
+        rows = db.execute('SELECT * FROM logs ORDER BY timestamp').fetchall()
+        return jsonify([dict(r) for r in rows])
+    except Exception as e:
+        traceback.print_exc()
+        return jsonify(error=str(e)), 500
 
 # 登録ルート一覧表示
 @app.route('/routes')
