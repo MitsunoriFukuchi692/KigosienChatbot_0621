@@ -128,6 +128,32 @@ def show_logs():
         traceback.print_exc()
         return jsonify(error=str(e)), 500
 
+# 用語説明用エンドポイント
+@app.route('/explain', methods=['POST'])
+def explain_term():
+    try:
+        data = request.get_json() or {}
+        term = data.get('term', '').strip()
+        if not term:
+            return jsonify(error='term is required'), 400
+        # AIに用語説明を依頼（日本語指定を追加）
+        resp = client.chat.completions.create(
+            model="gpt-3.5-turbo",
+            messages=[
+                {"role": "system", "content": (
+                    "あなたは分かりやすい用語解説者です。"
+                    "以下の専門用語や難しい言葉を日本語で、"
+                    "優しく、具体例を交えて説明してください。"
+                )},
+                {"role": "user", "content": f"「{term}」とは何か教えてください。"}
+            ]
+        )
+        explanation = resp.choices[0].message.content.strip()
+        return jsonify(explanation=explanation)
+    except Exception as e:
+        traceback.print_exc()
+        return jsonify(error=str(e)), 500
+
 # 登録ルート一覧表示
 @app.route('/routes')
 def list_routes():
