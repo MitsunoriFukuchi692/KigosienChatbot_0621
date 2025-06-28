@@ -29,7 +29,13 @@ def get_templates():
 @app.route('/en')
 @app.route('/en/')
 def chat():
-    return render_template('chatbot.html')
+    try:
+        return render_template('chatbot.html')
+    except Exception as e:
+        import traceback
+        traceback.print_exc()  # サーバーログにも
+        # ブラウザにスタックトレースを返す（デバッグ用）
+        return f"<pre>{traceback.format_exc()}</pre>", 500
 
 @app.route('/chat', methods=['POST'])
 def chat_api():
