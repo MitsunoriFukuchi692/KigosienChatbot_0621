@@ -1,6 +1,7 @@
-from flask import Flask, render_template, request, jsonify, send_file, g
 import os
+import time
 import traceback
+from flask import Flask, render_template, request, jsonify, send_file, g
 from openai import OpenAI
 import io
 from gtts import gTTS  # Google Text-to-Speech
@@ -67,9 +68,9 @@ def chat_api():
         # 会話ログをDBに記録
         db = get_db()
         db.execute('INSERT INTO logs (role, message, timestamp) VALUES (?, ?, ?)',
-                   ( 'user', user_msg, int(time.time()) ))
+                   ('user', user_msg, int(time.time())))
         db.execute('INSERT INTO logs (role, message, timestamp) VALUES (?, ?, ?)',
-                   ( 'bot', bot_msg, int(time.time()) ))
+                   ('bot', bot_msg, int(time.time())))
         db.commit()
         return jsonify(reply=bot_msg)
     except Exception as e:
