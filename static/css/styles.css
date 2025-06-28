@@ -1,12 +1,75 @@
-.bubble {
+/* 基本レイアウト */
+body {
+  font-family: sans-serif;
+  margin: 0;
+  padding: 0;
+}
+header {
+  background: #0066cc;
+  color: white;
+  padding: 12px;
+  text-align: center;
+}
+main {
+  padding: 16px;
+}
+
+/* チャット表示 */
+.chat-container {
+  max-height: 60vh;
+  overflow-y: auto;
+  margin-bottom: 12px;
+}
+
+/* テンプレートボタン */
+.template-container button {
+  margin: 2px;
+  padding: 4px 8px;
+  font-size: 0.9rem;
+}
+
+/* 入力エリア */
+.input-area {
   display: flex;
-  align-items: center;
-  margin: 8px 0;
+  gap: 8px;
 }
-.bubble .icon {
-  width: 12px;
-  height: 12px;
-  margin-right: 4px;
+.input-area textarea {
+  flex: 1;
+  resize: none;
+  padding: 8px;
+  font-size: 1rem;
 }
-.bubble.user { justify-content: flex-end; }
-.bubble.bot  { justify-content: flex-start; }
+.input-area .btn {
+  padding: 8px 12px;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+/* チャット吹き出し */
+.chat {
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: 8px;
+}
+.avatar {
+  display: inline-block;
+  width: 32px;
+  text-align: center;
+  margin-right: 8px;
+  font-size: 1.5rem;
+}
+.message-text {
+  flex: 1;
+  background: #f1f1f1;
+  padding: 6px 10px;
+  border-radius: 8px;
+  line-height: 1.4;
+}
+
+/* 送信者ごとのスタイル */
+.chat.user .message-text {
+  background: #d1e7dd;
+}
+.chat.bot .message-text {
+  background: #f8d7da;
+}

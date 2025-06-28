@@ -115,11 +115,22 @@ document.addEventListener('DOMContentLoaded', () => {
     if (e.key === 'Enter') sendMessage();
   });
 
-  // --------- DOM にチャットを追加 ---------
+  // --------- DOM にチャットを追加（アイコン付き） ---------
   function appendMessage(who, text) {
     const wrap = document.createElement('div');
     wrap.className = `chat ${who}`;
-    wrap.textContent = text;
+
+    // アイコン
+    const icon = document.createElement('span');
+    icon.className = 'avatar';
+    icon.textContent = who === 'user' ? '👩‍⚕️' : '👴';
+
+    const messageText = document.createElement('span');
+    messageText.className = 'message-text';
+    messageText.textContent = text;
+
+    wrap.appendChild(icon);
+    wrap.appendChild(messageText);
     chatContainer.appendChild(wrap);
     chatContainer.scrollTop = chatContainer.scrollHeight;
   }
