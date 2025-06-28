@@ -121,7 +121,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const term = explainInput.value.trim();
     if (!term) return alert('用語を入力してください');
     try {
-      const res = await fetch('/explain', {
+      const base = window.location.origin;  // 例: "https://kigosienchatbot-0621-27.onrender.com"
+      const res = await fetch(`${base}/explain`, {
         method: 'POST',
         headers: {'Content-Type':'application/json'},
         body: JSON.stringify({term})
