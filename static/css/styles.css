@@ -4,9 +4,9 @@
   margin: 8px 0;
 }
 .bubble .icon {
-  width: 24px;
-  height: 24px;
-  margin-right: 8px;
+  width: 12px;
+  height: 12px;
+  margin-right: 4px;
 }
 .bubble.user { justify-content: flex-end; }
 .bubble.bot  { justify-content: flex-start; }

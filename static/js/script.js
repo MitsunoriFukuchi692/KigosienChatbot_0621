@@ -4,9 +4,9 @@ document.addEventListener('DOMContentLoaded', () => {
   const sendBtn       = document.getElementById('send-btn');
   const inputField    = document.getElementById('chat-input');
   const chatContainer = document.getElementById('chat-container');
+  const ttsPlayer     = document.getElementById('tts-player');  // 追加
 
-  // 存在チェック（デバッグ用）
-  console.log('voiceBtn=', voiceBtn, 'sendBtn=', sendBtn, 'inputField=', inputField, 'chatContainer=', chatContainer);
+  console.log('voiceBtn=', voiceBtn, 'sendBtn=', sendBtn, 'inputField=', inputField, 'chatContainer=', chatContainer, 'ttsPlayer=', ttsPlayer);
 
   // --------- 音声認識のセットアップ ---------
   let recog = null;
@@ -19,7 +19,6 @@ document.addEventListener('DOMContentLoaded', () => {
     };
     recog.onerror = e => console.error('認識エラー', e);
   } else {
-    // 非対応ブラウザでは非表示
     voiceBtn.style.display = 'none';
   }
 
@@ -31,6 +30,17 @@ document.addEventListener('DOMContentLoaded', () => {
   async function sendMessage() {
     const text = inputField.value.trim();
     if (!text) return;
+
+    // AudioContext 再開（自動再生制限対策）
+    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+    if (AudioCtx) {
+      try {
+        const ctx = new AudioCtx();
+        if (ctx.state === 'suspended') await ctx.resume();
+      } catch (e) {
+        console.warn('AudioContext resume failed', e);
+      }
+    }
 
     appendMessage('user', text);
     inputField.value = '';
@@ -56,8 +66,8 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       console.log('TTS 呼び出し:', botReply);
       const audioUrl = await callTTS(botReply, 'ja');
-      const audio    = new Audio(audioUrl);
-      await audio.play();
+      ttsPlayer.src = audioUrl;
+      await ttsPlayer.play();
     } catch (err) {
       console.error('TTS再生エラー', err);
     }
@@ -71,7 +81,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // --------- DOM にチャットを追加 ---------
   function appendMessage(who, text) {
     const wrap = document.createElement('div');
-    wrap.className = `chat ${who}`;  // .chat.user, .chat.bot
+    wrap.className = `chat ${who}`;
     wrap.textContent = text;
     chatContainer.appendChild(wrap);
     chatContainer.scrollTop = chatContainer.scrollHeight;
