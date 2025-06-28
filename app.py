@@ -1,9 +1,10 @@
-from flask import Flask, render_template, request, jsonify, send_file
+from flask import Flask, render_template, request, jsonify, send_file, g
 import os
 import traceback
 from openai import OpenAI
 import io
 from gtts import gTTS  # Google Text-to-Speech
+import sqlite3
 
 # 環境変数からAPIキーを取得して設定
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
@@ -12,6 +13,22 @@ app = Flask(__name__, template_folder='templates', static_folder='static')
 app.config['TEMPLATES_AUTO_RELOAD'] = True
 app.jinja_env.auto_reload = True
 app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0
+
+# SQLite データベース設定
+DATABASE = os.path.join(os.getcwd(), 'chat_logs.db')
+
+def get_db():
+    if 'db' not in g:
+        conn = sqlite3.connect(DATABASE)
+        conn.row_factory = sqlite3.Row
+        g.db = conn
+    return g.db
+
+@app.teardown_appcontext
+def close_db(exc):
+    db = g.pop('db', None)
+    if db:
+        db.close()
 
 # Ping エンドポイント
 @app.route('/ping')
@@ -47,6 +64,13 @@ def chat_api():
             messages=[{"role": "user", "content": user_msg}]
         )
         bot_msg = resp.choices[0].message.content.strip()
+        # 会話ログをDBに記録
+        db = get_db()
+        db.execute('INSERT INTO logs (role, message, timestamp) VALUES (?, ?, ?)',
+                   ( 'user', user_msg, int(time.time()) ))
+        db.execute('INSERT INTO logs (role, message, timestamp) VALUES (?, ?, ?)',
+                   ( 'bot', bot_msg, int(time.time()) ))
+        db.commit()
         return jsonify(reply=bot_msg)
     except Exception as e:
         traceback.print_exc()
@@ -75,6 +99,13 @@ def tts_api():
     except Exception as e:
         traceback.print_exc()
         return jsonify(error=str(e)), 500
+
+# 対話ログをJSONで取得するエンドポイント
+@app.route('/logs')
+def show_logs():
+    db = get_db()
+    rows = db.execute('SELECT * FROM logs ORDER BY timestamp').fetchall()
+    return jsonify([dict(r) for r in rows])
 
 # 登録ルート一覧表示
 @app.route('/routes')
