@@ -1,12 +1,40 @@
 document.addEventListener('DOMContentLoaded', () => {
   // 要素取得
-  const voiceBtn      = document.getElementById('voice-btn');
-  const sendBtn       = document.getElementById('send-btn');
-  const inputField    = document.getElementById('chat-input');
-  const chatContainer = document.getElementById('chat-container');
-  const ttsPlayer     = document.getElementById('tts-player');  // 追加
+  const voiceBtn        = document.getElementById('voice-btn');
+  const sendBtn         = document.getElementById('send-btn');
+  const inputField      = document.getElementById('chat-input');
+  const chatContainer   = document.getElementById('chat-container');
+  const ttsPlayer       = document.getElementById('tts-player');
+  const tplContainer    = document.getElementById('template-container'); // テンプレート用コンテナ
 
-  console.log('voiceBtn=', voiceBtn, 'sendBtn=', sendBtn, 'inputField=', inputField, 'chatContainer=', chatContainer, 'ttsPlayer=', ttsPlayer);
+  console.log('voiceBtn=', voiceBtn, 'sendBtn=', sendBtn, 'inputField=', inputField, 'chatContainer=', chatContainer, 'ttsPlayer=', ttsPlayer, 'tplContainer=', tplContainer);
+
+  // --------- テンプレート取得＆描画 ---------
+  fetch('/templates')
+    .then(res => res.json())
+    .then(list => {
+      list.forEach(cat => {
+        const group = document.createElement('div');
+        group.style.marginBottom = '4px';
+        const label = document.createElement('strong');
+        label.textContent = cat.category + ': ';
+        group.appendChild(label);
+
+        cat.phrases.forEach(text => {
+          const btn = document.createElement('button');
+          btn.textContent = text;
+          btn.style.margin = '2px';
+          btn.onclick = () => {
+            inputField.value = text;
+            inputField.focus();
+          };
+          group.appendChild(btn);
+        });
+
+        tplContainer.appendChild(group);
+      });
+    })
+    .catch(err => console.error('templates load error', err));
 
   // --------- 音声認識のセットアップ ---------
   let recog = null;
@@ -67,6 +95,8 @@ document.addEventListener('DOMContentLoaded', () => {
       console.log('TTS 呼び出し:', botReply);
       const audioUrl = await callTTS(botReply, 'ja');
       ttsPlayer.src = audioUrl;
+      // 再生前にロード
+      ttsPlayer.load();
       await ttsPlayer.play();
     } catch (err) {
       console.error('TTS再生エラー', err);
