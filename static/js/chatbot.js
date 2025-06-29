@@ -66,7 +66,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const res = await fetch('/explain', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ term })
+      body: JSON.stringify({ term, prompt_hint: '高齢者にもわかるよう30秒以内で簡潔に' })
     });
 
     const data = await res.json();
@@ -105,7 +105,7 @@ document.addEventListener('DOMContentLoaded', () => {
     micButton.addEventListener('click', () => {
       try {
         recognition.start();
-        console.log('音声認識開始');
+        console.log('音声認識開始（介護士入力欄に反映）');
       } catch (e) {
         console.error('音声認識開始エラー:', e);
       }
