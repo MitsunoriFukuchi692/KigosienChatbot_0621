@@ -34,7 +34,6 @@ document.addEventListener('DOMContentLoaded', () => {
     userDiv.innerHTML = `<span>${role === 'caregiver' ? '🧑‍⚕️' : '👵'} ${msg}</span>`;
     chatContainer.appendChild(userDiv);
 
-    // ユーザー入力をTTSで読み上げ
     try {
       const ttsRes = await fetch('/tts', {
         method: 'POST',
@@ -71,10 +70,26 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     const data = await res.json();
+    const explanation = data.explanation || data.error;
+
     const botDiv = document.createElement('div');
     botDiv.className = 'bubble bot';
-    botDiv.innerHTML = `<span>📘 ${data.explanation || data.error}</span>`;
+    botDiv.innerHTML = `<span>📘 ${explanation}</span>`;
     chatContainer.appendChild(botDiv);
+
+    try {
+      const ttsRes = await fetch('/tts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: explanation, lang: 'ja' })
+      });
+
+      const blob = await ttsRes.blob();
+      ttsPlayer.src = URL.createObjectURL(blob);
+      ttsPlayer.play();
+    } catch (e) {
+      console.error('TTS error (explain):', e);
+    }
 
     explainInput.value = '';
     chatContainer.scrollTop = chatContainer.scrollHeight;
@@ -90,22 +105,24 @@ document.addEventListener('DOMContentLoaded', () => {
     micButton.addEventListener('click', () => {
       try {
         recognition.start();
+        console.log('音声認識開始');
       } catch (e) {
-        console.error('Speech recognition start error:', e);
+        console.error('音声認識開始エラー:', e);
       }
     });
 
     recognition.onresult = (event) => {
       const transcript = event.results[0][0].transcript;
       caregiverInput.value = transcript;
+      console.log('音声認識結果:', transcript);
     };
 
     recognition.onerror = (event) => {
-      console.error('Speech recognition error:', event.error);
+      console.error('音声認識エラー:', event.error);
     };
 
     recognition.onend = () => {
-      console.log('Speech recognition ended.');
+      console.log('音声認識終了');
     };
   }
 });
