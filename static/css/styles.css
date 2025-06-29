@@ -73,3 +73,20 @@ main {
 .chat.bot .message-text {
   background: #f8d7da;
 }
+
+.bubble.caregiver {
+  border: 2px solid #2196f3 !important;
+  background-color: #e3f2fd !important;
+  border-radius: 8px;
+  padding: 8px;
+  margin: 5px 0;
+}
+
+.bubble.elder {
+  border: 2px solid #fbc02d !important;
+  background-color: #fff9c4 !important;
+  border-radius: 8px;
+  padding: 8px;
+  margin: 5px 0;
+}
+
