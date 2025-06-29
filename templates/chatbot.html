@@ -19,14 +19,14 @@
     <!-- 介護士の入力欄 -->
     <div class="input-area">
       <label for="caregiver-input">🧑‍⚕️ 外国人介護士</label>
-      <textarea id="caregiver-input" placeholder="介護士からのメッセージ" rows="2"></textarea>
+      <textarea id="caregiver-input" class="caregiver-input" placeholder="介護士からのメッセージ" rows="2"></textarea>
       <button onclick="sendMessage('caregiver')">送信</button>
     </div>
 
     <!-- 被介護者の入力欄 -->
     <div class="input-area">
       <label for="elder-input">👵 被介護者</label>
-      <textarea id="elder-input" placeholder="高齢者からのメッセージ" rows="2"></textarea>
+      <textarea id="elder-input" class="elder-input" placeholder="高齢者からのメッセージ" rows="2"></textarea>
       <button onclick="sendMessage('elder')">送信</button>
     </div>
 
@@ -36,8 +36,9 @@
       <button id="explain-btn" class="btn">用語を説明</button>
     </div>
 
-    <!-- 音声再生 -->
-    <audio id="tts-player" controls playsinline webkit-playsinline></audio>
+    <!-- 音声再生プレイヤー（不要な場合非表示にしてもよい） -->
+    <audio id="tts-player" controls style="display: none;"></audio>
+
   </main>
 
   <script src="/static/js/chatbot.js?v=20250629"></script>

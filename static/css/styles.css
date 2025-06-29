@@ -1,92 +1,76 @@
-/* 基本レイアウト */
-body {
-  font-family: sans-serif;
-  margin: 0;
-  padding: 0;
-}
-header {
-  background: #0066cc;
-  color: white;
-  padding: 12px;
-  text-align: center;
-}
-main {
-  padding: 16px;
+/* チャット全体の見た目 */
+.chat-container {
+  max-height: 400px;
+  overflow-y: auto;
+  padding: 10px;
+  background: #f5f5f5;
+  border: 1px solid #ccc;
+  margin-bottom: 10px;
 }
 
-/* チャット表示 */
-.chat-container {
-  max-height: 60vh;
-  overflow-y: auto;
+/* 入力欄の共通スタイル */
+.input-area {
   margin-bottom: 12px;
 }
 
-/* テンプレートボタン */
-.template-container button {
-  margin: 2px;
-  padding: 4px 8px;
-  font-size: 0.9rem;
-}
-
-/* 入力エリア */
-.input-area {
-  display: flex;
-  gap: 8px;
-}
-.input-area textarea {
-  flex: 1;
-  resize: none;
-  padding: 8px;
-  font-size: 1rem;
-}
-.input-area .btn {
-  padding: 8px 12px;
-  font-size: 1rem;
-  cursor: pointer;
-}
-
-/* チャット吹き出し */
-.chat {
-  display: flex;
-  align-items: flex-start;
-  margin-bottom: 8px;
-}
-.avatar {
-  display: inline-block;
-  width: 32px;
-  text-align: center;
-  margin-right: 8px;
-  font-size: 1.5rem;
-}
-.message-text {
-  flex: 1;
-  background: #f1f1f1;
-  padding: 6px 10px;
-  border-radius: 8px;
-  line-height: 1.4;
-}
-
-/* 送信者ごとのスタイル */
-.chat.user .message-text {
-  background: #d1e7dd;
-}
-.chat.bot .message-text {
-  background: #f8d7da;
-}
-
-.bubble.caregiver {
+/* 入力欄の色分け */
+textarea.caregiver-input {
   border: 2px solid #2196f3 !important;
   background-color: #e3f2fd !important;
-  border-radius: 8px;
-  padding: 8px;
-  margin: 5px 0;
+  border-radius: 6px;
+  padding: 6px;
+  margin-bottom: 4px;
+}
+
+textarea.elder-input {
+  border: 2px solid #fbc02d !important;
+  background-color: #fff9c4 !important;
+  border-radius: 6px;
+  padding: 6px;
+  margin-bottom: 4px;
+}
+
+/* 吹き出し表示用バブル */
+.bubble {
+  display: inline-block;
+  padding: 8px 12px;
+  border-radius: 10px;
+  margin: 6px 0;
+  max-width: 80%;
+}
+
+/* 各発言の区別 */
+.bubble.caregiver {
+  background-color: #e3f2fd;
+  border: 2px solid #2196f3;
+  align-self: flex-start;
 }
 
 .bubble.elder {
-  border: 2px solid #fbc02d !important;
-  background-color: #fff9c4 !important;
-  border-radius: 8px;
-  padding: 8px;
-  margin: 5px 0;
+  background-color: #fff9c4;
+  border: 2px solid #fbc02d;
+  align-self: flex-end;
 }
 
+.bubble.bot {
+  background-color: #eeeeee;
+  border: 1px solid #ccc;
+  font-style: italic;
+}
+
+/* テンプレートボタン */
+.template-btn {
+  margin: 3px;
+  padding: 5px 10px;
+  border: 1px solid #888;
+  border-radius: 6px;
+  background-color: #f0f0f0;
+  cursor: pointer;
+}
+
+/* 用語説明エリア */
+#explain-area {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
