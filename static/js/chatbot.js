@@ -1,87 +1,69 @@
-// static/js/chatbot.js
-
-console.log('available voices:', speechSynthesis.getVoices());
-
-window.speechSynthesis.onvoiceschanged = () => {
-  console.log('voices now loaded:', speechSynthesis.getVoices());
-};
-
 document.addEventListener('DOMContentLoaded', () => {
   const chatContainer = document.getElementById('chat-container');
-  const input         = document.getElementById('chat-input');
-  const sendBtn       = document.getElementById('send-btn');
-  const voiceBtn      = document.getElementById('voice-btn');
-  const langSelect    = document.getElementById('lang-select'); // あれば
-  const ttsBar        = document.getElementById('tts-bar');
-  const catDiv        = document.getElementById('template-categories');
-  const phraseDiv     = document.getElementById('template-phrases');
+  const caregiverInput = document.getElementById('caregiver-input');
+  const elderInput = document.getElementById('elder-input');
+  const ttsPlayer = document.getElementById('tts-player');
 
-  // テンプレ取得（省略）
-
-  // ── 音声入力の初期化 ─────────────────────────
-  let recognition;
-  if (window.SpeechRecognition || window.webkitSpeechRecognition) {
-    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-    recognition = new SR();
-    recognition.lang = 'ja-JP';
-    recognition.interimResults = false;
-    recognition.maxAlternatives = 1;
-    recognition.onresult = e => {
-      input.value = e.results[0][0].transcript;
-    };
-    recognition.onerror = err => console.error('SpeechRecognition:', err);
-  } else {
-    voiceBtn.style.display = 'none';  // 非対応は非表示
-  }
-
-  voiceBtn.addEventListener('click', () => {
-    if (!recognition) return;
-    // 言語選択があれば反映
-    if (langSelect) {
-      recognition.lang = langSelect.value === 'en' ? 'en-US' : 'ja-JP';
-    }
-    recognition.start();
-  });
-  // ────────────────────────────────────────────
-
-  // ── メッセージ送信／表示 ────────────────────
-  sendBtn.addEventListener('click', async () => {
+  // メッセージ送信関数（roleは 'caregiver' または 'elder'）
+  window.sendMessage = async (role) => {
+    const input = role === 'caregiver' ? caregiverInput : elderInput;
     const msg = input.value.trim();
     if (!msg) return;
     input.value = '';
 
-    // ユーザーのバブル（アイコン付き）
     const userDiv = document.createElement('div');
     userDiv.className = 'bubble user';
-    userDiv.innerHTML = '<img class="icon" src="/static/images/user-icon.png" alt="user"><span>' + msg + '</span>';
+    userDiv.innerHTML = `<span>🧑‍⚕️ ${msg}</span>`;
     chatContainer.appendChild(userDiv);
 
-    // サーバーへ送信
-    const payload = { text: msg, lang: langSelect ? langSelect.value : 'ja' };
     const res = await fetch('/chat', {
       method: 'POST',
-      headers: {'Content-Type':'application/json'},
-      body: JSON.stringify(payload)
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message: msg })
     });
-    const { reply, error } = await res.json();
 
-    // ボットのバブル（アイコン付き）
-    const botMsg = reply || error;
+    const data = await res.json();
+    const reply = data.reply || data.error;
+
     const botDiv = document.createElement('div');
     botDiv.className = 'bubble bot';
-    botDiv.innerHTML  = '<img class="icon" src="/static/images/bot-icon.png"  alt="bot"><span>' + botMsg + '</span>';
+    botDiv.innerHTML = `<span>🤖 ${reply}</span>`;
     chatContainer.appendChild(botDiv);
 
     chatContainer.scrollTop = chatContainer.scrollHeight;
 
-    // TTS
-    if (reply && window.speechSynthesis) {
-      const utter = new SpeechSynthesisUtterance(reply);
-      utter.lang = langSelect && langSelect.value==='en' ? 'en-US':'ja-JP';
-      utter.onstart = () => ttsBar.classList.remove('hidden');
-      utter.onend   = () => ttsBar.classList.add('hidden');
-      window.speechSynthesis.speak(utter);
-    }
+    // 音声合成
+    const ttsRes = await fetch('/tts', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text: reply, lang: 'ja' })
+    });
+
+    const blob = await ttsRes.blob();
+    ttsPlayer.src = URL.createObjectURL(blob);
+    ttsPlayer.play();
+  };
+
+  // 用語説明機能
+  const explainBtn = document.getElementById('explain-btn');
+  const explainInput = document.getElementById('explain-input');
+  explainBtn.addEventListener('click', async () => {
+    const term = explainInput.value.trim();
+    if (!term) return;
+
+    const res = await fetch('/explain', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ term })
+    });
+
+    const data = await res.json();
+    const botDiv = document.createElement('div');
+    botDiv.className = 'bubble bot';
+    botDiv.innerHTML = `<span>📘 ${data.explanation || data.error}</span>`;
+    chatContainer.appendChild(botDiv);
+
+    explainInput.value = '';
+    chatContainer.scrollTop = chatContainer.scrollHeight;
   });
-  // ────────────────────────────────────────────
 });
