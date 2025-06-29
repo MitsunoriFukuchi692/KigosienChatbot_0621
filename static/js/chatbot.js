@@ -23,7 +23,6 @@ document.addEventListener('DOMContentLoaded', () => {
     templateContainer.appendChild(btn);
   });
 
-  // メッセージ送信
   window.sendMessage = async (role) => {
     const input = role === 'caregiver' ? caregiverInput : elderInput;
     const msg = input.value.trim();
@@ -31,7 +30,7 @@ document.addEventListener('DOMContentLoaded', () => {
     input.value = '';
 
     const userDiv = document.createElement('div');
-    userDiv.className = 'bubble user';
+    userDiv.className = role === 'caregiver' ? 'bubble caregiver' : 'bubble elder';
     userDiv.innerHTML = `<span>${role === 'caregiver' ? '🧑‍⚕️' : '👵'} ${msg}</span>`;
     chatContainer.appendChild(userDiv);
 
@@ -44,10 +43,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const data = await res.json();
     const reply = data.reply || data.error;
 
-    const botDiv = document.createElement('div');
-    botDiv.className = 'bubble bot';
-    botDiv.innerHTML = `<span>🤖 ${reply}</span>`;
-    chatContainer.appendChild(botDiv);
     chatContainer.scrollTop = chatContainer.scrollHeight;
 
     // 音声合成
@@ -62,7 +57,6 @@ document.addEventListener('DOMContentLoaded', () => {
     ttsPlayer.play();
   };
 
-  // 用語説明
   const explainBtn = document.getElementById('explain-btn');
   const explainInput = document.getElementById('explain-input');
   explainBtn.addEventListener('click', async () => {
