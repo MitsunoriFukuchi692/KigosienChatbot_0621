@@ -3,8 +3,27 @@ document.addEventListener('DOMContentLoaded', () => {
   const caregiverInput = document.getElementById('caregiver-input');
   const elderInput = document.getElementById('elder-input');
   const ttsPlayer = document.getElementById('tts-player');
+  const templateContainer = document.getElementById('template-container');
 
-  // メッセージ送信関数（roleは 'caregiver' または 'elder'）
+  const templates = [
+    { label: '薬: お薬は飲みましたか？', text: 'お薬は飲みましたか？', role: 'caregiver' },
+    { label: '体調: 調子はいかがですか？', text: '調子はいかがですか？', role: 'caregiver' },
+    { label: '返答: はい、飲みました。', text: 'はい、飲みました。', role: 'elder' },
+    { label: '返答: 少し熱があります。', text: '少し熱があります。', role: 'elder' }
+  ];
+
+  templates.forEach(t => {
+    const btn = document.createElement('button');
+    btn.textContent = t.label;
+    btn.className = 'template-btn';
+    btn.onclick = () => {
+      const target = t.role === 'caregiver' ? caregiverInput : elderInput;
+      target.value = t.text;
+    };
+    templateContainer.appendChild(btn);
+  });
+
+  // メッセージ送信
   window.sendMessage = async (role) => {
     const input = role === 'caregiver' ? caregiverInput : elderInput;
     const msg = input.value.trim();
@@ -13,7 +32,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const userDiv = document.createElement('div');
     userDiv.className = 'bubble user';
-    userDiv.innerHTML = `<span>🧑‍⚕️ ${msg}</span>`;
+    userDiv.innerHTML = `<span>${role === 'caregiver' ? '🧑‍⚕️' : '👵'} ${msg}</span>`;
     chatContainer.appendChild(userDiv);
 
     const res = await fetch('/chat', {
@@ -29,7 +48,6 @@ document.addEventListener('DOMContentLoaded', () => {
     botDiv.className = 'bubble bot';
     botDiv.innerHTML = `<span>🤖 ${reply}</span>`;
     chatContainer.appendChild(botDiv);
-
     chatContainer.scrollTop = chatContainer.scrollHeight;
 
     // 音声合成
@@ -44,7 +62,7 @@ document.addEventListener('DOMContentLoaded', () => {
     ttsPlayer.play();
   };
 
-  // 用語説明機能
+  // 用語説明
   const explainBtn = document.getElementById('explain-btn');
   const explainInput = document.getElementById('explain-input');
   explainBtn.addEventListener('click', async () => {
