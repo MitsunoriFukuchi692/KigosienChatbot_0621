@@ -6,7 +6,19 @@ document.addEventListener('DOMContentLoaded', () => {
   const templateContainer = document.getElementById('template-container');
   const micTarget = document.getElementById('mic-target');
 
-  const chatLog = [];
+  let chatLog = [];
+
+  const savedLog = localStorage.getItem('chatLog');
+  if (savedLog) {
+    chatLog = JSON.parse(savedLog);
+    chatLog.forEach(entry => {
+      const div = document.createElement('div');
+      div.className = 'bubble ' + (entry.role === 'caregiver' ? 'caregiver' : entry.role === 'elder' ? 'elder' : 'bot');
+      div.innerHTML = `<span>${entry.role === 'caregiver' ? '🧑‍⚕️' : entry.role === 'elder' ? '👵' : '📘'} ${entry.text}</span>`;
+      chatContainer.appendChild(div);
+    });
+    chatContainer.scrollTop = chatContainer.scrollHeight;
+  }
 
   const templates = [
     { label: '薬: お薬は飲みましたか？', text: 'お薬は飲みましたか？', role: 'caregiver' },
@@ -27,14 +39,16 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   function addLog(role, text) {
-    chatLog.push({ time: new Date().toISOString(), role, text });
+    const entry = { time: new Date().toISOString(), role, text };
+    chatLog.push(entry);
+    localStorage.setItem('chatLog', JSON.stringify(chatLog));
   }
 
   window.downloadCSV = () => {
     const csv = '時刻,話者,発言\n' + chatLog.map(log =>
       `${log.time},"${log.role}","${log.text.replace(/"/g, '""')}"`
     ).join('\n');
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const blob = new Blob(["\uFEFF" + csv], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
     link.download = 'chatlog.csv';
