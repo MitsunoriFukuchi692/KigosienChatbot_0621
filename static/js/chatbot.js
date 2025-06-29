@@ -35,15 +35,19 @@ document.addEventListener('DOMContentLoaded', () => {
     chatContainer.appendChild(userDiv);
 
     // ユーザー入力をTTSで読み上げ
-    const ttsRes = await fetch('/tts', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ text: msg, lang: 'ja' })
-    });
+    try {
+      const ttsRes = await fetch('/tts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: msg, lang: 'ja' })
+      });
 
-    const blob = await ttsRes.blob();
-    ttsPlayer.src = URL.createObjectURL(blob);
-    ttsPlayer.play();
+      const blob = await ttsRes.blob();
+      ttsPlayer.src = URL.createObjectURL(blob);
+      ttsPlayer.play();
+    } catch (e) {
+      console.error('TTS error:', e);
+    }
 
     await fetch('/chat', {
       method: 'POST',
@@ -84,12 +88,24 @@ document.addEventListener('DOMContentLoaded', () => {
     recognition.continuous = false;
 
     micButton.addEventListener('click', () => {
-      recognition.start();
+      try {
+        recognition.start();
+      } catch (e) {
+        console.error('Speech recognition start error:', e);
+      }
     });
 
     recognition.onresult = (event) => {
       const transcript = event.results[0][0].transcript;
       caregiverInput.value = transcript;
+    };
+
+    recognition.onerror = (event) => {
+      console.error('Speech recognition error:', event.error);
+    };
+
+    recognition.onend = () => {
+      console.log('Speech recognition ended.');
     };
   }
 });
