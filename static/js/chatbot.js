@@ -6,6 +6,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const templateContainer = document.getElementById('template-container');
   const micTarget = document.getElementById('mic-target');
 
+  const chatLog = [];
+
   const templates = [
     { label: '薬: お薬は飲みましたか？', text: 'お薬は飲みましたか？', role: 'caregiver' },
     { label: '体調: 調子はいかがですか？', text: '調子はいかがですか？', role: 'caregiver' },
@@ -24,11 +26,28 @@ document.addEventListener('DOMContentLoaded', () => {
     templateContainer.appendChild(btn);
   });
 
+  function addLog(role, text) {
+    chatLog.push({ time: new Date().toISOString(), role, text });
+  }
+
+  window.downloadCSV = () => {
+    const csv = '時刻,話者,発言\n' + chatLog.map(log =>
+      `${log.time},"${log.role}","${log.text.replace(/"/g, '""')}"`
+    ).join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = 'chatlog.csv';
+    link.click();
+  };
+
   window.sendMessage = async (role) => {
     const input = role === 'caregiver' ? caregiverInput : elderInput;
     const msg = input.value.trim();
     if (!msg) return;
     input.value = '';
+
+    addLog(role, msg);
 
     const userDiv = document.createElement('div');
     userDiv.className = role === 'caregiver' ? 'bubble caregiver' : 'bubble elder';
@@ -72,6 +91,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const data = await res.json();
     const explanation = data.explanation || data.error;
+
+    addLog('bot', explanation);
 
     const botDiv = document.createElement('div');
     botDiv.className = 'bubble bot';
