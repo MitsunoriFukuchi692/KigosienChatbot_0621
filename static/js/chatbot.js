@@ -2,7 +2,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const chatContainer = document.getElementById('chat-container');
   const caregiverInput = document.getElementById('caregiver-input');
   const elderInput = document.getElementById('elder-input');
-  const ttsPlayer = document.getElementById('tts-player');
   const templateContainer = document.getElementById('template-container');
 
   const templates = [
@@ -34,27 +33,13 @@ document.addEventListener('DOMContentLoaded', () => {
     userDiv.innerHTML = `<span>${role === 'caregiver' ? '🧑‍⚕️' : '👵'} ${msg}</span>`;
     chatContainer.appendChild(userDiv);
 
-    const res = await fetch('/chat', {
+    await fetch('/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ message: msg })
     });
 
-    const data = await res.json();
-    const reply = data.reply || data.error;
-
     chatContainer.scrollTop = chatContainer.scrollHeight;
-
-    // 音声合成
-    const ttsRes = await fetch('/tts', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ text: reply, lang: 'ja' })
-    });
-
-    const blob = await ttsRes.blob();
-    ttsPlayer.src = URL.createObjectURL(blob);
-    ttsPlayer.play();
   };
 
   const explainBtn = document.getElementById('explain-btn');
@@ -78,4 +63,21 @@ document.addEventListener('DOMContentLoaded', () => {
     explainInput.value = '';
     chatContainer.scrollTop = chatContainer.scrollHeight;
   });
+
+  const micButton = document.getElementById('mic-button');
+  if (micButton) {
+    const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+    recognition.lang = 'ja-JP';
+    recognition.interimResults = false;
+    recognition.continuous = false;
+
+    micButton.addEventListener('click', () => {
+      recognition.start();
+    });
+
+    recognition.onresult = (event) => {
+      const transcript = event.results[0][0].transcript;
+      caregiverInput.value = transcript; // ここは必要に応じて入力欄を切替可
+    };
+  }
 });
