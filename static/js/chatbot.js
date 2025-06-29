@@ -2,6 +2,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const chatContainer = document.getElementById('chat-container');
   const caregiverInput = document.getElementById('caregiver-input');
   const elderInput = document.getElementById('elder-input');
+  const ttsPlayer = document.getElementById('tts-player');
   const templateContainer = document.getElementById('template-container');
 
   const templates = [
@@ -32,6 +33,17 @@ document.addEventListener('DOMContentLoaded', () => {
     userDiv.className = role === 'caregiver' ? 'bubble caregiver' : 'bubble elder';
     userDiv.innerHTML = `<span>${role === 'caregiver' ? '🧑‍⚕️' : '👵'} ${msg}</span>`;
     chatContainer.appendChild(userDiv);
+
+    // ユーザー入力をTTSで読み上げ
+    const ttsRes = await fetch('/tts', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text: msg, lang: 'ja' })
+    });
+
+    const blob = await ttsRes.blob();
+    ttsPlayer.src = URL.createObjectURL(blob);
+    ttsPlayer.play();
 
     await fetch('/chat', {
       method: 'POST',
@@ -77,7 +89,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     recognition.onresult = (event) => {
       const transcript = event.results[0][0].transcript;
-      caregiverInput.value = transcript; // ここは必要に応じて入力欄を切替可
+      caregiverInput.value = transcript;
     };
   }
 });
