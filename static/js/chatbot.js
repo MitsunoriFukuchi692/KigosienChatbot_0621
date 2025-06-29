@@ -4,21 +4,20 @@ document.addEventListener('DOMContentLoaded', () => {
   const elderInput = document.getElementById('elder-input');
   const ttsPlayer = document.getElementById('tts-player');
   const templateContainer = document.getElementById('template-container');
-  const micTarget = document.getElementById('mic-target');
+  const slowVoiceCheckbox = document.getElementById('slow-voice') || document.getElementById('slow-toggle');
+  const volumeSlider = document.getElementById('volume-slider') || document.getElementById('volume-range');
+  const micToggleBtn = document.getElementById('mic-toggle') || document.getElementById('start-record-btn');
+  const micRoleSelect = document.getElementById('mic-role');
 
-  let chatLog = [];
+  let recognition;
+  let recognizing = false;
+  const logs = [];
 
-  const savedLog = localStorage.getItem('chatLog');
-  if (savedLog) {
-    chatLog = JSON.parse(savedLog);
-    chatLog.forEach(entry => {
-      const div = document.createElement('div');
-      div.className = 'bubble ' + (entry.role === 'caregiver' ? 'caregiver' : entry.role === 'elder' ? 'elder' : 'bot');
-      div.innerHTML = `<span>${entry.role === 'caregiver' ? '🧑‍⚕️' : entry.role === 'elder' ? '👵' : '📘'} ${entry.text}</span>`;
-      chatContainer.appendChild(div);
-    });
-    chatContainer.scrollTop = chatContainer.scrollHeight;
-  }
+  // 音量調整
+  ttsPlayer.volume = parseFloat(volumeSlider.value || 1);
+  volumeSlider.addEventListener('input', () => {
+    ttsPlayer.volume = parseFloat(volumeSlider.value);
+  });
 
   const templates = [
     { label: '薬: お薬は飲みましたか？', text: 'お薬は飲みましたか？', role: 'caregiver' },
@@ -38,54 +37,21 @@ document.addEventListener('DOMContentLoaded', () => {
     templateContainer.appendChild(btn);
   });
 
-  function addLog(role, text) {
-    const entry = { time: new Date().toISOString(), role, text };
-    chatLog.push(entry);
-    localStorage.setItem('chatLog', JSON.stringify(chatLog));
-  }
-
-  window.downloadCSV = () => {
-    const csv = '時刻,話者,発言\n' + chatLog.map(log =>
-      `${log.time},"${log.role}","${log.text.replace(/"/g, '""')}"`
-    ).join('\n');
-    const blob = new Blob(["\uFEFF" + csv], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
-    link.download = 'chatlog.csv';
-    link.click();
-  };
-
   window.sendMessage = async (role) => {
     const input = role === 'caregiver' ? caregiverInput : elderInput;
     const msg = input.value.trim();
     if (!msg) return;
     input.value = '';
 
-    addLog(role, msg);
-
     const userDiv = document.createElement('div');
-    userDiv.className = role === 'caregiver' ? 'bubble caregiver' : 'bubble elder';
+    userDiv.className = `bubble ${role === 'caregiver' ? 'caregiver' : 'elder'}`;
     userDiv.innerHTML = `<span>${role === 'caregiver' ? '🧑‍⚕️' : '👵'} ${msg}</span>`;
     chatContainer.appendChild(userDiv);
 
-    try {
-      const ttsRes = await fetch('/tts', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: msg, lang: 'ja' })
-      });
-
-      const blob = await ttsRes.blob();
-      ttsPlayer.src = URL.createObjectURL(blob);
-      ttsPlayer.play();
-    } catch (e) {
-      console.error('TTS error:', e);
-    }
-
-    await fetch('/chat', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ message: msg })
+    logs.push({
+      timestamp: new Date().toISOString(),
+      sender: role,
+      message: msg
     });
 
     chatContainer.scrollTop = chatContainer.scrollHeight;
@@ -100,66 +66,80 @@ document.addEventListener('DOMContentLoaded', () => {
     const res = await fetch('/explain', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ term, prompt_hint: '高齢者にもわかるよう30秒以内で簡潔に' })
+      body: JSON.stringify({ term })
     });
 
     const data = await res.json();
     const explanation = data.explanation || data.error;
-
-    addLog('bot', explanation);
 
     const botDiv = document.createElement('div');
     botDiv.className = 'bubble bot';
     botDiv.innerHTML = `<span>📘 ${explanation}</span>`;
     chatContainer.appendChild(botDiv);
 
-    try {
-      const ttsRes = await fetch('/tts', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: explanation, lang: 'ja' })
-      });
+    logs.push({
+      timestamp: new Date().toISOString(),
+      sender: 'bot',
+      message: explanation
+    });
 
-      const blob = await ttsRes.blob();
-      ttsPlayer.src = URL.createObjectURL(blob);
-      ttsPlayer.play();
-    } catch (e) {
-      console.error('TTS error (explain):', e);
-    }
+    const rate = slowVoiceCheckbox.checked ? 0.8 : 1.2;
+    const ttsRes = await fetch('/tts', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text: explanation, lang: 'ja', rate })
+    });
+    const blob = await ttsRes.blob();
+    ttsPlayer.src = URL.createObjectURL(blob);
+    ttsPlayer.play();
 
     explainInput.value = '';
     chatContainer.scrollTop = chatContainer.scrollHeight;
   });
 
-  const micButton = document.getElementById('mic-button');
-  if (micButton) {
-    const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-    recognition.lang = 'ja-JP';
-    recognition.interimResults = false;
-    recognition.continuous = false;
+  window.downloadCSV = () => {
+    const header = ['timestamp', 'sender', 'message'];
+    const rows = logs.map(log => [log.timestamp, log.sender, log.message]);
+    const csvContent = [header, ...rows]
+      .map(row => row.map(field => `"${(field || '').replace(/"/g, '""')}"`).join(','))
+      .join('\r\n');
+    const blob = new Blob(['\ufeff' + csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `chat_log_${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
 
-    micButton.addEventListener('click', () => {
-      try {
-        recognition.start();
-        console.log('音声認識開始');
-      } catch (e) {
-        console.error('音声認識開始エラー:', e);
-      }
-    });
+  // 音声認識
+  micToggleBtn.addEventListener('click', () => {
+    if (!recognition) {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SpeechRecognition) return alert('音声認識がサポートされていません。');
+      recognition = new SpeechRecognition();
+      recognition.lang = 'ja-JP';
+      recognition.continuous = false;
 
-    recognition.onresult = (event) => {
-      const transcript = event.results[0][0].transcript;
-      const target = micTarget.value === 'elder' ? elderInput : caregiverInput;
-      target.value = transcript;
-      console.log(`音声認識結果（${micTarget.value}欄）:`, transcript);
-    };
+      recognition.onresult = (event) => {
+        const transcript = event.results[0][0].transcript;
+        const role = micRoleSelect.value;
+        const targetInput = role === 'caregiver' ? caregiverInput : elderInput;
+        targetInput.value = transcript;
+      };
 
-    recognition.onerror = (event) => {
-      console.error('音声認識エラー:', event.error);
-    };
+      recognition.onerror = (event) => {
+        console.error('音声認識エラー:', event.error);
+      };
+    }
 
-    recognition.onend = () => {
-      console.log('音声認識終了');
-    };
-  }
+    if (recognizing) {
+      recognition.stop();
+      micToggleBtn.textContent = '🎤 マイク開始';
+    } else {
+      recognition.start();
+      micToggleBtn.textContent = '⏹️ マイク停止';
+    }
+    recognizing = !recognizing;
+  });
 });
