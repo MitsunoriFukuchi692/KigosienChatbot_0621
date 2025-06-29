@@ -36,16 +36,20 @@
       <button id="explain-btn" class="btn">用語を説明</button>
     </div>
 
-    <!-- マイク入力ボタン -->
+    <!-- 🎤 マイク入力の対象 選択欄 -->
     <div class="input-area">
-      <button id="mic-button">🎤 マイク入力</button>
+      <label for="mic-target">🎤 マイク入力の対象:</label>
+      <select id="mic-target">
+        <option value="caregiver">🧑‍⚕️ 外国人介護士</option>
+        <option value="elder">👵 被介護者</option>
+      </select>
+      <button id="mic-button">🎤 マイク開始</button>
     </div>
 
     <!-- 音声再生プレイヤー -->
     <audio id="tts-player" controls></audio>
 
   </main>
-
   <script src="/static/js/chatbot.js?v=20250629"></script>
 </body>
 </html>

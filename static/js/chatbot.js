@@ -4,6 +4,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const elderInput = document.getElementById('elder-input');
   const ttsPlayer = document.getElementById('tts-player');
   const templateContainer = document.getElementById('template-container');
+  const micTarget = document.getElementById('mic-target');
 
   const templates = [
     { label: '薬: お薬は飲みましたか？', text: 'お薬は飲みましたか？', role: 'caregiver' },
@@ -105,7 +106,7 @@ document.addEventListener('DOMContentLoaded', () => {
     micButton.addEventListener('click', () => {
       try {
         recognition.start();
-        console.log('音声認識開始（介護士入力欄に反映）');
+        console.log('音声認識開始');
       } catch (e) {
         console.error('音声認識開始エラー:', e);
       }
@@ -113,8 +114,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     recognition.onresult = (event) => {
       const transcript = event.results[0][0].transcript;
-      caregiverInput.value = transcript;
-      console.log('音声認識結果:', transcript);
+      const target = micTarget.value === 'elder' ? elderInput : caregiverInput;
+      target.value = transcript;
+      console.log(`音声認識結果（${micTarget.value}欄）:`, transcript);
     };
 
     recognition.onerror = (event) => {
