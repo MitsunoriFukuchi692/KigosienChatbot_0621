@@ -10,7 +10,7 @@ window.addEventListener('click', function _unlockTTS() {
 });
 // ───────────────────────
 
-// 要素を取得
+// 要素取得（defer により DOM 構築済）
 const chatContainer    = document.getElementById('chat-container');
 const templates        = document.querySelectorAll('#template-container button');
 const inpCaregiver     = document.getElementById('caregiver-input');
@@ -37,7 +37,8 @@ templates.forEach(btn => btn.addEventListener('click', () => {
   const cat = btn.dataset.cat;
   appendMessage('caregiver', btn.textContent);
   logConversation('caregiver', btn.textContent);
-  inpElder.value = ''; inpElder.focus();
+  inpElder.value = '';
+  inpElder.focus();
   if (cat === '説明') {
     const term = prompt('説明してほしい用語を入力してください');
     if (term) callAIExplain(term);
@@ -48,15 +49,18 @@ templates.forEach(btn => btn.addEventListener('click', () => {
 btnCaregiverSend.addEventListener('click', () => {
   console.log('👩‍⚕️ caregiver-send clicked');
   const text = inpCaregiver.value.trim(); if (!text) return;
-  appendMessage('caregiver', text); logConversation('caregiver', text);
-  inpCaregiver.value = ''; inpElder.focus();
+  appendMessage('caregiver', text);
+  logConversation('caregiver', text);
+  inpCaregiver.value = '';
+  inpElder.focus();
 });
 
 // 被介護者送信
 btnElderSend.addEventListener('click', () => {
   console.log('👵 elder-send clicked');
   const text = inpElder.value.trim(); if (!text) return;
-  appendMessage('elder', text); logConversation('elder', text);
+  appendMessage('elder', text);
+  logConversation('elder', text);
   inpElder.value = '';
 });
 
@@ -67,10 +71,10 @@ if (SpeechRecognition) {
   recognition = new SpeechRecognition();
   recognition.lang = currentLang === 'ja' ? 'ja-JP' : 'en-US';
   recognition.interimResults = false;
-  recognition.onstart   = () => console.log('🎙 recognition.onstart');
-  recognition.onerror   = e => console.error('🎙 recognition.onerror', e);
-  recognition.onend     = () => console.log('🎙 recognition.onend');
-  recognition.onresult  = e => {
+  recognition.onstart = () => console.log('🎙 recognition.onstart');
+  recognition.onerror = e => console.error('🎙 recognition.onerror', e);
+  recognition.onend = () => console.log('🎙 recognition.onend');
+  recognition.onresult = e => {
     const text = e.results[0][0].transcript;
     console.log('🎙 recognition.onresult:', text);
     appendMessage(currentMicRole, text);
@@ -94,7 +98,8 @@ selMicRole.addEventListener('change', () => {
 btnDownloadCsv.addEventListener('click', () => {
   console.log('💾 CSV保存 clicked');
   const rows = [['role','message','timestamp'], ...conversation.map(c => [c.role, c.message, c.timestamp])];
-  const blob = new Blob([rows.map(r => r.join(',')).join('\n')], { type: 'text/csv' });
+  const blob = new Blob([rows.map(r => r.join(',')).join('
+')], { type: 'text/csv' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
   a.download = 'conversation_log.csv';
@@ -117,7 +122,12 @@ function callAIExplain(term) {
   .then(data => {
     console.log('◀ data.reply:', data.reply);
     appendMessage('bot', data.reply);
-    playTTS(data.reply);
+    // フォールバックで audio 要素を使って再生
+    console.log('🔊 playTTS via audio element:', data.reply);
+    const url = `/tts?text=${encodeURIComponent(data.reply)}&slow=${chkSlow.checked ? 1 : 0}`;
+    ttsPlayer.src = url;
+    ttsPlayer.volume = +volControl.value;
+    ttsPlayer.play().catch(err => console.error('Audio playback error:', err));
     logConversation('bot', data.reply);
   })
   .catch(err => console.error('fetch error:', err));
@@ -131,22 +141,6 @@ function appendMessage(role, text) {
   d.textContent = p + text;
   chatContainer.appendChild(d);
   chatContainer.scrollTop = chatContainer.scrollHeight;
-}
-
-// TTS 再生
-function playTTS(text) {
-  console.log('🔊 playTTS:', text);
-  if ('speechSynthesis' in window) {
-    const u = new SpeechSynthesisUtterance(text);
-    u.lang = currentLang === 'ja' ? 'ja-JP' : 'en-US';
-    u.volume = +volControl.value;
-    u.rate = chkSlow.checked ? 0.6 : 1.0;
-    speechSynthesis.speak(u);
-  } else {
-    ttsPlayer.src = `/tts?text=${encodeURIComponent(text)}&slow=${chkSlow.checked ? 1 : 0}`;
-    ttsPlayer.volume = +volControl.value;
-    ttsPlayer.play();
-  }
 }
 
 // 会話ログ記録
