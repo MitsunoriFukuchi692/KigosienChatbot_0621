@@ -1,12 +1,17 @@
 // static/js/chatbot.js
 console.log('chatbot.js loaded');
-// TTS unlock
+
+// ─── TTS アンロック ───
+// 最初のクリック／タップで空の発声を行い、以降の speechSynthesis を有効化します
 window.addEventListener('click', function _unlockTTS() {
-  if ('speechSynthesis' in window) window.speechSynthesis.speak(new SpeechSynthesisUtterance(''));
+  if ('speechSynthesis' in window) {
+    window.speechSynthesis.speak(new SpeechSynthesisUtterance(''));
+  }
   window.removeEventListener('click', _unlockTTS);
 });
+// ───────────────────────
 
-// Element refs
+// 要素取得（<script defer> により DOM 構築後に実行されます）
 const chatContainer    = document.getElementById('chat-container');
 const templates        = document.querySelectorAll('#template-container button');
 const inpCaregiver     = document.getElementById('caregiver-input');
@@ -16,7 +21,7 @@ const btnElderSend     = document.getElementById('elder-send');
 const selMicRole       = document.getElementById('mic-role');
 const btnMicStart      = document.getElementById('mic-start');
 const btnDownloadCsv   = document.getElementById('download-csv');
-const ttsPlayer        = document.getElementById('tts-player');
+const ttsPlayer        = document.getElementById('tts-player');  // unused now but kept
 const volControl       = document.getElementById('volume');
 const chkSlow          = document.getElementById('slow-playback');
 
@@ -25,79 +30,128 @@ let recognition, currentMicRole = 'caregiver';
 let conversation = [];
 let currentLang = new URLSearchParams(location.search).get('lang') || 'ja';
 
-// Template buttons
+console.log('Initializing chatbot…');
+
+// テンプレートボタン
 templates.forEach(btn => btn.addEventListener('click', () => {
+  console.log('template clicked:', btn.dataset.cat);
   appendMessage('caregiver', btn.textContent);
   logConversation('caregiver', btn.textContent);
-  inpElder.value = ''; inpElder.focus();
+  inpElder.value = '';
+  inpElder.focus();
   if (btn.dataset.cat === '説明') {
     const term = prompt('説明してほしい用語を入力してください');
     if (term) callAIExplain(term);
   }
 }));
 
-// Caregiver send
+// 介護士送信
 btnCaregiverSend.addEventListener('click', () => {
-  const text = inpCaregiver.value.trim(); if (!text) return;
-  appendMessage('caregiver', text); logConversation('caregiver', text);
-  inpCaregiver.value = ''; inpElder.focus();
+  console.log('👩‍⚕️ caregiver-send clicked');
+  const text = inpCaregiver.value.trim();
+  if (!text) return;
+  appendMessage('caregiver', text);
+  logConversation('caregiver', text);
+  inpCaregiver.value = '';
+  inpElder.focus();
 });
 
-// Elder send
+// 被介護者送信
 btnElderSend.addEventListener('click', () => {
-  const text = inpElder.value.trim(); if (!text) return;
-  appendMessage('elder', text); logConversation('elder', text);
+  console.log('👵 elder-send clicked');
+  const text = inpElder.value.trim();
+  if (!text) return;
+  appendMessage('elder', text);
+  logConversation('elder', text);
   inpElder.value = '';
 });
 
-// SpeechRecognition
+// マイク入力設定
 const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 if (SpeechRecognition) {
+  console.log('🎙 SpeechRecognition API is available');
   recognition = new SpeechRecognition();
   recognition.lang = currentLang === 'ja' ? 'ja-JP' : 'en-US';
   recognition.interimResults = false;
+  recognition.onstart = () => console.log('🎙 recognition.onstart');
+  recognition.onerror = e => console.error('🎙 recognition.onerror', e);
+  recognition.onend   = () => console.log('🎙 recognition.onend');
   recognition.onresult = e => {
     const text = e.results[0][0].transcript;
-    appendMessage(currentMicRole, text); logConversation(currentMicRole, text);
+    console.log('🎙 recognition.onresult:', text);
+    appendMessage(currentMicRole, text);
+    logConversation(currentMicRole, text);
     if (currentMicRole === 'elder') inpElder.value = '';
   };
-  btnMicStart.addEventListener('click', () => recognition.start());
+  btnMicStart.addEventListener('click', () => {
+    console.log('🎙 btnMicStart clicked, calling recognition.start()');
+    recognition.start();
+  });
 } else {
+  console.warn('SpeechRecognition not supported');
   btnMicStart.disabled = true;
 }
-
-// CSV download
-btnDownloadCsv.addEventListener('click', () => {
-  const rows = [['role','message','timestamp'], ...conversation.map(c=>[c.role,c.message,c.timestamp])];
-  const blob = new Blob([rows.map(r=>r.join(',')).join('\n')], {type:'text/csv'});
-  const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
-  a.download = 'conversation_log.csv'; a.click(); URL.revokeObjectURL(a.href);
+selMicRole.addEventListener('change', () => {
+  console.log('mic-role changed to', selMicRole.value);
+  currentMicRole = selMicRole.value;
 });
 
-// AI explain
+// CSV保存
+btnDownloadCsv.addEventListener('click', () => {
+  console.log('💾 CSV保存 clicked');
+  const rows = [['role','message','timestamp'], ...conversation.map(c => [c.role, c.message, c.timestamp])];
+  const blob = new Blob([ rows.map(r => r.join(',')).join('\n') ], { type: 'text/csv' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'conversation_log.csv';
+  a.click();
+  URL.revokeObjectURL(a.href);
+});
+
+// 用語説明（AI 呼び出し）
 function callAIExplain(term) {
+  console.log('▶ send to chat:', term);
   fetch(`${apiPath}?lang=${currentLang}`, {
-    method:'POST', headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({role:'explain',message:term})
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ role: 'explain', message: term })
   })
-  .then(r=>r.json())
-  .then(data=>{
+  .then(res => {
+    console.log('◀ response status:', res.status);
+    return res.json();
+  })
+  .then(data => {
+    console.log('◀ data.reply:', data.reply);
     appendMessage('bot', data.reply);
-    const url = `/tts?text=${encodeURIComponent(data.reply)}&slow=${chkSlow.checked?1:0}`;
-    ttsPlayer.src = url; ttsPlayer.volume = +volControl.value; ttsPlayer.play();
+
+    // Web Speech API で TTS を再生
+    console.log('🔊 playTTS:', data.reply);
+    if ('speechSynthesis' in window) {
+      const u = new SpeechSynthesisUtterance(data.reply);
+      u.lang = currentLang === 'ja' ? 'ja-JP' : 'en-US';
+      u.volume = +volControl.value;
+      u.rate = chkSlow.checked ? 0.6 : 1.0;
+      window.speechSynthesis.speak(u);
+    } else {
+      console.warn('speechSynthesis not supported; skipping TTS playback');
+    }
+
     logConversation('bot', data.reply);
-  });
+  })
+  .catch(err => console.error('fetch error:', err));
 }
 
-// Append message
-function appendMessage(role,text) {
-  const d = document.createElement('div'); d.className=`message ${role}`;
-  const p = role==='caregiver'?'👩‍⚕️ ':role==='elder'?'👵 ':'🤖 ';
-  d.textContent = p+text; chatContainer.appendChild(d);
+// メッセージ表示
+function appendMessage(role, text) {
+  const d = document.createElement('div');
+  d.className = `message ${role}`;
+  const p = role === 'caregiver' ? '👩‍⚕️ ' : role === 'elder' ? '👵 ' : '🤖 ';
+  d.textContent = p + text;
+  chatContainer.appendChild(d);
   chatContainer.scrollTop = chatContainer.scrollHeight;
 }
 
-// Log
-function logConversation(role,message) {
-  conversation.push({role,message,timestamp:new Date().toISOString()});
+// 会話ログ記録
+function logConversation(role, message) {
+  conversation.push({ role, message, timestamp: new Date().toISOString() });
 }
