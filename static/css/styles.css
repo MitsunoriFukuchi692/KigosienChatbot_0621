@@ -1,76 +1,80 @@
-/* チャット全体の見た目 */
-.chat-container {
-  max-height: 400px;
-  overflow-y: auto;
-  padding: 10px;
+body {
+  font-family: sans-serif;
+  margin: 0;
   background: #f5f5f5;
-  border: 1px solid #ccc;
-  margin-bottom: 10px;
 }
-
-/* 入力欄の共通スタイル */
-.input-area {
-  margin-bottom: 12px;
+.chat-container {
+  max-width: 480px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
 }
-
-/* 入力欄の色分け */
-textarea.caregiver-input {
-  border: 2px solid #2196f3 !important;
-  background-color: #e3f2fd !important;
-  border-radius: 6px;
-  padding: 6px;
-  margin-bottom: 4px;
+.chat-header {
+  background: #3a7afe;
+  color: #fff;
+  padding: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
-
-textarea.elder-input {
-  border: 2px solid #fbc02d !important;
-  background-color: #fff9c4 !important;
-  border-radius: 6px;
-  padding: 6px;
-  margin-bottom: 4px;
+.chat-window {
+  flex: 1;
+  padding: 10px;
+  overflow-y: auto;
+  background: #fff;
 }
-
-/* 吹き出し表示用バブル */
-.bubble {
-  display: inline-block;
+.message {
+  margin: 5px 0;
   padding: 8px 12px;
   border-radius: 10px;
-  margin: 6px 0;
   max-width: 80%;
 }
-
-/* 各発言の区別 */
-.bubble.caregiver {
-  background-color: #e3f2fd;
-  border: 2px solid #2196f3;
-  align-self: flex-start;
-}
-
-.bubble.elder {
-  background-color: #fff9c4;
-  border: 2px solid #fbc02d;
+.message.user {
+  background: #dcf8c6;
   align-self: flex-end;
 }
-
-.bubble.bot {
-  background-color: #eeeeee;
-  border: 1px solid #ccc;
-  font-style: italic;
+.message.bot {
+  background: #ececec;
+  align-self: flex-start;
 }
-
-/* テンプレートボタン */
-.template-btn {
-  margin: 3px;
-  padding: 5px 10px;
-  border: 1px solid #888;
-  border-radius: 6px;
-  background-color: #f0f0f0;
+.controls {
+  display: flex;
+  padding: 10px;
+  background: #fff;
+}
+.controls input {
+  flex: 1;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+.controls button {
+  margin-left: 8px;
+  padding: 8px 12px;
+  border: none;
+  border-radius: 4px;
   cursor: pointer;
 }
-
-/* 用語説明エリア */
-#explain-area {
+.controls #btn-voice .icon-mic::before {
+  content: '🎤';
+}
+.template-buttons {
   display: flex;
-  gap: 8px;
-  align-items: center;
+  flex-wrap: wrap;
+  background: #fff;
+  padding: 5px;
+}
+.template-buttons button {
+  flex: 1 1 45%;
+  margin: 5px;
+  padding: 8px;
+  border-radius: 6px;
+  border: 1px solid #aaa;
+  cursor: pointer;
+}
+@media (max-width: 480px) {
+  .controls button, .template-buttons button {
+    flex: 1 1 100%;
+  }
 }
