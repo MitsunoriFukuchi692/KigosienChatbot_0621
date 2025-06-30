@@ -1,9 +1,11 @@
+<!DOCTYPE html>
 <html lang="ja">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>AIみまくん 多言語介護チャットボット</title>
-  <link rel="stylesheet" href="/static/styles.css" />
+  <!-- 修正: CSS は /static/css/styles.css -->
+  <link rel="stylesheet" href="/static/css/styles.css" />
 </head>
 <body>
   <h1>AIみまくん 多言語介護チャットボット</h1>
@@ -60,6 +62,7 @@
   <!-- TTS 再生プレイヤー -->
   <audio id="tts-player" controls></audio>
 
-  <script src="/static/chatbot.js"></script>
+  <!-- 修正: JS は /static/js/chatbot.js に defer 属性を付与 -->
+  <script src="/static/js/chatbot.js" defer></script>
 </body>
 </html>
