@@ -1,8 +1,10 @@
+// static/js/chatbot.js
 console.log('chatbot.js loaded');
 
-const apiUrl = 'chat';
+const apiPath = '/chat';
 let recognition, currentMicRole = 'caregiver';
 let conversation = [];
+let currentLang = new URLSearchParams(location.search).get('lang') || 'ja';
 
 window.addEventListener('DOMContentLoaded', () => {
   const chatContainer    = document.getElementById('chat-container');
@@ -18,121 +20,84 @@ window.addEventListener('DOMContentLoaded', () => {
   const volControl       = document.getElementById('volume');
   const chkSlow          = document.getElementById('slow-playback');
 
-  // ログ用
-  btnCaregiverSend.addEventListener('click', () => console.log('👩‍⚕️ caregiver-send clicked'));
-  btnElderSend.addEventListener('click', () => console.log('👵 elder-send clicked'));
-
   // テンプレート
-  templates.forEach(btn => {
-    btn.addEventListener('click', () => {
-      console.log('template clicked:', btn.dataset.cat);
-      const cat = btn.dataset.cat;
-      appendMessage('caregiver', btn.textContent);
-      logConversation('caregiver', btn.textContent);
-      inpElder.value = '';
-      inpElder.focus();
-      if (cat === '説明') {
-        const term = prompt('説明してほしい用語を入力してください');
-        if (term) callAIExplain(term);
-      }
-    });
-  });
+  templates.forEach(btn => btn.addEventListener('click', () => {
+    const cat = btn.dataset.cat;
+    appendMessage('caregiver', btn.textContent);
+    logConversation('caregiver', btn.textContent);
+    inpElder.value = ''; inpElder.focus();
+    if (cat === '説明') {
+      const term = prompt('説明してほしい用語を入力してください');
+      if (term) callAIExplain(term);
+    }
+  }));
 
   // 介護士送信
   btnCaregiverSend.addEventListener('click', () => {
-    const text = inpCaregiver.value.trim();
-    if (!text) return;
-    appendMessage('caregiver', text);
-    logConversation('caregiver', text);
-    inpCaregiver.value = '';
-    inpElder.focus();
+    const text = inpCaregiver.value.trim(); if (!text) return;
+    appendMessage('caregiver', text); logConversation('caregiver', text);
+    inpCaregiver.value = ''; inpElder.focus();
   });
 
   // 被介護者送信
   btnElderSend.addEventListener('click', () => {
-    const text = inpElder.value.trim();
-    if (!text) return;
-    appendMessage('elder', text);
-    logConversation('elder', text);
+    const text = inpElder.value.trim(); if (!text) return;
+    appendMessage('elder', text); logConversation('elder', text);
     inpElder.value = '';
   });
 
   // マイク
   if ('webkitSpeechRecognition' in window) {
     recognition = new webkitSpeechRecognition();
-    recognition.lang = 'ja-JP';
+    recognition.lang = currentLang === 'ja' ? 'ja-JP' : 'en-US';
     recognition.interimResults = false;
-    recognition.onstart    = () => console.log('recognition started');
-    recognition.onerror    = e => console.error('recognition error', e);
-    recognition.onresult   = e => {
+    recognition.onresult = e => {
       const text = e.results[0][0].transcript;
-      console.log('recognition result:', text);
-      const role = currentMicRole;
-      appendMessage(role, text);
-      logConversation(role, text);
-      if (role === 'elder') inpElder.value = '';
+      appendMessage(currentMicRole, text); logConversation(currentMicRole, text);
+      if (currentMicRole === 'elder') inpElder.value = '';
     };
-    btnMicStart.addEventListener('click', () => {
-      console.log('mic start for', currentMicRole);
-      recognition.lang = 'ja-JP';
-      recognition.start();
-    });
-  } else {
-    btnMicStart.disabled = true;
-  }
+    btnMicStart.addEventListener('click', () => recognition.start());
+  } else btnMicStart.disabled = true;
   selMicRole.addEventListener('change', () => currentMicRole = selMicRole.value);
 
-  // CSV
+  // CSV保存
   btnDownloadCsv.addEventListener('click', () => {
-    const header = ['role','message','timestamp'];
-    const rows = conversation.map(c => [c.role, c.message, c.timestamp]);
-    const csv = [header, ...rows].map(r => r.join(',')).join('\n');
-    const blob = new Blob([csv], { type: 'text/csv' });
-    const url  = URL.createObjectURL(blob);
-    const a    = document.createElement('a');
-    a.href     = url;
-    a.download = 'conversation_log.csv';
-    a.click();
-    URL.revokeObjectURL(url);
+    const csv = [['role','message','timestamp'], ...conversation.map(c=>[c.role,c.message,c.timestamp])];
+    const blob = new Blob([csv.map(r=>r.join(',')).join('\n')], {type:'text/csv'});
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+    a.download = 'conversation_log.csv'; a.click();
+    URL.revokeObjectURL(a.href);
   });
 
-  // AI 呼び出し
+  // AI呼び出し
   function callAIExplain(term) {
-    console.log('▶ send to chat:', term);
-    fetch(apiUrl, {
-      method: 'POST',
-      headers: {'Content-Type':'application/json'},
+    fetch(`${apiPath}?lang=${currentLang}`, {
+      method: 'POST', headers: {'Content-Type':'application/json'},
       body: JSON.stringify({role:'explain', message:term})
     })
-      .then(res => { console.log('◀ status', res.status); return res.json(); })
-      .then(data => {
-        appendMessage('bot', data.reply);
-        playTTS(data.reply);
-        logConversation('bot', data.reply);
-      })
-      .catch(err => console.error('fetch error', err));
+    .then(r=>r.json())
+    .then(data=>{ appendMessage('bot', data.reply); playTTS(data.reply); logConversation('bot', data.reply); })
+    .catch(e=>console.error(e));
   }
 
   // 表示
   function appendMessage(role, text) {
-    const div = document.createElement('div');
-    div.className = `message ${role}`;
-    const prefix = role==='caregiver' ? '👩‍⚕️ ' : role==='elder' ? '👵 ' : '';
-    div.textContent = prefix + text;
-    chatContainer.appendChild(div);
+    const d = document.createElement('div'); d.className=`message ${role}`;
+    const p = role==='caregiver'?'👩‍⚕️ ':role==='elder'?'👵 ':'🤖 ';
+    d.textContent = p+text; chatContainer.appendChild(d);
     chatContainer.scrollTop = chatContainer.scrollHeight;
   }
 
   // TTS
   function playTTS(text) {
     if ('speechSynthesis' in window) {
-      const utter = new SpeechSynthesisUtterance(text);
-      utter.lang = 'ja-JP'; utter.volume = +volControl.value; utter.rate = chkSlow.checked?0.6:1.0;
-      window.speechSynthesis.speak(utter);
+      const u = new SpeechSynthesisUtterance(text);
+      u.lang = currentLang==='ja'?'ja-JP':'en-US';
+      u.volume = +volControl.value; u.rate = chkSlow.checked?0.6:1.0;
+      speechSynthesis.speak(u);
     } else {
       ttsPlayer.src = `/tts?text=${encodeURIComponent(text)}&slow=${chkSlow.checked?1:0}`;
-      ttsPlayer.volume = +volControl.value;
-      ttsPlayer.play();
+      ttsPlayer.volume = +volControl.value; ttsPlayer.play();
     }
   }
 

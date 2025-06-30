@@ -1,149 +1,26 @@
-body {
-  margin: 0;
-  font-family: sans-serif;
-  background: #f5f5f5;
-}
-
-.chat-wrapper {
-  max-width: 600px;
-  margin: 0 auto;
-  padding: 10px;
-  display: flex;
-  flex-direction: column;
-  height: 100vh;
-}
-
-header h1 {
-  text-align: center;
-  margin-bottom: 10px;
-}
-
-.chat-container {
-  flex: 1;
-  background: #fff;
-  padding: 10px;
-  overflow-y: auto;
-  border: 1px solid #ddd;
-  border-radius: 5px;
-}
-
-.message {
-  margin: 5px 0;
-  padding: 8px 12px;
-  border-radius: 10px;
-  max-width: 80%;
-}
-
-.message.caregiver {
-  background: #e0f7ff;
-  align-self: flex-end;
-}
-
-.message.elder {
-  background: #f0ffe0;
-  align-self: flex-start;
-}
-
-.message.bot {
-  background: #ececec;
-  align-self: flex-start;
-}
-
-.template-container {
-  display: flex;
-  flex-wrap: wrap;
-  margin: 10px 0;
-  background: #fff;
-  padding: 5px;
-  border-radius: 5px;
-}
-
-.template-container button {
-  flex: 1 1 45%;
-  margin: 5px;
-  padding: 8px;
-  border-radius: 6px;
-  border: 1px solid #aaa;
-  cursor: pointer;
-}
-
-.input-area {
-  margin: 10px 0;
-}
-
-.input-row {
-  display: flex;
-  align-items: center;
-  margin-bottom: 5px;
-}
-
-.input-row input {
-  flex: 1;
-  padding: 6px;
-  margin: 0 5px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-}
-
-.input-row button {
-  padding: 6px 12px;
-  border: none;
-  background: #3a7afe;
-  color: #fff;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-.input-row.caregiver-row {
-  background: #e0f7ff;
-  padding: 5px;
-  border-radius: 5px;
-}
-
-.input-row.elder-row {
-  background: #f0ffe0;
-  padding: 5px;
-  border-radius: 5px;
-}
-
-.controls {
-  display: flex;
-  align-items: center;
-  background: #fff;
-  padding: 5px;
-  border-radius: 5px;
-}
-
-.controls .mic-control,
-.controls .tts-control {
-  display: flex;
-  align-items: center;
-  margin-right: 10px;
-}
-
-.controls select,
-.controls button,
-.controls input[type="range"] {
-  margin-right: 5px;
-}
-
-@media (max-width: 480px) {
-  .template-container button {
-    flex: 1 1 100%;
-  }
-  .input-row {
-    flex-direction: column;
-    align-items: stretch;
-  }
-  .input-row input {
-    margin: 5px 0;
-  }
-  .controls {
-    flex-direction: column;
-    align-items: stretch;
-  }
-  .controls .mic-control,
-  .controls .tts-control {
-    margin-bottom: 5px;
-  }
+body { margin:0; font-family:sans-serif; background:#f5f5f5; }
+.chat-wrapper { max-width:600px; margin:auto; padding:10px; display:flex; flex-direction:column; height:100vh; }
+header h1 { text-align:center; margin-bottom:10px; }
+.chat-container { flex:1; background:#fff; padding:10px; overflow-y:auto; border:1px solid #ddd; border-radius:5px; }
+.message { margin:5px 0; padding:8px 12px; border-radius:10px; max-width:80%; }
+.message.caregiver { background:#e0f7ff; align-self:flex-end; }
+.message.elder    { background:#f0ffe0; align-self:flex-start; }
+.message.bot      { background:#ececec; align-self:flex-start; }
+.template-container { display:flex; flex-wrap:wrap; margin:10px 0; }
+.template-container button { flex:1 1 45%; margin:5px; padding:8px; border-radius:6px; border:1px solid #aaa; background:#fff; cursor:pointer; }
+.input-area { margin:10px 0; }
+.input-row { display:flex; align-items:center; margin-bottom:5px; }
+.input-row input { flex:1; padding:6px; margin:0 5px; border:1px solid #ccc; border-radius:4px; }
+.input-row button { padding:6px 12px; border:none; background:#3a7afe; color:#fff; border-radius:4px; cursor:pointer; }
+.caregiver-row { background:#e0f7ff; padding:5px; border-radius:5px; }
+.elder-row     { background:#f0ffe0; padding:5px; border-radius:5px; }
+.controls { display:flex; align-items:center; background:#fff; padding:5px; border-radius:5px; }
+.controls .mic-control, .controls .tts-control { display:flex; align-items:center; margin-right:10px; }
+.controls select, .controls button, .controls input[type="range"] { margin-right:5px; }
+@media(max-width:480px){
+  .template-container button{flex:1 1 100%;}
+  .input-row{flex-direction:column;}
+  .input-row input{margin:5px 0;}
+  .controls{flex-direction:column;}
+  .controls .mic-control, .controls .tts-control{margin-bottom:5px;}
 }
