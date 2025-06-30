@@ -2,67 +2,60 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>AIみまくん 多言語介護チャットボット</title>
-  <!-- 修正: CSS は /static/css/styles.css -->
   <link rel="stylesheet" href="/static/css/styles.css" />
 </head>
 <body>
-  <h1>AIみまくん 多言語介護チャットボット</h1>
+  <div class="chat-wrapper">
+    <header>
+      <h1>AIみまくん 多言語介護チャットボット</h1>
+    </header>
+    <main>
+      <!-- チャット表示領域 -->
+      <div id="chat-container" class="chat-container"></div>
 
-  <!-- チャット表示領域 -->
-  <div id="chat-container" class="chat-container"></div>
+      <!-- テンプレートボタン -->
+      <div id="template-container" class="template-container">
+        <button data-cat="体調">体調: 調子はいかがですか？</button>
+        <button data-cat="服薬">薬: お薬は飲みましたか？</button>
+        <button data-cat="排泄">排泄: 排泄はどうでしたか？</button>
+        <button id="explain-btn" data-cat="説明">用語を説明</button>
+      </div>
 
-  <!-- テンプレート領域 -->
-  <div id="template-container" class="template-container">
-    <button data-cat="体調">体調: 調子はいかがですか？</button>
-    <button data-cat="服薬">薬: お薬は飲みましたか？</button>
-    <button data-cat="排泄">排泄: 排泄はどうでしたか？</button>
-    <button id="explain-btn" data-cat="説明">用語を説明</button>
+      <!-- 入力エリア -->
+      <div class="input-area">
+        <div class="input-row caregiver-row">
+          <label for="caregiver-input">👩‍⚕️ 外国人介護士:</label>
+          <input type="text" id="caregiver-input" placeholder="メッセージを入力" />
+          <button id="caregiver-send">送信</button>
+        </div>
+        <div class="input-row elder-row">
+          <label for="elder-input">👵 被介護者:</label>
+          <input type="text" id="elder-input" placeholder="メッセージを入力" />
+          <button id="elder-send">送信</button>
+        </div>
+      </div>
+
+      <!-- マイク／ログ／再生設定 -->
+      <div class="controls">
+        <div class="mic-control">
+          <select id="mic-role">
+            <option value="caregiver">👩‍⚕️ 介護士</option>
+            <option value="elder">👵 被介護者</option>
+          </select>
+          <button id="mic-start">🎤 マイク開始</button>
+        </div>
+        <button id="download-csv">💾 CSV保存</button>
+        <div class="tts-control">
+          <input type="range" id="volume" min="0" max="1" step="0.1" value="1" />
+          <label><input type="checkbox" id="slow-playback" /> 🐢 ゆっくり再生</label>
+        </div>
+        <audio id="tts-player" controls></audio>
+      </div>
+    </main>
   </div>
 
-  <!-- 外国人介護士の入力 -->
-  <div class="input-row">
-    <label for="caregiver-input">👩‍⚕️ 外国人介護士：</label>
-    <input type="text" id="caregiver-input" placeholder="介護士からのメッセージ" />
-    <button id="caregiver-send">送信</button>
-  </div>
-
-  <!-- 被介護者の入力 -->
-  <div class="input-row">
-    <label for="elder-input">👵 被介護者：</label>
-    <input type="text" id="elder-input" placeholder="高齢者からのメッセージ" />
-    <button id="elder-send">送信</button>
-  </div>
-
-  <!-- マイク入力設定 -->
-  <div class="input-row">
-    <label for="mic-role">🎙 マイク入力の対象：</label>
-    <select id="mic-role">
-      <option value="caregiver">👩‍⚕️ 外国人介護士</option>
-      <option value="elder">👵 被介護者</option>
-    </select>
-    <button id="mic-start">🎤 マイク開始</button>
-  </div>
-
-  <!-- 会話ログをCSVで保存 -->
-  <div class="input-row">
-    <button id="download-csv">💾 会話ログをCSVで保存</button>
-  </div>
-
-  <!-- 音量調整・ゆっくり再生 -->
-  <div class="input-row">
-    <label for="volume">🔊 音量を調整：</label>
-    <input type="range" id="volume" min="0" max="1" step="0.1" value="1" />
-    <label for="slow-playback">
-      <input type="checkbox" id="slow-playback" /> 🐢 ゆっくり再生する
-    </label>
-  </div>
-
-  <!-- TTS 再生プレイヤー -->
-  <audio id="tts-player" controls></audio>
-
-  <!-- 修正: JS は /static/js/chatbot.js に defer 属性を付与 -->
   <script src="/static/js/chatbot.js" defer></script>
 </body>
 </html>
