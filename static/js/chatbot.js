@@ -1,4 +1,5 @@
-const apiUrl = '/chat';
+// static/js/chatbot.js
+const apiUrl = 'chat';  // 修正：絶対パス '/chat' → 相対パス 'chat'
 let recognition, currentMicRole = 'caregiver';
 let conversation = [];
 
@@ -22,7 +23,6 @@ window.addEventListener('DOMContentLoaded', () => {
       const cat = btn.dataset.cat;
       appendMessage('caregiver', btn.textContent);
       logConversation('caregiver', btn.textContent);
-      // 被介護者入力を促す
       inpElder.value = '';
       inpElder.focus();
       if (cat === '説明') {
@@ -89,18 +89,24 @@ window.addEventListener('DOMContentLoaded', () => {
 
   // AI 呼び出し （用語説明のみ）
   function callAIExplain(term) {
+    console.log('▶ sending to chat:', term);
     fetch(apiUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ role: 'explain', message: term })
     })
-    .then(res => res.json())
+    .then(res => {
+      console.log('◀ response status:', res.status);
+      return res.json();
+    })
     .then(data => {
       appendMessage('bot', data.reply);
       playTTS(data.reply);
       logConversation('bot', data.reply);
     })
-    .catch(console.error);
+    .catch(err => {
+      console.error('✖ fetch error:', err);
+    });
   }
 
   // メッセージ表示
