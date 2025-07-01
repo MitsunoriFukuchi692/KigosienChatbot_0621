@@ -1,41 +1,60 @@
-
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>AIみまくん介護チャット</title>
-  <link rel="stylesheet" href="/static/css/styles.css" />
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AIみまくん - 外国人介護士支援ボット</title>
+    <link rel="stylesheet" href="/static/css/styles.css">
 </head>
 <body>
-  <div class="container">
-    <h1>AIみまくん多言語チャット</h1>
-    <div class="controls">
-      <label>音量:
-        <input type="range" id="volumeSlider" min="0" max="1" step="0.1" value="1">
-      </label>
-      <label>速度:
-        <input type="range" id="rateSlider" min="0.5" max="2" step="0.1" value="1">
-      </label>
-    </div>
-    <div class="chat-box" id="chat-box"></div>
+    <div class="container">
+        <h1>AIみまくん - 外国人介護士支援チャット</h1>
 
-    <div class="template-buttons">
-      <button onclick="sendTemplate('お薬はもう飲みましたか？')">薬</button>
-      <button onclick="sendTemplate('今日の調子はいかがですか？')">体調</button>
-      <button onclick="sendTemplate('排せつは順調ですか？')">排せつ</button>
-      <button onclick="sendTemplate('食事は美味しかったですか？')">食事</button>
-      <button onclick="sendTemplate('昨夜はよく眠れましたか？')">睡眠</button>
+        <div id="template-controls" class="template-container">
+            <div class="template-category">体調
+                <button class="template-btn">今日は調子はどうですか？</button>
+                <button class="template-btn">痛みはありますか？</button>
+            </div>
+            <div class="template-category">服薬
+                <button class="template-btn">お薬はもう飲みましたか？</button>
+                <button class="template-btn">飲み忘れはありませんか？</button>
+            </div>
+            <div class="template-category">排せつ
+                <button class="template-btn">排泄は順調ですか？</button>
+                <button class="template-btn">お手洗いは行きましたか？</button>
+            </div>
+            <div class="template-category">食事
+                <button class="template-btn">朝ごはんは食べましたか？</button>
+                <button class="template-btn">好きな食べ物は何ですか？</button>
+            </div>
+            <div class="template-category">睡眠
+                <button class="template-btn">昨夜はよく眠れましたか？</button>
+                <button class="template-btn">昼寝はしましたか？</button>
+            </div>
+        </div>
+
+        <div class="input-area">
+            <textarea id="caregiver-input" placeholder="介護士の入力..."></textarea>
+            <textarea id="patient-input" placeholder="被介護者の入力..."></textarea>
+        </div>
+
+        <div class="controls">
+            <button id="send-btn">送信</button>
+            <button id="explain-btn">用語を説明</button>
+        </div>
+
+        <div class="sliders">
+            <label>音量:
+                <input type="range" id="volumeSlider" min="0" max="1" step="0.1" value="1">
+            </label>
+            <label>速度:
+                <input type="range" id="speedSlider" min="0.5" max="2" step="0.1" value="1">
+            </label>
+        </div>
+
+        <div id="chat-log"></div>
     </div>
 
-    <div class="input-area">
-      <textarea id="caregiverInput" placeholder="介護士の入力..."></textarea>
-      <textarea id="patientInput" placeholder="被介護者の入力..."></textarea>
-      <button onclick="sendMessage()">送信</button>
-      <button onclick="startRecognition()">🎤</button>
-      <button onclick="explainTerm()">用語を説明</button>
-    </div>
-  </div>
-  <script src="/static/js/chatbot.js"></script>
+    <script src="/static/js/chatbot.js"></script>
 </body>
 </html>
