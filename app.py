@@ -1,176 +1,92 @@
+from flask import Flask, request, jsonify, Response, render_template
+from flask_cors import CORS
 import os
-import time
-import traceback
-from flask import Flask, render_template, request, jsonify, send_file, g
-from openai import OpenAI
-import io
-from gtts import gTTS  # Google Text-to-Speech
-import sqlite3
+import base64
+import openai
+from google.cloud import texttospeech
+import json
 
-# データベース初期化
-DATABASE = os.path.join(os.getcwd(), 'chat_logs.db')
-def init_db():
-    conn = sqlite3.connect(DATABASE)
-    conn.execute('''
-    CREATE TABLE IF NOT EXISTS logs (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        role TEXT NOT NULL,
-        message TEXT NOT NULL,
-        timestamp INTEGER NOT NULL
-    );
-    ''')
-    conn.commit()
-    conn.close()
+app = Flask(__name__, static_folder="static", template_folder="templates")
+CORS(app)
 
-# 環境変数からAPIキーを取得して設定
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+# Set up OpenAI API key
+openai.api_key = os.getenv("OPENAI_API_KEY")
 
-# Flask アプリ起動前に DB を初期化
-init_db()
+# Load Google Cloud credentials from base64
+google_credentials = os.getenv("GOOGLE_CREDENTIALS_JSON")
+if google_credentials:
+    service_account_info = json.loads(base64.b64decode(google_credentials))
+    tts_client = texttospeech.TextToSpeechClient.from_service_account_info(service_account_info)
+else:
+    tts_client = texttospeech.TextToSpeechClient()
 
-app = Flask(__name__, template_folder='templates', static_folder='static')
-app.config['TEMPLATES_AUTO_RELOAD'] = True
-app.jinja_env.auto_reload = True
-app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0
+@app.route("/")
+def index():
+    return render_template("index.html")
 
-# SQLite データベース接続取得
-def get_db():
-    if 'db' not in g:
-        conn = sqlite3.connect(DATABASE)
-        conn.row_factory = sqlite3.Row
-        g.db = conn
-    return g.db
+@app.route("/ja/")
+def ja():
+    return render_template("index.html")
 
-@app.teardown_appcontext
-def close_db(exc):
-    db = g.pop('db', None)
-    if db:
-        db.close()
-
-# Ping エンドポイント
-@app.route('/ping')
-def ping():
-    return "pong"
-
-# テンプレート取得用
-@app.route('/templates')
-def get_templates():
-    data = [
-        {"category": "薬",   "phrases": ["お薬はお飲みになりましたか？", "服用忘れはありませんか？"]},
-        {"category": "体調", "phrases": ["今日の調子はいかがですか？", "違和感はありませんか？"]}
-    ]
-    return jsonify(data)
-
-# チャット画面レンダリング
-@app.route('/')
-@app.route('/ja')
-@app.route('/ja/')
-@app.route('/en')
-@app.route('/en/')
-def chat_page():
-    return render_template('chatbot.html')
-
-# AIチャット用APIエンドポイント
-@app.route('/chat', methods=['POST'])
-def chat_api():
-    data = request.get_json() or {}
-    user_msg = data.get('message') or data.get('text', '')
+@app.route("/chat", methods=["POST"])
+def chat():
     try:
-        resp = client.chat.completions.create(
-            model="gpt-3.5-turbo",
-            messages=[{"role": "user", "content": user_msg}]
-        )
-        bot_msg = resp.choices[0].message.content.strip()
-        # 会話ログをDBに記録
-        db = get_db()
-        db.execute('INSERT INTO logs (role, message, timestamp) VALUES (?, ?, ?)',
-                   ('user', user_msg, int(time.time())))
-        db.execute('INSERT INTO logs (role, message, timestamp) VALUES (?, ?, ?)',
-                   ('bot', bot_msg, int(time.time())))
-        db.commit()
-        return jsonify(reply=bot_msg)
-    except Exception as e:
-        traceback.print_exc()
-        return jsonify(error=str(e)), 500
-
-# TTS用APIエンドポイント (gTTS使用)
-@app.route('/tts', methods=['POST'])
-def tts_api():
-    data = request.get_json() or {}
-    text = data.get('text', '')
-    lang = data.get('lang', 'ja')
-    try:
-        # gTTS で MP3 を生成
-        tts = gTTS(text=text, lang=lang)
-        buf = io.BytesIO()
-        tts.write_to_fp(buf)
-        buf.seek(0)
-
-        # クライアントに MP3 を返す
-        return send_file(
-            buf,
-            mimetype='audio/mpeg',
-            as_attachment=False,
-            download_name='tts.mp3'
-        )
-    except Exception as e:
-        traceback.print_exc()
-        return jsonify(error=str(e)), 500
-
-# 対話ログをJSONで取得するエンドポイント
-@app.route('/logs')
-def show_logs():
-    try:
-        db = get_db()
-        rows = db.execute('SELECT * FROM logs ORDER BY timestamp').fetchall()
-        return jsonify([dict(r) for r in rows])
-    except Exception as e:
-        traceback.print_exc()
-        return jsonify(error=str(e)), 500
-
-# 用語説明用エンドポイント
-@app.route('/explain', methods=['POST'])
-def explain_term():
-    try:
-        data = request.get_json() or {}
-        term = data.get('term', '').strip()
-        if not term:
-            return jsonify(error='term is required'), 400
-        # AIに用語説明を依頼（日本語指定を追加）
-        resp = client.chat.completions.create(
+        data = request.get_json()
+        message = data.get("message", "")
+        response = openai.ChatCompletion.create(
             model="gpt-3.5-turbo",
             messages=[
-                {"role": "system", "content": (
-                    "あなたは分かりやすい用語解説者です。"
-                    "以下の専門用語や難しい言葉を日本語で、"
-                    "優しく、具体例を交えて説明してください。"
-                )},
-                {"role": "user", "content": f"「{term}」とは何か教えてください。"}
+                {"role": "system", "content": "あなたは介護の現場で使われる多言語対応AIです。"},
+                {"role": "user", "content": message}
             ]
         )
-        explanation = resp.choices[0].message.content.strip()
-        return jsonify(explanation=explanation)
+        reply = response.choices[0].message["content"].strip()
+        return jsonify({"reply": reply})
     except Exception as e:
-        traceback.print_exc()
-        return jsonify(error=str(e)), 500
+        return jsonify({"error": str(e)})
 
-# 登録ルート一覧表示
-@app.route('/routes')
-def list_routes():
-    routes = [f"{r.rule} → {','.join(r.methods)}" for r in app.url_map.iter_rules()]
-    return "<br>".join(routes), 200, {'Content-Type': 'text/html'}
+@app.route("/tts", methods=["POST"])
+def tts():
+    data = request.get_json()
+    text = data.get("text", "")
+    lang = data.get("lang", "ja-JP")
+    rate = float(data.get("rate", 1.0))  # speaking rate 追加
 
-# プロジェクト内ファイル一覧表示
-@app.route('/files')
-def list_files():
-    lines = []
-    cwd = os.getcwd()
-    for root, dirs, files in os.walk(cwd):
-        rel = os.path.relpath(root, cwd)
-        lines.append(f"<b>/{rel}</b>")
-        for f in files:
-            lines.append(f"&nbsp;&nbsp;{f}")
-    return "<br>".join(lines), 200, {'Content-Type': 'text/html'}
+    synthesis_input = texttospeech.SynthesisInput(text=text)
+    voice = texttospeech.VoiceSelectionParams(
+        language_code=lang,
+        ssml_gender=texttospeech.SsmlVoiceGender.NEUTRAL
+    )
+    audio_config = texttospeech.AudioConfig(
+        audio_encoding=texttospeech.AudioEncoding.MP3,
+        speaking_rate=rate  # 再生速度の設定
+    )
 
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=int(os.getenv('PORT', 5000)), debug=True)
+    response = tts_client.synthesize_speech(
+        input=synthesis_input, voice=voice, audio_config=audio_config
+    )
+
+    return Response(response.audio_content, mimetype="audio/mpeg")
+
+@app.route("/explain", methods=["POST"])
+def explain():
+    try:
+        data = request.get_json()
+        term = data.get("term", "")
+        prompt_hint = data.get("prompt_hint", "高齢者にも分かりやすく説明してください。")
+        prompt = f"{term} について {prompt_hint}"
+
+        response = openai.ChatCompletion.create(
+            model="gpt-3.5-turbo",
+            messages=[
+                {"role": "system", "content": "あなたは高齢者にもわかりやすい言葉で専門用語をやさしく説明するAIです。"},
+                {"role": "user", "content": prompt}
+            ]
+        )
+        explanation = response.choices[0].message["content"].strip()
+        return jsonify({"explanation": explanation})
+    except Exception as e:
+        return jsonify({"error": str(e)})
+
+if __name__ == "__main__":
+    app.run(debug=True)
