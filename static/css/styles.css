@@ -1,64 +1,36 @@
 
 body {
-  font-family: sans-serif;
-  background: #f9f9f9;
-  margin: 0;
-  padding: 1rem;
+    font-family: 'Arial', sans-serif;
+    padding: 20px;
+    background: #f9f9f9;
 }
-.container {
-  max-width: 600px;
-  margin: auto;
+h1 {
+    font-size: 24px;
 }
-.chat-box {
-  background: white;
-  border: 1px solid #ccc;
-  padding: 1rem;
-  height: 300px;
-  overflow-y: scroll;
-  margin-bottom: 1rem;
+.template-buttons div {
+    margin: 10px 0;
 }
-.user {
-  text-align: right;
-  color: blue;
-}
-.bot {
-  text-align: left;
-  color: green;
-}
-.template-buttons button, .input-area button {
-  margin: 0.3rem;
+button {
+    margin: 2px;
+    padding: 5px 10px;
 }
 textarea {
-  width: 100%;
-  height: 60px;
-  margin-top: 0.5rem;
+    width: 95%;
+    margin-top: 10px;
 }
-.controls {
-  margin-bottom: 1rem;
+#chat-response {
+    margin: 10px 0;
+    padding: 10px;
+    background: #fff;
+    border: 1px solid #ccc;
 }
-
-/* .containerの中央寄せと余白調整 */
-.container {
-  max-width: 900px;
-  margin: 0 auto;
-  padding: 20px 10px;
-  box-sizing: border-box;
-}
-
-/* スマホ表示用テンプレートボタン改善 */
 @media screen and (max-width: 600px) {
-  .template-container {
-    flex-wrap: wrap;
-    justify-content: center;
-  }
-  .template-category {
-    flex: 1 1 100%;
-    margin-bottom: 10px;
-  }
-  .template-category button {
-    width: 100%;
-    font-size: 1.1em;
-    margin-bottom: 5px;
-  }
+    button {
+        display: block;
+        width: 100%;
+        margin: 4px 0;
+    }
+    textarea {
+        width: 100%;
+    }
 }
-

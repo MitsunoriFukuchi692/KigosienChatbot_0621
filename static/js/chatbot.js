@@ -1,95 +1,46 @@
-// static/js/chatbot.js
-let currentVolume = 1.0;
-let currentRate = 1.0;
 
-document.getElementById("volumeSlider").addEventListener("input", (e) => {
-  currentVolume = parseFloat(e.target.value);
-});
-
-document.getElementById("rateSlider").addEventListener("input", (e) => {
-  currentRate = parseFloat(e.target.value);
-});
-
-function appendMessage(sender, text) {
-  const box = document.getElementById("chat-box");
-  const div = document.createElement("div");
-  div.className = sender;
-  div.textContent = text;
-  box.appendChild(div);
-  box.scrollTop = box.scrollHeight;
+function setMessage(text) {
+    document.getElementById("user-input").value = text;
+    speakText(text);
 }
 
-async function sendMessage() {
-  const caregiver = document.getElementById("caregiverInput").value.trim();
-  const patient = document.getElementById("patientInput").value.trim();
-  const message = caregiver || patient;
-  if (!message) return;
-
-  appendMessage("user", message);
-
-  const res = await fetch("/chat", {
-    method: "POST",
-    headers: {"Content-Type": "application/json"},
-    body: JSON.stringify({message})
-  });
-  const data = await res.json();
-  appendMessage("bot", data.reply);
-  playTTS(data.reply);
-}
-
-async function sendTemplate(text) {
-  appendMessage("user", text);
-  const res = await fetch("/chat", {
-    method: "POST",
-    headers: {"Content-Type": "application/json"},
-    body: JSON.stringify({message: text})
-  });
-  const data = await res.json();
-  appendMessage("bot", data.reply);
-  playTTS(data.reply);
-}
-
-async function explainTerm() {
-  const term = prompt("説明したい用語を入力してください:");
-  if (!term) return;
-  const res = await fetch("/explain", {
-    method: "POST",
-    headers: {"Content-Type": "application/json"},
-    body: JSON.stringify({term})
-  });
-  const data = await res.json();
-  appendMessage("bot", data.explanation);
-  playTTS(data.explanation);
-}
-
-async function playTTS(text) {
-  const res = await fetch("/tts", {
-    method: "POST",
-    headers: {"Content-Type": "application/json"},
-    body: JSON.stringify({
-      text: text,
-      lang: "ja-JP",
-      rate: currentRate
+function sendMessage() {
+    const input = document.getElementById("user-input").value;
+    if (!input) return;
+    document.getElementById("chat-response").innerText = "送信中...";
+    fetch("/chat", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({message: input})
     })
-  });
-  const blob = await res.blob();
-  const url = URL.createObjectURL(blob);
-  const audio = new Audio(url);
-  audio.volume = currentVolume;
-  audio.play();
+    .then(res => res.json())
+    .then(data => {
+        document.getElementById("chat-response").innerText = data.response;
+        speakText(data.response);
+    });
 }
 
-function startRecognition() {
-  if (!window.SpeechRecognition && !window.webkitSpeechRecognition) {
-    alert("音声認識がサポートされていません。");
-    return;
-  }
+function explainTerm() {
+    const input = document.getElementById("user-input").value;
+    if (!input) return;
+    fetch("/explain", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({term: input})
+    })
+    .then(res => res.json())
+    .then(data => {
+        document.getElementById("chat-response").innerText = data.explanation;
+        speakText(data.explanation);
+    });
+}
 
-  const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-  recognition.lang = "ja-JP";
-  recognition.start();
-
-  recognition.onresult = function(event) {
-    document.getElementById("caregiverInput").value = event.results[0][0].transcript;
-  };
+function speakText(text) {
+    const utterance = new SpeechSynthesisUtterance(text);
+    const volume = parseFloat(document.getElementById("volume").value);
+    const rate = parseFloat(document.getElementById("rate").value);
+    utterance.volume = volume;
+    utterance.rate = rate;
+    utterance.lang = "ja-JP";
+    window.speechSynthesis.speak(utterance);
 }

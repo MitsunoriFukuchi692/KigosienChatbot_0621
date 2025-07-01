@@ -1,59 +1,47 @@
+
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>AIみまくん - 外国人介護士支援ボット</title>
+    <meta charset="UTF-8">
+    <title>AIみまくん - 外国人介護士支援チャット</title>
     <link rel="stylesheet" href="/static/css/styles.css">
 </head>
 <body>
-    <div class="container">
-        <h1>AIみまくん - 外国人介護士支援チャット</h1>
+    <h1>AIみまくん - 外国人介護士支援チャット</h1>
 
-        <div id="template-controls" class="template-container">
-            <div class="template-category">体調
-                <button class="template-btn">今日は調子はどうですか？</button>
-                <button class="template-btn">痛みはありますか？</button>
-            </div>
-            <div class="template-category">服薬
-                <button class="template-btn">お薬はもう飲みましたか？</button>
-                <button class="template-btn">飲み忘れはありませんか？</button>
-            </div>
-            <div class="template-category">排せつ
-                <button class="template-btn">排泄は順調ですか？</button>
-                <button class="template-btn">お手洗いは行きましたか？</button>
-            </div>
-            <div class="template-category">食事
-                <button class="template-btn">朝ごはんは食べましたか？</button>
-                <button class="template-btn">好きな食べ物は何ですか？</button>
-            </div>
-            <div class="template-category">睡眠
-                <button class="template-btn">昨夜はよく眠れましたか？</button>
-                <button class="template-btn">昼寝はしましたか？</button>
-            </div>
+    <div class="template-buttons">
+        <div><strong>体調</strong>
+            <button onclick="setMessage('こんにちは。体調はいかがですか？')">今日は調子はどうですか？</button>
+            <button onclick="setMessage('痛みはありますか？')">痛みはありますか？</button>
         </div>
-
-        <div class="input-area">
-            <textarea id="caregiver-input" placeholder="介護士の入力..."></textarea>
-            <textarea id="patient-input" placeholder="被介護者の入力..."></textarea>
+        <div><strong>服薬</strong>
+            <button onclick="setMessage('お薬はもう飲みましたか？')">お薬はもう飲みましたか？</button>
+            <button onclick="setMessage('飲み忘れはありませんか？')">飲み忘れはありませんか？</button>
         </div>
-
-        <div class="controls">
-            <button id="send-btn">送信</button>
-            <button id="explain-btn">用語を説明</button>
+        <div><strong>排せつ</strong>
+            <button onclick="setMessage('排泄は順調ですか？')">排泄は順調ですか？</button>
+            <button onclick="setMessage('お手洗いは行きましたか？')">お手洗いは行きましたか？</button>
         </div>
-
-        <div class="sliders">
-            <label>音量:
-                <input type="range" id="volumeSlider" min="0" max="1" step="0.1" value="1">
-            </label>
-            <label>速度:
-                <input type="range" id="speedSlider" min="0.5" max="2" step="0.1" value="1">
-            </label>
+        <div><strong>食事</strong>
+            <button onclick="setMessage('朝ごはんは食べましたか？')">朝ごはんは食べましたか？</button>
+            <button onclick="setMessage('好きな食べ物は何ですか？')">好きな食べ物は何ですか？</button>
         </div>
-
-        <div id="chat-log"></div>
+        <div><strong>睡眠</strong>
+            <button onclick="setMessage('昨夜はよく眠れましたか？')">昨夜はよく眠れましたか？</button>
+            <button onclick="setMessage('昼寝はしましたか？')">昼寝はしましたか？</button>
+        </div>
     </div>
+
+    <textarea id="user-input" placeholder="ここに入力..." rows="2" cols="40"></textarea><br>
+    <button onclick="sendMessage()">送信</button>
+    <button onclick="explainTerm()">用語を説明</button>
+
+    <div id="chat-response"></div>
+
+    <label for="volume">音量：</label>
+    <input type="range" id="volume" min="0" max="1" step="0.1" value="1">
+    <label for="rate">速度：</label>
+    <input type="range" id="rate" min="0.5" max="2" step="0.1" value="1">
 
     <script src="/static/js/chatbot.js"></script>
 </body>
