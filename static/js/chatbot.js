@@ -1,48 +1,77 @@
-// chatbot.js
 
-// 送信用関数（既存の sendMessage を利用）
+const chatBox = document.getElementById('chat-box');
+const caregiverInput = document.getElementById('caregiverInput');
+const patientInput = document.getElementById('patientInput');
+
+console.log("chatbot.js 最新バージョン読み込み確認");
+
+function appendMessage(text, sender) {
+  const msg = document.createElement('div');
+  msg.className = sender;
+  msg.innerText = text;
+  chatBox.appendChild(msg);
+  chatBox.scrollTop = chatBox.scrollHeight;
+}
+
+function getVolume() {
+  return parseFloat(document.getElementById('volumeSlider').value);
+}
+
+function getRate() {
+  return parseFloat(document.getElementById('rateSlider').value);
+}
+
+function speak(text) {
+  const utter = new SpeechSynthesisUtterance(text);
+  utter.volume = getVolume();
+  utter.rate = getRate();
+  speechSynthesis.speak(utter);
+}
+
 function sendMessage() {
-    const input = document.getElementById("user-input").value;
-    if (!input) return;
-
-    appendMessage("あなた", input);
-    document.getElementById("user-input").value = "";
-
-    fetch("/chat", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ message: input })
-    })
-    .then(response => response.json())
-    .then(data => {
-        appendMessage("みまくん", data.response);
-        speakText(data.response);
-    });
+  const text = caregiverInput.value || patientInput.value;
+  if (!text) return;
+  appendMessage("👤 " + text, "user");
+  fetch('/chat', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ text })
+  })
+  .then(res => res.json())
+  .then(data => {
+    appendMessage("🤖 " + data.reply, "bot");
+    speak(data.reply);
+  });
+  caregiverInput.value = '';
+  patientInput.value = '';
 }
 
-// テンプレートボタンからの送信用
 function sendTemplate(text) {
-    document.getElementById("user-input").value = text;
-    sendMessage();
+  appendMessage("📋 " + text, "user");
+  speak(text);
 }
 
-// メッセージをチャット欄に追加
-function appendMessage(sender, text) {
-    const chatBox = document.getElementById("chat-box");
-    const messageDiv = document.createElement("div");
-    messageDiv.className = sender === "あなた" ? "user-message" : "bot-message";
-    messageDiv.textContent = sender + ": " + text;
-    chatBox.appendChild(messageDiv);
-    chatBox.scrollTop = chatBox.scrollHeight;
+function startRecognition() {
+  const recognition = new webkitSpeechRecognition();
+  recognition.lang = 'ja-JP';
+  recognition.onresult = (e) => {
+    const text = e.results[0][0].transcript;
+    caregiverInput.value = text;
+  };
+  recognition.start();
 }
 
-// 音声読み上げ
-function speakText(text) {
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = "ja-JP";
-    utterance.volume = 1.0;
-    utterance.rate = 1.0;
-    speechSynthesis.speak(utterance);
+function explainTerm() {
+  const word = caregiverInput.value.trim();
+  if (!word) return;
+  fetch('/explain', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ word })
+  })
+  .then(res => res.json())
+  .then(data => {
+    appendMessage("📘 " + data.explanation, "bot");
+    speak(data.explanation);
+  });
 }
