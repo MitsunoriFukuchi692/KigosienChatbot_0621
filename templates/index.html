@@ -1,45 +1,49 @@
-
 <!DOCTYPE html>
 <html lang="ja">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>介護支援チャットボット</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AIみまくん 多言語介護チャットボット</title>
   <link rel="stylesheet" href="/static/css/styles.css" />
 </head>
 <body>
-  <div class="container">
-    <h1>介護支援チャットボット</h1>
-    <div class="input-section">
-      <label for="caregiverInput">介護士:</label>
-      <input type="text" id="caregiverInput" placeholder="介護士の発言を入力" />
-      <button onclick="sendMessage('caregiver')">送信</button>
-    </div>
-    <div class="input-section">
-      <label for="patientInput">被介護者:</label>
-      <input type="text" id="patientInput" placeholder="被介護者の発言を入力" />
-      <button onclick="sendMessage('patient')">送信</button>
-    </div>
+  <h1>AIみまくん 多言語介護チャットボット</h1>
 
-    <div class="template-buttons">
-      <button onclick="sendTemplate('体調')">体調</button>
-      <button onclick="sendTemplate('排せつ')">排せつ</button>
-      <button onclick="sendTemplate('服薬')">服薬</button>
-      <button onclick="sendTemplate('食事')">食事</button>
-      <button onclick="sendTemplate('睡眠')">睡眠</button>
-    </div>
+  <div class="chat-area" id="chat-area"></div>
 
-    <div class="voice-controls">
-      <label>音量</label>
-      <input type="range" id="volumeSlider" min="0" max="1" step="0.1" value="1" />
-      <label>速度</label>
-      <input type="range" id="rateSlider" min="0.5" max="2" step="0.1" value="1" />
-    </div>
-
-    <button onclick="startRecognition()">🎤 マイク</button>
-
-    <div id="chatContainer"></div>
+  <div class="template-buttons">
+    <button onclick="sendTemplate('体調: 調子はいかがですか？')">体調: 調子はいかがですか？</button>
+    <button onclick="sendTemplate('薬: お薬は飲みましたか？')">薬: お薬は飲みましたか？</button>
+    <button onclick="sendTemplate('排泄: 排泄はどうでしたか？')">排泄: 排泄はどうでしたか？</button>
+    <button onclick="explainTerm()">用語を説明</button>
   </div>
+
+  <div class="input-section">
+    <label>👩‍⚕️ 外国人介護士：</label>
+    <input type="text" id="caregiverInput" placeholder="メッセージを入力" />
+    <button onclick="sendMessage('caregiver')">送信</button>
+
+    <label>👴 被介護者：</label>
+    <input type="text" id="patientInput" placeholder="メッセージを入力" />
+    <button onclick="sendMessage('patient')">送信</button>
+  </div>
+
+  <div class="controls">
+    <select id="speakerSelect">
+      <option value="caregiver">👩‍⚕️ 介護士</option>
+      <option value="patient">👴 被介護者</option>
+    </select>
+    <button onclick="startMic()">🎙️ マイク開始</button>
+    <button onclick="saveCSV()">💾 CSV保存</button>
+    <label for="volumeSlider">音量：</label>
+    <input type="range" id="volumeSlider" min="0" max="1" step="0.1" value="0.8" />
+    <label for="rateSlider">速さ：</label>
+    <input type="range" id="rateSlider" min="0.5" max="2" step="0.1" value="1" />
+    <label><input type="checkbox" id="slowMode" /> ゆっくり再生</label>
+  </div>
+
+  <audio id="audioPlayer" controls></audio>
+
   <script src="/static/js/chatbot.js"></script>
 </body>
 </html>

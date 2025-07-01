@@ -1,53 +1,61 @@
+const chatArea = document.getElementById('chat-area');
+const caregiverInput = document.getElementById('caregiverInput');
+const patientInput = document.getElementById('patientInput');
+const speakerSelect = document.getElementById('speakerSelect');
+const volumeSlider = document.getElementById('volumeSlider');
+const rateSlider = document.getElementById('rateSlider');
+const slowMode = document.getElementById('slowMode');
 
-let volume = 1;
-let rate = 1;
+function addMessage(sender, text) {
+  const messageDiv = document.createElement('div');
+  messageDiv.textContent = `${sender}: ${text}`;
+  chatArea.appendChild(messageDiv);
+}
 
-document.getElementById("volumeSlider").addEventListener("input", (e) => {
-  volume = parseFloat(e.target.value);
-});
+function sendMessage(role) {
+  const input = role === 'caregiver' ? caregiverInput : patientInput;
+  const text = input.value.trim();
+  if (text === '') return;
+  addMessage(role === 'caregiver' ? '👩‍⚕️' : '👴', text);
+  input.value = '';
+  speakText(text);
+}
 
-document.getElementById("rateSlider").addEventListener("input", (e) => {
-  rate = parseFloat(e.target.value);
-});
+function sendTemplate(text) {
+  const speaker = speakerSelect.value;
+  addMessage(speaker === 'caregiver' ? '👩‍⚕️' : '👴', text);
+  speakText(text);
+}
+
+function explainTerm() {
+  const explanation = "喉の痛み、鼻水、くしゃみ、咳、倦怠感、頭痛などがあります。早めの対処が大切です。";
+  addMessage('📘', explanation);
+  speakText(explanation);
+}
 
 function speakText(text) {
   const utterance = new SpeechSynthesisUtterance(text);
-  utterance.volume = volume;
-  utterance.rate = rate;
+  utterance.volume = parseFloat(volumeSlider.value);
+  utterance.rate = slowMode.checked ? 0.7 : parseFloat(rateSlider.value);
   speechSynthesis.speak(utterance);
 }
 
-function sendMessage(sender) {
-  const inputId = sender === "caregiver" ? "caregiverInput" : "patientInput";
-  const input = document.getElementById(inputId);
-  const message = input.value.trim();
-  if (!message) return;
-  appendMessage(sender, message);
-  speakText(message);
-  input.value = "";
-}
-
-function sendTemplate(category) {
-  const message = `[${category}] テンプレート発言です`;
-  appendMessage("template", message);
-  speakText(message);
-}
-
-function appendMessage(sender, message) {
-  const container = document.getElementById("chatContainer");
-  const div = document.createElement("div");
-  div.className = "chat-message";
-  div.textContent = sender + ": " + message;
-  container.appendChild(div);
-}
-
-// 音声認識
-function startRecognition() {
+function startMic() {
   const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
   recognition.lang = 'ja-JP';
   recognition.start();
   recognition.onresult = function (event) {
-    const transcript = event.results[0][0].transcript;
-    document.getElementById("caregiverInput").value = transcript;
+    const result = event.results[0][0].transcript;
+    const input = speakerSelect.value === 'caregiver' ? caregiverInput : patientInput;
+    input.value = result;
   };
+}
+
+function saveCSV() {
+  const lines = Array.from(chatArea.children).map(div => div.textContent);
+  const blob = new Blob([lines.join('\n')], { type: 'text/csv' });
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = 'chatlog.csv';
+  link.click();
 }
