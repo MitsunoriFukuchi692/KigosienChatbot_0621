@@ -26,7 +26,7 @@ def index():
 
 @app.route("/ja/")
 def ja():
-    return render_template("index.html")  # ← 修正済み
+    return render_template("chatbot.html")
 
 @app.route("/chat", methods=["POST"])
 def chat():
@@ -41,7 +41,7 @@ def chat():
             ]
         )
         reply = response.choices[0].message["content"].strip()
-        return jsonify({"response": reply})
+        return jsonify({"reply": reply})
     except Exception as e:
         return jsonify({"error": str(e)})
 

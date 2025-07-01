@@ -1,147 +1,64 @@
-/* /static/css/styles.css */
 
 body {
-  margin: 0;
   font-family: sans-serif;
-  background: #f5f5f5;
+  background: #f9f9f9;
+  margin: 0;
+  padding: 1rem;
 }
-
-.chat-wrapper {
+.container {
   max-width: 600px;
   margin: auto;
-  padding: 10px;
-  display: flex;
-  flex-direction: column;
-  height: 100vh;
 }
-
-header h1 {
-  text-align: center;
-  margin-bottom: 10px;
-}
-
-.chat-container {
-  flex: 1;
-  background: #fff;
-  padding: 10px;
-  overflow-y: auto;
-  border: 1px solid #ddd;
-  border-radius: 5px;
-}
-
-.message {
-  margin: 5px 0;
-  padding: 8px 12px;
-  border-radius: 10px;
-  max-width: 80%;
-}
-
-.message.caregiver {
-  background: #e0f7ff;
-  align-self: flex-end;
-}
-
-.message.elder {
-  background: #f0ffe0;
-  align-self: flex-start;
-}
-
-.message.bot {
-  background: #ececec;
-  align-self: flex-start;
-}
-
-.template-container {
-  display: flex;
-  flex-wrap: wrap;
-  margin: 10px 0;
-}
-
-.template-container button {
-  flex: 1 1 45%;
-  margin: 5px;
-  padding: 8px;
-  border-radius: 6px;
-  border: 1px solid #aaa;
-  background: #fff;
-  cursor: pointer;
-}
-
-.input-area {
-  margin: 10px 0;
-}
-
-.input-row {
-  display: flex;
-  align-items: center;
-  margin-bottom: 5px;
-}
-
-.input-row input {
-  flex: 1;
-  padding: 6px;
-  margin: 0 5px;
+.chat-box {
+  background: white;
   border: 1px solid #ccc;
-  border-radius: 4px;
+  padding: 1rem;
+  height: 300px;
+  overflow-y: scroll;
+  margin-bottom: 1rem;
 }
-
-.input-row button {
-  padding: 6px 12px;
-  border: none;
-  background: #3a7afe;
-  color: #fff;
-  border-radius: 4px;
-  cursor: pointer;
+.user {
+  text-align: right;
+  color: blue;
 }
-
-.caregiver-row {
-  background: #e0f7ff;
-  padding: 5px;
-  border-radius: 5px;
+.bot {
+  text-align: left;
+  color: green;
 }
-
-.elder-row {
-  background: #f0ffe0;
-  padding: 5px;
-  border-radius: 5px;
+.template-buttons button, .input-area button {
+  margin: 0.3rem;
 }
-
+textarea {
+  width: 100%;
+  height: 60px;
+  margin-top: 0.5rem;
+}
 .controls {
-  display: flex;
-  align-items: center;
-  background: #fff;
-  padding: 5px;
-  border-radius: 5px;
+  margin-bottom: 1rem;
 }
 
-.controls .mic-control,
-.controls .tts-control {
-  display: flex;
-  align-items: center;
-  margin-right: 10px;
+/* .containerの中央寄せと余白調整 */
+.container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 20px 10px;
+  box-sizing: border-box;
 }
 
-.controls select,
-.controls button,
-.controls input[type="range"] {
-  margin-right: 5px;
-}
-
-@media (max-width: 480px) {
-  .template-container button {
+/* スマホ表示用テンプレートボタン改善 */
+@media screen and (max-width: 600px) {
+  .template-container {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .template-category {
     flex: 1 1 100%;
+    margin-bottom: 10px;
   }
-  .input-row {
-    flex-direction: column;
-  }
-  .input-row input {
-    margin: 5px 0;
-  }
-  .controls {
-    flex-direction: column;
-  }
-  .controls .mic-control,
-  .controls .tts-control {
+  .template-category button {
+    width: 100%;
+    font-size: 1.1em;
     margin-bottom: 5px;
   }
 }
+
