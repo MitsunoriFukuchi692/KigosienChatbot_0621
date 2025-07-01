@@ -1,17 +1,25 @@
-
 body {
-    font-family: sans-serif;
-    padding: 1rem;
+  font-family: sans-serif;
+  padding: 1em;
+  background: #f8f8f8;
 }
-.caregiver-input {
-    background-color: #e0f0ff;
+#chat-container p {
+  background: #e0f7fa;
+  padding: 0.5em;
+  border-radius: 5px;
+  margin: 5px 0;
 }
-.patient-input {
-    background-color: #fff6cc;
+input[type="text"] {
+  width: 60%;
+  padding: 0.5em;
 }
-.template-buttons button {
-    margin: 0.2rem;
+button {
+  padding: 0.5em;
+  margin: 0.3em;
 }
-.term-explain {
-    margin: 1rem 0;
+@media (max-width: 600px) {
+  input[type="text"], button {
+    width: 100%;
+    margin-top: 0.5em;
+  }
 }
