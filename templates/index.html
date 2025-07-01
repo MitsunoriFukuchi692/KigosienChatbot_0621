@@ -1,56 +1,32 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
-  <title>AIみまくん 多言語介護チャットボット</title>
-  <link rel="stylesheet" href="/static/css/styles.css">
+    <meta charset="UTF-8">
+    <title>外国人介護士支援チャットボット</title>
+    <link rel="stylesheet" href="/static/css/style.css">
 </head>
 <body>
-  <div class="chat-wrapper">
-    <header><h1>AIみまくん 多言語介護チャットボット</h1></header>
-    <main>
-      <div id="chat-container" class="chat-container"></div>
+    <div class="chat-container">
+        <h1>AIみまくん 介護士支援チャットボット</h1>
 
-      <div id="template-container" class="template-container">
-        <button data-cat="体調">体調: 調子はいかがですか？</button>
-        <button data-cat="服薬">薬: お薬は飲みましたか？</button>
-        <button data-cat="排泄">排泄: 排泄はどうでしたか？</button>
-        <button data-cat="説明">用語を説明</button>
-      </div>
+        <!-- テンプレートボタン -->
+        <div id="template-buttons">
+            <button onclick="sendTemplate('お薬は飲みましたか？')">💊 お薬</button>
+            <button onclick="sendTemplate('体調はどうですか？')">🤒 体調</button>
+            <button onclick="sendTemplate('排泄はありましたか？')">🚽 排泄</button>
+            <button onclick="sendTemplate('お食事は済みましたか？')">🍚 食事</button>
+        </div>
 
-      <div class="input-area">
-        <div class="input-row caregiver-row">
-          <label for="caregiver-input">👩‍⚕️ 外国人介護士：</label>
-          <input type="text" id="caregiver-input" placeholder="メッセージを入力">
-          <button id="caregiver-send">送信</button>
-        </div>
-        <div class="input-row elder-row">
-          <label for="elder-input">👵 被介護者：</label>
-          <input type="text" id="elder-input" placeholder="メッセージを入力">
-          <button id="elder-send">送信</button>
-        </div>
-      </div>
+        <!-- チャット表示欄 -->
+        <div id="chat-box"></div>
 
-      <div class="controls">
-        <div class="mic-control">
-          <select id="mic-role">
-            <option value="caregiver">👩‍⚕️ 介護士</option>
-            <option value="elder">👵 被介護者</option>
-          </select>
-          <button id="mic-start">🎤 マイク開始</button>
+        <!-- 入力フォーム -->
+        <div class="input-area">
+            <input type="text" id="user-input" placeholder="ここに入力..." />
+            <button onclick="sendMessage()">送信</button>
         </div>
-        <button id="download-csv">💾 CSV保存</button>
-        <div class="tts-control">
-          <input type="range" id="volume" min="0" max="1" step="0.1" value="1">
-          <label><input type="checkbox" id="slow-playback"> 🐢 ゆっくり再生</label>
-        </div>
-        <audio id="tts-player" controls></audio>
-      </div>
-    </main>
-  </div>
+    </div>
 
-  <!-- ここで必ず正しいスクリプトを読み込み -->
-  <script src="/static/js/chatbot.js" defer></script>
+    <script src="/static/js/chatbot.js"></script>
 </body>
 </html>
