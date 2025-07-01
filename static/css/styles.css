@@ -1,36 +1,35 @@
 
 body {
-    font-family: 'Arial', sans-serif;
-    padding: 20px;
-    background: #f9f9f9;
+  font-family: sans-serif;
+  background-color: #f7f7f7;
+  margin: 0;
+  padding: 0;
 }
-h1 {
-    font-size: 24px;
+
+.container {
+  max-width: 700px;
+  margin: auto;
+  padding: 1rem;
+  background-color: #fff;
+  border-radius: 10px;
+  margin-top: 1rem;
 }
-.template-buttons div {
-    margin: 10px 0;
+
+.input-section {
+  margin-bottom: 1rem;
 }
+
+.template-buttons button,
+.voice-controls input,
 button {
-    margin: 2px;
-    padding: 5px 10px;
+  margin: 5px;
+  padding: 10px;
+  font-size: 16px;
 }
-textarea {
-    width: 95%;
-    margin-top: 10px;
-}
-#chat-response {
-    margin: 10px 0;
-    padding: 10px;
-    background: #fff;
-    border: 1px solid #ccc;
-}
-@media screen and (max-width: 600px) {
-    button {
-        display: block;
-        width: 100%;
-        margin: 4px 0;
-    }
-    textarea {
-        width: 100%;
-    }
+
+.chat-message {
+  margin: 0.5rem 0;
+  padding: 0.5rem;
+  background-color: #eee;
+  border-radius: 5px;
 }

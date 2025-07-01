@@ -2,68 +2,44 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8">
-  <title>AIみまくん - 外国人介護士支援チャット</title>
-  <link rel="stylesheet" href="/static/css/styles.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>介護支援チャットボット</title>
+  <link rel="stylesheet" href="/static/css/styles.css" />
 </head>
 <body>
-  <h1>AIみまくん - 外国人介護士支援チャット</h1>
-
-  <div class="template-buttons">
-    <div>
-      <strong>体調</strong>
-      <button onclick="sendTemplate('今日は調子はどうですか？')">今日は調子はどうですか？</button>
-      <button onclick="sendTemplate('痛みはありますか？')">痛みはありますか？</button>
-    </div>
-    <div>
-      <strong>服薬</strong>
-      <button onclick="sendTemplate('お薬はもう飲みましたか？')">お薬はもう飲みましたか？</button>
-      <button onclick="sendTemplate('飲み忘れはありませんか？')">飲み忘れはありませんか？</button>
-    </div>
-    <div>
-      <strong>排せつ</strong>
-      <button onclick="sendTemplate('排泄は順調ですか？')">排泄は順調ですか？</button>
-      <button onclick="sendTemplate('お手洗いは行きましたか？')">お手洗いは行きましたか？</button>
-    </div>
-    <div>
-      <strong>食事</strong>
-      <button onclick="sendTemplate('朝ごはんは食べましたか？')">朝ごはんは食べましたか？</button>
-      <button onclick="sendTemplate('好きな食べ物は何ですか？')">好きな食べ物は何ですか？</button>
-    </div>
-    <div>
-      <strong>睡眠</strong>
-      <button onclick="sendTemplate('昨夜はよく眠れましたか？')">昨夜はよく眠れましたか？</button>
-      <button onclick="sendTemplate('昼寝はしましたか？')">昼寝はしましたか？</button>
-    </div>
-  </div>
-
-  <div class="chat-container">
-    <div>
-      <label>🧑‍⚕️ 外国人介護士：</label>
-      <input type="text" id="input-caregiver" placeholder="メッセージを入力">
+  <div class="container">
+    <h1>介護支援チャットボット</h1>
+    <div class="input-section">
+      <label for="caregiverInput">介護士:</label>
+      <input type="text" id="caregiverInput" placeholder="介護士の発言を入力" />
       <button onclick="sendMessage('caregiver')">送信</button>
     </div>
-    <div>
-      <label>👴 被介護者：</label>
-      <input type="text" id="input-elderly" placeholder="メッセージを入力">
-      <button onclick="sendMessage('elderly')">送信</button>
+    <div class="input-section">
+      <label for="patientInput">被介護者:</label>
+      <input type="text" id="patientInput" placeholder="被介護者の発言を入力" />
+      <button onclick="sendMessage('patient')">送信</button>
     </div>
-    <select id="speaker-role">
-      <option value="caregiver">介護士</option>
-      <option value="elderly">被介護者</option>
-    </select>
-    <button onclick="startRecognition()">🎤 マイク開始</button>
-    <button onclick="saveToCSV()">📄 CSV保存</button>
-  </div>
 
-  <div>
-    <audio id="audioPlayer" controls></audio>
-    <label for="volumeSlider">音量：</label>
-    <input type="range" id="volumeSlider" min="0" max="1" step="0.1" value="1">
-    <label for="speedSlider">速度：</label>
-    <input type="range" id="speedSlider" min="0.5" max="1.5" step="0.1" value="1">
-  </div>
+    <div class="template-buttons">
+      <button onclick="sendTemplate('体調')">体調</button>
+      <button onclick="sendTemplate('排せつ')">排せつ</button>
+      <button onclick="sendTemplate('服薬')">服薬</button>
+      <button onclick="sendTemplate('食事')">食事</button>
+      <button onclick="sendTemplate('睡眠')">睡眠</button>
+    </div>
 
+    <div class="voice-controls">
+      <label>音量</label>
+      <input type="range" id="volumeSlider" min="0" max="1" step="0.1" value="1" />
+      <label>速度</label>
+      <input type="range" id="rateSlider" min="0.5" max="2" step="0.1" value="1" />
+    </div>
+
+    <button onclick="startRecognition()">🎤 マイク</button>
+
+    <div id="chatContainer"></div>
+  </div>
   <script src="/static/js/chatbot.js"></script>
 </body>
 </html>

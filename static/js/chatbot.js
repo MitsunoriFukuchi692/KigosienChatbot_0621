@@ -1,46 +1,53 @@
 
-function setMessage(text) {
-    document.getElementById("user-input").value = text;
-    speakText(text);
-}
+let volume = 1;
+let rate = 1;
 
-function sendMessage() {
-    const input = document.getElementById("user-input").value;
-    if (!input) return;
-    document.getElementById("chat-response").innerText = "送信中...";
-    fetch("/chat", {
-        method: "POST",
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify({message: input})
-    })
-    .then(res => res.json())
-    .then(data => {
-        document.getElementById("chat-response").innerText = data.response;
-        speakText(data.response);
-    });
-}
+document.getElementById("volumeSlider").addEventListener("input", (e) => {
+  volume = parseFloat(e.target.value);
+});
 
-function explainTerm() {
-    const input = document.getElementById("user-input").value;
-    if (!input) return;
-    fetch("/explain", {
-        method: "POST",
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify({term: input})
-    })
-    .then(res => res.json())
-    .then(data => {
-        document.getElementById("chat-response").innerText = data.explanation;
-        speakText(data.explanation);
-    });
-}
+document.getElementById("rateSlider").addEventListener("input", (e) => {
+  rate = parseFloat(e.target.value);
+});
 
 function speakText(text) {
-    const utterance = new SpeechSynthesisUtterance(text);
-    const volume = parseFloat(document.getElementById("volume").value);
-    const rate = parseFloat(document.getElementById("rate").value);
-    utterance.volume = volume;
-    utterance.rate = rate;
-    utterance.lang = "ja-JP";
-    window.speechSynthesis.speak(utterance);
+  const utterance = new SpeechSynthesisUtterance(text);
+  utterance.volume = volume;
+  utterance.rate = rate;
+  speechSynthesis.speak(utterance);
+}
+
+function sendMessage(sender) {
+  const inputId = sender === "caregiver" ? "caregiverInput" : "patientInput";
+  const input = document.getElementById(inputId);
+  const message = input.value.trim();
+  if (!message) return;
+  appendMessage(sender, message);
+  speakText(message);
+  input.value = "";
+}
+
+function sendTemplate(category) {
+  const message = `[${category}] テンプレート発言です`;
+  appendMessage("template", message);
+  speakText(message);
+}
+
+function appendMessage(sender, message) {
+  const container = document.getElementById("chatContainer");
+  const div = document.createElement("div");
+  div.className = "chat-message";
+  div.textContent = sender + ": " + message;
+  container.appendChild(div);
+}
+
+// 音声認識
+function startRecognition() {
+  const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+  recognition.lang = 'ja-JP';
+  recognition.start();
+  recognition.onresult = function (event) {
+    const transcript = event.results[0][0].transcript;
+    document.getElementById("caregiverInput").value = transcript;
+  };
 }
