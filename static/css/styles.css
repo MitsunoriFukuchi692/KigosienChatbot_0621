@@ -1,27 +1,17 @@
+
 body {
-  font-family: sans-serif;
-  background: #f8f8f8;
-  margin: 20px;
+    font-family: sans-serif;
+    padding: 1rem;
 }
-h1 {
-  font-size: 1.5em;
+.caregiver-input {
+    background-color: #e0f0ff;
 }
-.chat-area {
-  background: #fff;
-  padding: 10px;
-  border: 1px solid #ccc;
-  height: 150px;
-  overflow-y: auto;
-  margin-bottom: 10px;
+.patient-input {
+    background-color: #fff6cc;
 }
-input[type="text"] {
-  width: 60%;
-  margin: 5px;
+.template-buttons button {
+    margin: 0.2rem;
 }
-button {
-  margin: 5px;
-  padding: 5px 10px;
-}
-.controls {
-  margin-top: 10px;
+.term-explain {
+    margin: 1rem 0;
 }
