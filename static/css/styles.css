@@ -1,25 +1,83 @@
+
 body {
   font-family: sans-serif;
-  padding: 1em;
-  background: #f8f8f8;
+  background-color: #f7f7f7;
+  margin: 0;
+  padding: 0;
 }
-#chat-container p {
-  background: #e0f7fa;
-  padding: 0.5em;
-  border-radius: 5px;
+
+.container {
+  max-width: 600px;
+  margin: auto;
+  padding: 20px;
+  background: white;
+  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+  border-radius: 10px;
+}
+
+.input-section {
+  margin: 10px 0;
+}
+
+.input-section h3 {
+  margin-bottom: 5px;
+}
+
+.input-section textarea {
+  width: 100%;
+  height: 50px;
+  padding: 10px;
+  font-size: 16px;
+  resize: none;
+}
+
+.input-section button {
+  margin-top: 5px;
+  width: 100%;
+  padding: 8px;
+}
+
+.caregiver textarea {
+  background-color: #e0f0ff;
+}
+
+.careReceiver textarea {
+  background-color: #fff0d0;
+}
+
+.template-buttons button,
+.term-explain button,
+.mic-controls button {
+  margin: 4px 2px;
+  padding: 10px;
+}
+
+.chat-log {
+  margin-top: 20px;
+}
+
+.chat-message {
+  padding: 8px;
   margin: 5px 0;
+  border-radius: 5px;
 }
-input[type="text"] {
-  width: 60%;
-  padding: 0.5em;
+
+.chat-message.caregiver {
+  background-color: #d0ecff;
+  text-align: left;
 }
-button {
-  padding: 0.5em;
-  margin: 0.3em;
+
+.chat-message.careReceiver {
+  background-color: #fff4ce;
+  text-align: right;
 }
-@media (max-width: 600px) {
-  input[type="text"], button {
-    width: 100%;
-    margin-top: 0.5em;
-  }
+
+.chat-message.system {
+  background-color: #e6e6e6;
+  font-style: italic;
+  text-align: center;
+}
+
+.sliders {
+  margin: 10px 0;
 }

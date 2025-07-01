@@ -1,25 +1,55 @@
+
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8">
-  <title>AIみまくん 多言語介護チャットボット</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>多言語介護チャットボット</title>
   <link rel="stylesheet" href="/static/css/styles.css">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
 <body>
-  <h1>AIみまくん 多言語介護チャットボット</h1>
-  <div id="chat-container"></div>
-  <div>
-    <input type="text" id="termInput" placeholder="用語を入力してください">
-    <button onclick="explainTerm()">用語を説明</button>
+  <div class="container">
+    <h1>多言語介護チャットボット</h1>
+    
+    <div class="input-section caregiver">
+      <h3>👩‍⚕️ 介護士</h3>
+      <textarea id="caregiverInput" placeholder="介護士の入力..."></textarea>
+      <button onclick="sendMessage('caregiver')">送信</button>
+    </div>
+
+    <div class="input-section careReceiver">
+      <h3>🧓 被介護者</h3>
+      <textarea id="careReceiverInput" placeholder="被介護者の入力..."></textarea>
+      <button onclick="sendMessage('careReceiver')">送信</button>
+    </div>
+
+    <div class="mic-controls">
+      <button onclick="startRecognition()">🎤 マイク</button>
+    </div>
+
+    <div class="sliders">
+      <label for="volumeControl">音量:</label>
+      <input type="range" id="volumeControl" min="0" max="1" step="0.1" value="1">
+      <label for="speedControl">速度:</label>
+      <input type="range" id="speedControl" min="0.5" max="2" step="0.1" value="1">
+    </div>
+
+    <div class="template-buttons">
+      <button onclick="sendTemplate('体調')">体調</button>
+      <button onclick="sendTemplate('薬')">薬</button>
+      <button onclick="sendTemplate('排泄')">排泄</button>
+      <button onclick="sendTemplate('食事')">食事</button>
+      <button onclick="sendTemplate('睡眠')">睡眠</button>
+    </div>
+
+    <div class="term-explain">
+      <input type="text" id="termInput" placeholder="用語を入力してください...">
+      <button onclick="explainTerm()">用語を説明</button>
+    </div>
+
+    <div id="chatLog" class="chat-log"></div>
   </div>
-  <div>
-    <button onclick="sendTemplate('体調')">体調: 調子はいかがですか？</button>
-    <button onclick="sendTemplate('薬')">薬: お薬は飲みましたか？</button>
-    <button onclick="sendTemplate('排泄')">排泄: 排泄はどうでしたか？</button>
-    <button onclick="sendTemplate('食事')">食事: ご飯は食べましたか？</button>
-    <button onclick="sendTemplate('睡眠')">睡眠: よく眠れましたか？</button>
-  </div>
+
   <script src="/static/js/chatbot.js"></script>
 </body>
 </html>
