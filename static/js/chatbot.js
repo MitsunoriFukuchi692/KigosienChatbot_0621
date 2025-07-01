@@ -2,12 +2,13 @@
 let recognition;
 const synth = window.speechSynthesis;
 
-function startRecognition() {
+function startRecognition(sender) {
   recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
   recognition.lang = 'ja-JP';
   recognition.onresult = function(event) {
     const result = event.results[0][0].transcript;
-    document.getElementById('caregiverInput').value = result;
+    const inputId = sender === 'caregiver' ? 'caregiverInput' : 'careReceiverInput';
+    document.getElementById(inputId).value = result;
   };
   recognition.start();
 }
@@ -21,7 +22,7 @@ function speak(text) {
 }
 
 function sendMessage(sender) {
-  const input = sender === 'caregiver' ? document.getElementById('caregiverInput') : document.getElementById('careReceiverInput');
+  const input = document.getElementById(sender === 'caregiver' ? 'caregiverInput' : 'careReceiverInput');
   const message = input.value.trim();
   if (!message) return;
 
@@ -33,29 +34,41 @@ function sendMessage(sender) {
   speak(message);
 }
 
-function sendTemplate(category) {
-  const templates = {
-    '体調': '今日の体調はどうですか？',
-    '薬': 'お薬はもう飲みましたか？',
-    '排泄': 'トイレには行きましたか？',
-    '食事': 'ご飯は食べましたか？',
-    '睡眠': '昨夜はよく眠れましたか？'
+function showSubTemplates(category) {
+  const subTemplates = {
+    '体調': ['体調はどうですか？', '気になる所はありますか？'],
+    '薬': ['薬は飲みましたか？', '飲み忘れていませんか？'],
+    '排泄': ['トイレに行きましたか？'],
+    '食事': ['ご飯を食べましたか？'],
+    '睡眠': ['昨夜は眠れましたか？']
   };
-  const message = templates[category];
-  const div = document.createElement('div');
-  div.className = 'chat-message caregiver';
-  div.innerText = message;
-  document.getElementById('chatLog').appendChild(div);
-  speak(message);
+  const container = document.getElementById('subTemplates');
+  container.innerHTML = '';
+  subTemplates[category].forEach(text => {
+    const btn = document.createElement('button');
+    btn.textContent = text;
+    btn.onclick = () => {
+      const div = document.createElement('div');
+      div.className = 'chat-message caregiver';
+      div.innerText = text;
+      document.getElementById('chatLog').appendChild(div);
+      speak(text);
+    };
+    container.appendChild(btn);
+  });
 }
 
 function explainTerm() {
   const term = document.getElementById('termInput').value.trim();
   if (!term) return;
-  const explanation = `「${term}」の意味を調べています...`; // 仮
-  const div = document.createElement('div');
-  div.className = 'chat-message system';
-  div.innerText = explanation;
-  document.getElementById('chatLog').appendChild(div);
-  speak(explanation);
+  fetch(`/explain?term=${encodeURIComponent(term)}`)
+    .then(res => res.json())
+    .then(data => {
+      const explanation = data.explanation || `「${term}」の意味を調べています...`;
+      const div = document.createElement('div');
+      div.className = 'chat-message system';
+      div.innerText = explanation;
+      document.getElementById('chatLog').appendChild(div);
+      speak(explanation);
+    });
 }

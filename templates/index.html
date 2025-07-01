@@ -2,54 +2,40 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>多言語介護チャットボット</title>
-  <link rel="stylesheet" href="/static/css/styles.css">
+    <meta charset="UTF-8">
+    <title>介護支援チャット</title>
+    <link rel="stylesheet" href="/static/css/styles.css">
 </head>
 <body>
-  <div class="container">
-    <h1>多言語介護チャットボット</h1>
-    
-    <div class="input-section caregiver">
-      <h3>👩‍⚕️ 介護士</h3>
-      <textarea id="caregiverInput" placeholder="介護士の入力..."></textarea>
-      <button onclick="sendMessage('caregiver')">送信</button>
-    </div>
-
-    <div class="input-section careReceiver">
-      <h3>🧓 被介護者</h3>
-      <textarea id="careReceiverInput" placeholder="被介護者の入力..."></textarea>
-      <button onclick="sendMessage('careReceiver')">送信</button>
-    </div>
-
-    <div class="mic-controls">
-      <button onclick="startRecognition()">🎤 マイク</button>
-    </div>
-
-    <div class="sliders">
-      <label for="volumeControl">音量:</label>
-      <input type="range" id="volumeControl" min="0" max="1" step="0.1" value="1">
-      <label for="speedControl">速度:</label>
-      <input type="range" id="speedControl" min="0.5" max="2" step="0.1" value="1">
-    </div>
-
-    <div class="template-buttons">
-      <button onclick="sendTemplate('体調')">体調</button>
-      <button onclick="sendTemplate('薬')">薬</button>
-      <button onclick="sendTemplate('排泄')">排泄</button>
-      <button onclick="sendTemplate('食事')">食事</button>
-      <button onclick="sendTemplate('睡眠')">睡眠</button>
-    </div>
-
-    <div class="term-explain">
-      <input type="text" id="termInput" placeholder="用語を入力してください...">
-      <button onclick="explainTerm()">用語を説明</button>
-    </div>
-
+<div class="container">
     <div id="chatLog" class="chat-log"></div>
-  </div>
-
-  <script src="/static/js/chatbot.js"></script>
+    <div class="input-area caregiver-area">
+        <textarea id="caregiverInput" placeholder="介護士の入力欄"></textarea>
+        <button onclick="startRecognition('caregiver')">🎤</button>
+        <button onclick="sendMessage('caregiver')">送信</button>
+    </div>
+    <div class="input-area receiver-area">
+        <textarea id="careReceiverInput" placeholder="被介護者の入力欄"></textarea>
+        <button onclick="startRecognition('receiver')">🎤</button>
+        <button onclick="sendMessage('receiver')">送信</button>
+    </div>
+    <div class="template-panel">
+        <button onclick="showSubTemplates('体調')">体調</button>
+        <button onclick="showSubTemplates('薬')">薬</button>
+        <button onclick="showSubTemplates('排泄')">排泄</button>
+        <button onclick="showSubTemplates('食事')">食事</button>
+        <button onclick="showSubTemplates('睡眠')">睡眠</button>
+    </div>
+    <div id="subTemplates"></div>
+    <div class="term-explanation">
+        <input type="text" id="termInput" placeholder="説明したい用語">
+        <button onclick="explainTerm()">用語を説明</button>
+    </div>
+    <div class="sliders">
+        音量：<input type="range" id="volumeControl" min="0" max="1" step="0.1" value="1">
+        速度：<input type="range" id="speedControl" min="0.5" max="2" step="0.1" value="1">
+    </div>
+</div>
+<script src="/static/js/chatbot.js"></script>
 </body>
 </html>
