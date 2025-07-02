@@ -1,15 +1,46 @@
-
 body {
-    font-family: sans-serif;
-    margin: 20px;
+  font-family: sans-serif;
+  background: #f7f7f7;
+  margin: 0;
+  padding: 1em;
 }
-button, label, input, textarea {
-    margin: 5px;
+.chat-container {
+  height: 300px;
+  overflow-y: auto;
+  background: white;
+  border: 1px solid #ccc;
+  padding: 10px;
+  margin-bottom: 1em;
 }
-#chatLog {
-    border: 1px solid #ccc;
-    padding: 10px;
-    height: 150px;
-    overflow-y: auto;
-    background-color: #f8f8f8;
+.chat-bubble {
+  padding: 8px;
+  margin: 5px;
+  border-radius: 10px;
+  max-width: 80%;
+}
+.chat-bubble.caregiver {
+  background-color: #d0e6ff;
+  text-align: left;
+}
+.chat-bubble.patient {
+  background-color: #fff3b0;
+  text-align: right;
+}
+.input-container {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.input-section {
+  display: flex;
+  flex-direction: column;
+}
+textarea {
+  height: 50px;
+}
+.template-panel button {
+  margin: 3px;
+}
+.term-section {
+  margin-top: 10px;
 }
