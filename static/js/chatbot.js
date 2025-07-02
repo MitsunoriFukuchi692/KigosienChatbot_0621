@@ -4,32 +4,42 @@ const chatContainer = document.getElementById('chat-window');
 const caregiverInput = document.getElementById('caregiver-input');
 const patientInput   = document.getElementById('patient-input');
 
-// メッセージ描画。speaker は必ず文字列で渡す
+// メッセージ描画。speaker および text の undefined を防ぐ
 function appendChatLine(speaker, text) {
+  const safeSpeaker = speaker ?? '(no speaker)';
+  const safeText = text ?? '(返答なし)';
   const p = document.createElement('p');
-  p.textContent = `${speaker}: ${text}`;
+  p.textContent = `${safeSpeaker}: ${safeText}`;
   chatContainer.appendChild(p);
   chatContainer.scrollTop = chatContainer.scrollHeight;
 }
 
 // ChatGPT へのリクエスト共通部
 async function callApi(message, role) {
-  // デバッグ用にレスポンスをログ
   console.log('🔍 API call:', { message, role });
-  const res = await fetch('/chat', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ message, role })
-  });
-  const data = await res.json();
-  console.log('🔍 API response:', data);
+  try {
+    const res = await fetch('/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message, role })
+    });
+    const data = await res.json();
+    console.log('🔍 API response (parsed):', data);
 
-  // v1 フォーマットにも対応し、NULLISH COALESCING で必ず文字列を返す
-  const content = data.choices?.[0]?.message?.content
-                ?? data.reply
-                ?? data.message
-                ?? data.text;
-  return content ?? '(返答なし)';
+    // レスポンスに応じて適切なキーを参照
+    let content =
+      data.choices?.[0]?.message?.content ??
+      data.choices?.[0]?.text ??
+      data.reply ??
+      data.message ??
+      data.text;
+
+    console.log('🔍 Parsed content:', content);
+    return content ?? '(返答なし)';
+  } catch (e) {
+    console.error('🚨 callApi エラー:', e);
+    return '(通信エラー)';
+  }
 }
 
 // 介護士→AI（patient ロール）＋表示
@@ -40,6 +50,7 @@ async function sendCaregiverMessage() {
   caregiverInput.value = '';
 
   const reply = await callApi(msg, 'caregiver');
+  console.log('🔍 Caregiver→Patient reply:', reply);
   appendChatLine('被介護者', reply);
 }
 
@@ -51,9 +62,10 @@ async function sendPatientMessage() {
   patientInput.value = '';
 
   const reply = await callApi(msg, 'patient');
+  console.log('🔍 Patient→Caregiver reply:', reply);
   appendChatLine('介護士', reply);
 }
 
-// ボタンへの紐づけ（もしonclickでなくaddEventListenerを使う場合）
+// ボタンへの紐づけ
 document.getElementById('send-caregiver').addEventListener('click', sendCaregiverMessage);
 document.getElementById('send-patient').addEventListener('click', sendPatientMessage);
