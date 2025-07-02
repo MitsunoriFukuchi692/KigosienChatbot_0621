@@ -1,71 +1,72 @@
-from flask import Flask, request, jsonify, render_template
-import openai
-import os
-from dotenv import load_dotenv
 
-load_dotenv()
+import os
+from flask import Flask, request, jsonify, render_template
+from flask_cors import CORS
+from openai import OpenAI
+from datetime import datetime
 
 app = Flask(__name__)
-openai.api_key = os.getenv("OPENAI_API_KEY")
+CORS(app)
+
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 @app.route("/")
-def index():
-    return render_template("index.html")
-
 @app.route("/ja/")
-def index_ja():
+def index():
     return render_template("index.html")
 
 @app.route("/chat", methods=["POST"])
 def chat():
     data = request.get_json()
-    message = data.get("message", "")
-    role = data.get("role", "介護士")
-
+    messages = data.get("messages", [])
     try:
-        response = openai.ChatCompletion.create(
+        response = client.chat.completions.create(
             model="gpt-3.5-turbo",
-            messages=[
-                {"role": "system", "content": f"{role}として自然に会話してください"},
-                {"role": "user", "content": message}
-            ]
+            messages=messages
         )
-        reply = response.choices[0].message["content"].strip()
-        return jsonify({"response": reply})
+        return jsonify({"response": response.choices[0].message.content})
     except Exception as e:
-        return jsonify({"response": f"エラーが発生しました：{str(e)}"})
+        return jsonify({"error": str(e)}), 500
 
 @app.route("/explain", methods=["POST"])
 def explain():
     data = request.get_json()
     term = data.get("term", "")
     try:
-        response = openai.ChatCompletion.create(
+        messages = [
+            {"role": "system", "content": "日本語で30文字以内で簡潔に専門用語を説明してください。"},
+            {"role": "user", "content": f"{term}とは？"}
+        ]
+        response = client.chat.completions.create(
             model="gpt-3.5-turbo",
-            messages=[
-                {"role": "system", "content": "日本語で30文字以内で簡潔に専門用語を説明してください。"},
-                {"role": "user", "content": f"{term}とは？"}
-            ]
+            messages=messages
         )
-        explanation = response.choices[0].message["content"].strip()
+        explanation = response.choices[0].message.content.strip()
         return jsonify({"explanation": explanation})
     except Exception as e:
-        return jsonify({"explanation": f"取得に失敗しました：{str(e)}"})
+        return jsonify({"error": str(e)}), 500
 
-@app.route("/templates")
-def templates():
-    return jsonify([
+@app.route("/templates", methods=["GET"])
+def get_templates():
+    templates = [
         {"category": "体調", "phrases": ["体調はどうですか？", "気になるところはありますか？"]},
-        {"category": "薬", "phrases": ["薬は飲みましたか？", "飲み忘れはないですか？"]},
-        {"category": "食事", "phrases": ["ごはんは食べましたか？", "食欲はありますか？"]},
-        {"category": "睡眠", "phrases": ["昨晩はよく眠れましたか？", "睡眠に問題はありますか？"]}
-    ])
+        {"category": "薬", "phrases": ["薬は飲みましたか？", "飲み忘れはありませんか？"]}
+    ]
+    return jsonify(templates)
 
 @app.route("/save_log", methods=["POST"])
 def save_log():
     data = request.get_json()
-    print("保存されたログ:", data)
-    return jsonify({"status": "保存しました"})
+    log_dir = "logs"
+    os.makedirs(log_dir, exist_ok=True)
+    now = datetime.now().strftime("%Y%m%d_%H%M%S")
+    file_path = os.path.join(log_dir, f"log_{now}.txt")
+    with open(file_path, "w", encoding="utf-8") as f:
+        f.write(f"ユーザー名: {data.get('username', '')}\n")
+        f.write(f"日時: {data.get('timestamp', '')}\n")
+        f.write(f"入力: {data.get('input', '')}\n")
+        f.write(f"返答: {data.get('response', '')}\n")
+    return jsonify({"status": "success"})
 
 if __name__ == "__main__":
     app.run(debug=True)
