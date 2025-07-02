@@ -3,50 +3,50 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>多言語介護支援チャットボット</title>
+  <title>AIみまくん - 多言語介護チャット</title>
   <link rel="stylesheet" href="/static/css/styles.css" />
 </head>
 <body>
-  <div class="container">
-    <h1>多言語介護支援チャットボット</h1>
+  <header>
+    <h1>AIみまくん 介護支援チャット</h1>
+  </header>
 
-    <div class="chat-section">
-      <div class="chat-window" id="chat-window"></div>
-      
-      <div class="input-section">
-        <textarea id="caregiver-input" placeholder="介護士の発言を入力..."></textarea>
+  <main>
+    <div class="chat-container">
+      <div id="chat-window"></div>
+
+      <div class="input-panel">
+        <h3>介護士</h3>
+        <input type="text" id="caregiver-input" placeholder="介護士の入力..." />
+        <button onclick="startCaregiverRecognition()">🎤</button>
         <button onclick="sendMessage('caregiver')">送信</button>
-        <button onclick="startRecognition('caregiver')">🎤</button>
-        
-        <textarea id="patient-input" placeholder="被介護者の返答を入力..."></textarea>
+        <div class="template-buttons" id="caregiver-templates"></div>
+      </div>
+
+      <div class="input-panel">
+        <h3>被介護者</h3>
+        <input type="text" id="patient-input" placeholder="被介護者の入力..." />
+        <button onclick="startPatientRecognition()">🎤</button>
         <button onclick="sendMessage('patient')">送信</button>
-        <button onclick="startRecognition('patient')">🎤</button>
+        <div class="template-buttons" id="patient-templates"></div>
       </div>
 
-      <div class="template-buttons">
-        <h3>テンプレート選択</h3>
-        <div class="template-group">
-          <button onclick="selectTemplate('体調')">体調</button>
-          <button onclick="selectTemplate('薬')">薬</button>
-          <button onclick="selectTemplate('排便')">排便</button>
-          <button onclick="selectTemplate('睡眠')">睡眠</button>
-          <button onclick="selectTemplate('食事')">食事</button>
-        </div>
-        <div id="sub-template-buttons"></div>
+      <div class="controls">
+        <label>読み上げ音量：<input type="range" id="volume-control" min="0" max="2" step="0.1" value="1" /></label>
+        <label>読み上げ速度：<input type="range" id="speed-control" min="0.5" max="2" step="0.1" value="1" /></label>
       </div>
 
-      <div class="explanation-section">
-        <input type="text" id="explain-word" placeholder="用語を入力" />
+      <div class="explanation">
+        <input type="text" id="explanation-input" placeholder="用語を入力" />
         <button onclick="explainTerm()">用語を説明</button>
-        <p id="explanation-result"></p>
+        <p id="explanation-text"></p>
       </div>
 
-      <div class="audio-settings">
-        <label>音声速度：<input type="range" id="rateControl" min="0.5" max="2" step="0.1" value="1"></label>
-        <label>音量：<input type="range" id="volumeControl" min="0" max="2" step="0.1" value="1.5"></label>
+      <div class="log-save">
+        <button onclick="saveLog()">📝 会話ログ保存</button>
       </div>
     </div>
-  </div>
+  </main>
 
   <script src="/static/js/chatbot.js"></script>
 </body>
