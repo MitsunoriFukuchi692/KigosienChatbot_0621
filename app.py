@@ -12,6 +12,10 @@ openai.api_key = os.getenv("OPENAI_API_KEY")
 def index():
     return render_template("index.html")
 
+@app.route("/ja/")
+def index_ja():
+    return render_template("index.html")
+
 @app.route("/chat", methods=["POST"])
 def chat():
     data = request.get_json()
