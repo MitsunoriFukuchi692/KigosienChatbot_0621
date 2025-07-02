@@ -14,36 +14,42 @@ function appendLine(role, text) {
 // API呼び出し
 async function callChat(message, role) {
   console.log('▶️ callChat:', { message, role });
-  const res = await fetch('chat', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ message, role })
-  });
-  const data = await res.json();
-  console.log('◀️ response:', data);
-  if (data.error) {
-    appendLine('Error', data.error);
-    return;
+  try {
+    const res = await fetch('chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message, role })
+    });
+    const data = await res.json();
+    console.log('◀️ response:', data);
+
+    if (data.error) {
+      return `Error: ${data.error}`;
+    }
+
+    return data.reply ?? '(返答なし)';
+  } catch (e) {
+    console.error('🚨 fetch error:', e);
+    return '(通信エラー)';
   }
-  const reply = data.reply ?? '(返答なし)';
-  return reply;
 }
 
-// 送信ボタンのハンドラ
+// 介護士送信
 document.getElementById('send-caregiver').addEventListener('click', async () => {
   const msg = caregiverInput.value.trim();
   if (!msg) return;
   appendLine('介護士', msg);
   caregiverInput.value = '';
-  const r = await callChat(msg, 'caregiver');
-  appendLine('被介護者', r);
+  const reply = await callChat(msg, 'caregiver');
+  appendLine('被介護者', reply);
 });
 
+// 被介護者送信
 document.getElementById('send-patient').addEventListener('click', async () => {
   const msg = patientInput.value.trim();
   if (!msg) return;
   appendLine('被介護者', msg);
   patientInput.value = '';
-  const r = await callChat(msg, 'patient');
-  appendLine('介護士', r);
+  const reply = await callChat(msg, 'patient');
+  appendLine('介護士', reply);
 });
