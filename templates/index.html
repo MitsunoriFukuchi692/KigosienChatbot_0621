@@ -2,53 +2,29 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>AI介護支援ボット</title>
-  <link rel="stylesheet" href="/static/css/styles.css" />
+  <title>介護チャット</title>
+  <style>
+    /* 必要最小限のスタイルだけここに記載 */
+    #chat-window { height: 300px; overflow-y: auto; background: #eef; padding: 10px; }
+    .input-panel { margin-top: 10px; }
+  </style>
 </head>
 <body>
-  <header>
-    <h1>AI介護支援ボット</h1>
-  </header>
+  <div id="chat-window"></div>
 
-  <main>
-    <div class="chat-container">
-      <div id="chat-window"></div>
+  <div class="input-panel">
+    <h3>介護士</h3>
+    <input type="text" id="caregiver-input" placeholder="介護士の入力…" />
+    <button id="send-caregiver">送信</button>
+  </div>
 
-      <div class="input-panel">
-        <h3>介護士</h3>
-        <input type="text" id="caregiver-input" placeholder="介護士の入力..." />
-        <button onclick="startCaregiverRecognition()">🎤</button>
-        <button onclick="sendCaregiverMessage()">送信</button>
-        <div class="template-buttons" id="caregiver-templates"></div>
-      </div>
+  <div class="input-panel">
+    <h3>被介護者</h3>
+    <input type="text" id="patient-input" placeholder="被介護者の入力…" />
+    <button id="send-patient">送信</button>
+  </div>
 
-      <div class="input-panel">
-        <h3>被介護者</h3>
-        <input type="text" id="patient-input" placeholder="被介護者の入力..." />
-        <button onclick="startPatientRecognition()">🎤</button>
-        <button onclick="sendPatientMessage()">送信</button>
-        <div class="template-buttons" id="patient-templates"></div>
-      </div>
-
-      <div class="controls">
-        <label>読み上げ音量：<input type="range" id="volume-control" min="0" max="2" step="0.1" value="1" /></label>
-        <label>読み上げ速度：<input type="range" id="speed-control" min="0.5" max="2" step="0.1" value="1" /></label>
-      </div>
-
-      <div class="explanation">
-        <input type="text" id="explanation-input" placeholder="用語を入力" />
-        <button onclick="explainTerm()">用語を説明</button>
-        <p id="explanation-text"></p>
-      </div>
-
-      <div class="log-save">
-        <button onclick="saveLog()">📝 会話ログ保存</button>
-      </div>
-    </div>
-  </main>
-　
-　<script src="/static/js/chatbot.js"></script>
-  <!--<script src="/static/js/chatbot.js"></script>-->
+  <!-- 末尾にスクリプトを読み込む -->
+  <script src="/static/js/chatbot.js?v=1"></script>
 </body>
 </html>
