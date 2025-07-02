@@ -14,23 +14,25 @@ function appendChatLine(speaker, text) {
 
 // ChatGPT へのリクエスト共通部
 async function callApi(message, role) {
+  // デバッグ用にレスポンスをログ
+  console.log('🔍 API call:', { message, role });
   const res = await fetch('/chat', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ message, role })
   });
   const data = await res.json();
-  // v1 フォーマットにも対応
-  return (
-    data.choices?.[0]?.message?.content ??
-    data.reply ??
-    data.message ??
-    data.text ??
-    '(返答なし)'
-  );
+  console.log('🔍 API response:', data);
+
+  // v1 フォーマットにも対応し、NULLISH COALESCING で必ず文字列を返す
+  const content = data.choices?.[0]?.message?.content
+                ?? data.reply
+                ?? data.message
+                ?? data.text;
+  return content ?? '(返答なし)';
 }
 
-// 介護士→AI（被介護者ロール）＋表示
+// 介護士→AI（patient ロール）＋表示
 async function sendCaregiverMessage() {
   const msg = caregiverInput.value.trim();
   if (!msg) return;
@@ -41,7 +43,7 @@ async function sendCaregiverMessage() {
   appendChatLine('被介護者', reply);
 }
 
-// 被介護者→AI（介護士ロール）＋表示
+// 被介護者→AI（caregiver ロール）＋表示
 async function sendPatientMessage() {
   const msg = patientInput.value.trim();
   if (!msg) return;
@@ -52,7 +54,6 @@ async function sendPatientMessage() {
   appendChatLine('介護士', reply);
 }
 
-// ボタンに紐づけ済みなので、addEventListener は不要です。
-// もし onclick を外したい場合は、ここで紐づけてもOKです。
-// document.getElementById('send-caregiver').addEventListener('click', sendCaregiverMessage);
-// document.getElementById('send-patient').addEventListener('click',   sendPatientMessage);
+// ボタンへの紐づけ（もしonclickでなくaddEventListenerを使う場合）
+document.getElementById('send-caregiver').addEventListener('click', sendCaregiverMessage);
+document.getElementById('send-patient').addEventListener('click', sendPatientMessage);
