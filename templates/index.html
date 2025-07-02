@@ -1,47 +1,45 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
   <title>AIみまくん 多言語介護チャットボット</title>
-  <link rel="stylesheet" href="/static/css/styles.css" />
+  <link rel="stylesheet" href="/static/css/styles.css">
 </head>
 <body>
   <h1>AIみまくん 多言語介護チャットボット</h1>
 
   <div>
-    <input type="text" id="explain-term" placeholder="用語を入力してください" />
+    <input type="text" id="termInput" placeholder="用語を入力してください">
     <button onclick="explainTerm()">用語を説明</button>
+    <p id="termExplanation"></p>
   </div>
-
-  <div id="template-buttons">
-    <button onclick="showSubOptions('体調')">体調</button>
-    <button onclick="showSubOptions('薬')">薬</button>
-    <button onclick="showSubOptions('排泄')">排泄</button>
-    <button onclick="showSubOptions('食事')">食事</button>
-    <button onclick="showSubOptions('睡眠')">睡眠</button>
-  </div>
-  <div id="sub-options"></div>
 
   <div>
-    <label for="speaker-role">🎤</label>
-    <select id="speaker-role">
-      <option value="介護士">介護士</option>
-      <option value="被介護者">被介護者</option>
-    </select>
-    <button onclick="startRecognition()">マイク開始</button>
-    <button onclick="saveToCSV()">📁 CSV保存</button>
+    <button onclick="showSubTemplates('体調')">体調</button>
+    <button onclick="showSubTemplates('薬')">薬</button>
+    <button onclick="showSubTemplates('排泄')">排泄</button>
+    <button onclick="showSubTemplates('食事')">食事</button>
+    <button onclick="showSubTemplates('睡眠')">睡眠</button>
   </div>
 
-  <div id="chat-window"></div>
+  <div id="subTemplateArea"></div>
 
-  <textarea id="user-input" rows="2" placeholder="メッセージを入力"></textarea>
+  <div>
+    <label><input type="radio" name="role" value="介護士" checked>介護士</label>
+    <label><input type="radio" name="role" value="被介護者">被介護者</label>
+    <button onclick="startMic()">マイク開始</button>
+    <button onclick="saveCSV()">CSV保存</button>
+  </div>
+
+  <div id="chatLog"></div>
+
+  <textarea id="inputArea" placeholder="メッセージを入力"></textarea>
   <button onclick="sendMessage()">送信</button>
 
   <div>
-    音量：<input type="range" id="volume" min="0" max="1" step="0.1" value="1" />
-    速さ：<input type="range" id="rate" min="0.5" max="2" step="0.1" value="1" />
-    <label><input type="checkbox" id="slowPlayback" />ゆっくり再生</label>
+    音量：<input type="range" id="volumeSlider" min="0" max="1" step="0.1" value="1">
+    速さ：<input type="range" id="speedSlider" min="0.5" max="2" step="0.1" value="1">
+    <label><input type="checkbox" id="slowPlayback">ゆっくり再生</label>
   </div>
 
   <script src="/static/js/chatbot.js"></script>

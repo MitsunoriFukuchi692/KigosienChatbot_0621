@@ -1,53 +1,15 @@
 
 body {
-  font-family: sans-serif;
-  margin: 0;
-  padding: 10px;
-  background-color: #f0f0f0;
+    font-family: sans-serif;
+    margin: 20px;
 }
-.container {
-  max-width: 600px;
-  margin: auto;
+button, label, input, textarea {
+    margin: 5px;
 }
-.chat-log {
-  height: 300px;
-  overflow-y: auto;
-  background: white;
-  padding: 10px;
-  margin-bottom: 10px;
-}
-.chat-message {
-  padding: 5px;
-  margin-bottom: 5px;
-}
-.chat-message.caregiver {
-  background-color: #cce5ff;
-}
-.chat-message.receiver {
-  background-color: #fff3cd;
-}
-.chat-message.system {
-  background-color: #e2e3e5;
-}
-.input-area {
-  display: flex;
-  gap: 5px;
-  margin-bottom: 10px;
-}
-.input-area textarea {
-  flex: 1;
-}
-.template-panel, .sliders {
-  margin: 10px 0;
-}
-.template-panel button, .term-explanation button, #subTemplates button {
-  margin: 3px;
-}
-@media screen and (max-width: 480px) {
-  .input-area {
-    flex-direction: column;
-  }
-  .chat-log {
-    height: 200px;
-  }
+#chatLog {
+    border: 1px solid #ccc;
+    padding: 10px;
+    height: 150px;
+    overflow-y: auto;
+    background-color: #f8f8f8;
 }
