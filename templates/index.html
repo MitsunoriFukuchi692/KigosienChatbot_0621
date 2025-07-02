@@ -1,41 +1,38 @@
+
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8">
-  <title>AIみまくん介護チャット</title>
-  <link rel="stylesheet" href="/static/css/styles.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>介護支援チャットボット</title>
+  <link rel="stylesheet" href="/static/css/styles.css" />
 </head>
 <body>
-  <h1>AIみまくん 多言語介護チャット</h1>
-
-  <div class="chat-container" id="chat-container"></div>
-
-  <div class="input-container">
-    <div class="input-section caregiver">
-      <label>介護士</label>
-      <textarea id="input-caregiver" placeholder="介護士が話す内容を入力"></textarea>
-      <button onclick="sendMessage('caregiver')">送信</button>
-      <button onclick="startRecognition('caregiver')">🎤</button>
-      <div id="caregiver-templates" class="template-panel"></div>
+  <div class="container">
+    <h1>AIみまくん - 介護支援チャットボット</h1>
+    <div class="chat-container" id="chat-container"></div>
+    <div class="controls">
+      <textarea id="user-input" placeholder="ここに入力..."></textarea>
+      <button id="send-button">送信</button>
+      <button id="mic-button">🎤</button>
     </div>
-
-    <div class="input-section patient">
-      <label>被介護者</label>
-      <textarea id="input-patient" placeholder="被介護者の返事を入力"></textarea>
-      <button onclick="sendMessage('patient')">送信</button>
-      <button onclick="startRecognition('patient')">🎤</button>
-      <div id="patient-templates" class="template-panel"></div>
+    <div class="template-buttons">
+      <button class="category-button" data-category="体調">体調</button>
+      <button class="category-button" data-category="薬">薬</button>
+      <button class="category-button" data-category="排便">排便</button>
+      <button class="category-button" data-category="睡眠">睡眠</button>
+    </div>
+    <div id="phrase-options" class="phrase-options"></div>
+    <div class="explain-area">
+      <input type="text" id="term-input" placeholder="用語を入力">
+      <button id="explain-button">用語を説明</button>
+      <p id="term-explanation"></p>
+    </div>
+    <div class="tts-controls">
+      <label>音量</label><input type="range" id="volume" min="0" max="1" step="0.1" value="1">
+      <label>速度</label><input type="range" id="rate" min="0.5" max="2" step="0.1" value="1">
     </div>
   </div>
-
-  <div class="term-section">
-    <input type="text" id="term-input" placeholder="用語を入力">
-    <button onclick="explainTerm()">用語を説明</button>
-    <p id="term-result"></p>
-  </div>
-
-  <button onclick="saveLog()">💾 ログ保存</button>
-
   <script src="/static/js/chatbot.js"></script>
 </body>
 </html>

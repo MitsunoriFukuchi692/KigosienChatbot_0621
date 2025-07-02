@@ -1,87 +1,81 @@
-let chatContainer = document.getElementById("chat-container");
-let termResult = document.getElementById("term-result");
 
-function sendMessage(role) {
-  const input = document.getElementById(`input-${role}`);
-  const message = input.value.trim();
-  if (!message) return;
+const userInput = document.getElementById("user-input");
+const sendButton = document.getElementById("send-button");
+const micButton = document.getElementById("mic-button");
+const chatContainer = document.getElementById("chat-container");
+const explainButton = document.getElementById("explain-button");
+const termInput = document.getElementById("term-input");
+const termExplanation = document.getElementById("term-explanation");
+const phraseOptions = document.getElementById("phrase-options");
 
-  const bubble = document.createElement("div");
-  bubble.className = `chat-bubble ${role}`;
-  bubble.textContent = `${role === "caregiver" ? "介護士" : "被介護者"}：${message}`;
-  chatContainer.appendChild(bubble);
-  chatContainer.scrollTop = chatContainer.scrollHeight;
-  input.value = "";
+const volumeControl = document.getElementById("volume");
+const rateControl = document.getElementById("rate");
 
-  // 音声読み上げ
-  const utter = new SpeechSynthesisUtterance(message);
-  utter.lang = "ja-JP";
-  speechSynthesis.speak(utter);
-}
+const templates = {
+  "体調": ["体調はどうですか？", "気になる所はありますか？"],
+  "薬": ["薬は飲みましたか？", "飲み忘れはありませんか？"],
+  "排便": ["今日は排便がありましたか？", "便の調子はどうですか？"],
+  "睡眠": ["昨夜はよく眠れましたか？", "今朝は何時に起きましたか？"]
+};
 
-function startRecognition(role) {
-  if (!('webkitSpeechRecognition' in window)) return;
-  const recognition = new webkitSpeechRecognition();
-  recognition.lang = "ja-JP";
-  recognition.start();
-  recognition.onresult = function (e) {
-    document.getElementById(`input-${role}`).value = e.results[0][0].transcript;
-  };
-}
+document.querySelectorAll(".category-button").forEach(button => {
+  button.addEventListener("click", () => {
+    const category = button.dataset.category;
+    phraseOptions.innerHTML = "";
+    templates[category].forEach(phrase => {
+      const p = document.createElement("button");
+      p.textContent = phrase;
+      p.addEventListener("click", () => {
+        userInput.value = phrase;
+      });
+      phraseOptions.appendChild(p);
+    });
+  });
+});
 
-function explainTerm() {
-  const term = document.getElementById("term-input").value.trim();
-  if (!term) return;
-  fetch("/explain", {
+sendButton.onclick = () => {
+  const text = userInput.value;
+  if (!text) return;
+  appendMessage("👤", text);
+  fetch("/chat", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ term })
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({message: text})
   })
   .then(res => res.json())
   .then(data => {
-    termResult.textContent = data.explanation || "説明できませんでした。";
+    appendMessage("🤖", data.response);
+    speakText(data.response);
   });
-}
-
-function saveLog() {
-  const lines = Array.from(chatContainer.children).map(div => div.textContent);
-  const blob = new Blob([lines.join("\n")], { type: "text/plain" });
-  const a = document.createElement("a");
-  a.href = URL.createObjectURL(blob);
-  a.download = "chat_log.txt";
-  a.click();
-}
-
-// テンプレート例（カテゴリ毎に追加可能）
-const templates = {
-  caregiver: {
-    "体調": ["体調はどうですか？", "痛みはありますか？"],
-    "食事": ["ご飯は食べましたか？", "食欲はありますか？"]
-  },
-  patient: {
-    "返事": ["はい、元気です", "いいえ、少し痛いです"]
-  }
+  userInput.value = "";
 };
 
-function loadTemplates() {
-  ["caregiver", "patient"].forEach(role => {
-    const container = document.getElementById(`${role}-templates`);
-    Object.entries(templates[role]).forEach(([category, phrases]) => {
-      const btn = document.createElement("button");
-      btn.textContent = category;
-      btn.onclick = () => {
-        container.innerHTML = "";
-        phrases.forEach(phrase => {
-          const sub = document.createElement("button");
-          sub.textContent = phrase;
-          sub.onclick = () => {
-            document.getElementById(`input-${role}`).value = phrase;
-          };
-          container.appendChild(sub);
-        });
-      };
-      container.appendChild(btn);
-    });
-  });
+function appendMessage(sender, text) {
+  const msg = document.createElement("div");
+  msg.className = "message";
+  msg.innerHTML = `<strong>${sender}</strong>: ${text}`;
+  chatContainer.appendChild(msg);
+  chatContainer.scrollTop = chatContainer.scrollHeight;
 }
-document.addEventListener("DOMContentLoaded", loadTemplates);
+
+explainButton.onclick = () => {
+  const term = termInput.value;
+  if (!term) return;
+  fetch("/explain", {
+    method: "POST",
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({term})
+  })
+  .then(res => res.json())
+  .then(data => {
+    termExplanation.textContent = data.explanation;
+    speakText(data.explanation);
+  });
+};
+
+function speakText(text) {
+  const utterance = new SpeechSynthesisUtterance(text);
+  utterance.volume = parseFloat(volumeControl.value);
+  utterance.rate = parseFloat(rateControl.value);
+  speechSynthesis.speak(utterance);
+}

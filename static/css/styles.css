@@ -1,46 +1,44 @@
+
 body {
   font-family: sans-serif;
-  background: #f7f7f7;
   margin: 0;
-  padding: 1em;
+  padding: 0;
+}
+.container {
+  max-width: 600px;
+  margin: auto;
+  padding: 10px;
 }
 .chat-container {
   height: 300px;
-  overflow-y: auto;
-  background: white;
+  overflow-y: scroll;
   border: 1px solid #ccc;
   padding: 10px;
-  margin-bottom: 1em;
+  background: #f9f9f9;
 }
-.chat-bubble {
-  padding: 8px;
-  margin: 5px;
-  border-radius: 10px;
-  max-width: 80%;
-}
-.chat-bubble.caregiver {
-  background-color: #d0e6ff;
-  text-align: left;
-}
-.chat-bubble.patient {
-  background-color: #fff3b0;
-  text-align: right;
-}
-.input-container {
+.controls {
   display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-.input-section {
-  display: flex;
-  flex-direction: column;
+  gap: 5px;
+  margin-top: 10px;
 }
 textarea {
+  flex: 1;
   height: 50px;
 }
-.template-panel button {
-  margin: 3px;
+button {
+  padding: 5px 10px;
 }
-.term-section {
+.template-buttons, .phrase-options, .tts-controls {
   margin-top: 10px;
+  display: flex;
+  gap: 5px;
+  flex-wrap: wrap;
+}
+@media screen and (max-width: 600px) {
+  .controls, .template-buttons, .phrase-options {
+    flex-direction: column;
+  }
+  textarea {
+    height: 80px;
+  }
 }
