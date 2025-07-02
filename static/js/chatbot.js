@@ -1,81 +1,114 @@
+const caregiverInput = document.getElementById("input-caregiver");
+const patientInput = document.getElementById("input-patient");
+const chatArea = document.getElementById("chat-area");
+const explanationText = document.getElementById("explanation-text");
+const voiceSpeed = document.getElementById("voice-speed");
+const voiceVolume = document.getElementById("voice-volume");
 
-const userInput = document.getElementById("user-input");
-const sendButton = document.getElementById("send-button");
-const micButton = document.getElementById("mic-button");
-const chatContainer = document.getElementById("chat-container");
-const explainButton = document.getElementById("explain-button");
-const termInput = document.getElementById("term-input");
-const termExplanation = document.getElementById("term-explanation");
-const phraseOptions = document.getElementById("phrase-options");
+let recognition;
 
-const volumeControl = document.getElementById("volume");
-const rateControl = document.getElementById("rate");
-
-const templates = {
-  "体調": ["体調はどうですか？", "気になる所はありますか？"],
-  "薬": ["薬は飲みましたか？", "飲み忘れはありませんか？"],
-  "排便": ["今日は排便がありましたか？", "便の調子はどうですか？"],
-  "睡眠": ["昨夜はよく眠れましたか？", "今朝は何時に起きましたか？"]
-};
-
-document.querySelectorAll(".category-button").forEach(button => {
-  button.addEventListener("click", () => {
-    const category = button.dataset.category;
-    phraseOptions.innerHTML = "";
-    templates[category].forEach(phrase => {
-      const p = document.createElement("button");
-      p.textContent = phrase;
-      p.addEventListener("click", () => {
-        userInput.value = phrase;
-      });
-      phraseOptions.appendChild(p);
-    });
-  });
-});
-
-sendButton.onclick = () => {
-  const text = userInput.value;
-  if (!text) return;
-  appendMessage("👤", text);
-  fetch("/chat", {
-    method: "POST",
-    headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify({message: text})
-  })
-  .then(res => res.json())
-  .then(data => {
-    appendMessage("🤖", data.response);
-    speakText(data.response);
-  });
-  userInput.value = "";
-};
-
-function appendMessage(sender, text) {
-  const msg = document.createElement("div");
-  msg.className = "message";
-  msg.innerHTML = `<strong>${sender}</strong>: ${text}`;
-  chatContainer.appendChild(msg);
-  chatContainer.scrollTop = chatContainer.scrollHeight;
+function appendMessage(role, text) {
+  const message = document.createElement("div");
+  message.className = role === "caregiver" ? "caregiver-message" : "patient-message";
+  message.textContent = `${role === "caregiver" ? "介護士" : "被介護者"}：${text}`;
+  chatArea.appendChild(message);
+  chatArea.scrollTop = chatArea.scrollHeight;
 }
 
-explainButton.onclick = () => {
-  const term = termInput.value;
+function sendMessage(role) {
+  const input = role === "caregiver" ? caregiverInput : patientInput;
+  const message = input.value.trim();
+  if (!message) return;
+
+  appendMessage(role, message);
+  input.value = "";
+
+  fetch("/chat", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ role, message })
+  })
+    .then((res) => res.json())
+    .then((data) => {
+      appendMessage("bot", data.reply);
+      speak(data.reply);
+    });
+}
+
+function startRecognition(role) {
+  if (!("webkitSpeechRecognition" in window)) {
+    alert("音声認識はこのブラウザでサポートされていません。");
+    return;
+  }
+
+  recognition = new webkitSpeechRecognition();
+  recognition.lang = "ja-JP";
+  recognition.onresult = (event) => {
+    const transcript = event.results[0][0].transcript;
+    const input = role === "caregiver" ? caregiverInput : patientInput;
+    input.value = transcript;
+  };
+  recognition.start();
+}
+
+function speak(text) {
+  const utterance = new SpeechSynthesisUtterance(text);
+  utterance.lang = "ja-JP";
+  utterance.rate = parseFloat(voiceSpeed.value);
+  utterance.volume = parseFloat(voiceVolume.value);
+  speechSynthesis.speak(utterance);
+}
+
+function explainTerm() {
+  const term = document.getElementById("explain-term").value.trim();
   if (!term) return;
+
   fetch("/explain", {
     method: "POST",
-    headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify({term})
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ term })
   })
-  .then(res => res.json())
-  .then(data => {
-    termExplanation.textContent = data.explanation;
-    speakText(data.explanation);
-  });
-};
+    .then((res) => res.json())
+    .then((data) => {
+      explanationText.textContent = data.explanation;
+      speak(data.explanation);
+    })
+    .catch(() => {
+      explanationText.textContent = "説明の取得に失敗しました。";
+    });
+}
 
-function speakText(text) {
-  const utterance = new SpeechSynthesisUtterance(text);
-  utterance.volume = parseFloat(volumeControl.value);
-  utterance.rate = parseFloat(rateControl.value);
-  speechSynthesis.speak(utterance);
+function loadTemplates() {
+  const category = document.getElementById("template-category").value;
+  const templateDiv = document.getElementById("template-buttons");
+  templateDiv.innerHTML = "";
+
+  if (!category) return;
+
+  fetch(`/templates?category=${category}`)
+    .then((res) => res.json())
+    .then((data) => {
+      data.phrases.forEach((phrase) => {
+        const button = document.createElement("button");
+        button.textContent = phrase;
+        button.onclick = () => {
+          caregiverInput.value = phrase;
+        };
+        templateDiv.appendChild(button);
+      });
+    });
+}
+
+function downloadLog() {
+  const logs = [...chatArea.children]
+    .map((msg) => msg.textContent)
+    .join("\n");
+
+  const blob = new Blob([logs], { type: "text/plain" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = "chat_log.txt";
+  link.click();
+  URL.revokeObjectURL(url);
 }

@@ -1,38 +1,58 @@
-
 <!DOCTYPE html>
 <html lang="ja">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>介護支援チャットボット</title>
   <link rel="stylesheet" href="/static/css/styles.css" />
 </head>
 <body>
-  <div class="container">
-    <h1>AIみまくん - 介護支援チャットボット</h1>
-    <div class="chat-container" id="chat-container"></div>
-    <div class="controls">
-      <textarea id="user-input" placeholder="ここに入力..."></textarea>
-      <button id="send-button">送信</button>
-      <button id="mic-button">🎤</button>
+  <h1>介護支援チャットボット</h1>
+
+  <div class="chat-container">
+    <div class="chat-area" id="chat-area"></div>
+
+    <div class="input-section">
+      <label>介護士</label>
+      <input id="input-caregiver" type="text" placeholder="介護士の入力" />
+      <button onclick="sendMessage('caregiver')">送信</button>
+      <button onclick="startRecognition('caregiver')">🎤</button>
+
+      <label>被介護者</label>
+      <input id="input-patient" type="text" placeholder="被介護者の入力" />
+      <button onclick="sendMessage('patient')">送信</button>
+      <button onclick="startRecognition('patient')">🎤</button>
     </div>
-    <div class="template-buttons">
-      <button class="category-button" data-category="体調">体調</button>
-      <button class="category-button" data-category="薬">薬</button>
-      <button class="category-button" data-category="排便">排便</button>
-      <button class="category-button" data-category="睡眠">睡眠</button>
+
+    <div class="template-section">
+      <h3>テンプレート</h3>
+      <select id="template-category" onchange="loadTemplates()">
+        <option value="">カテゴリを選択</option>
+        <option value="体調">体調</option>
+        <option value="薬">薬</option>
+        <option value="排便">排便</option>
+        <option value="睡眠">睡眠</option>
+        <option value="食事">食事</option>
+      </select>
+      <div id="template-buttons"></div>
     </div>
-    <div id="phrase-options" class="phrase-options"></div>
-    <div class="explain-area">
-      <input type="text" id="term-input" placeholder="用語を入力">
-      <button id="explain-button">用語を説明</button>
-      <p id="term-explanation"></p>
+
+    <div class="explain-section">
+      <input id="explain-term" type="text" placeholder="用語を入力" />
+      <button onclick="explainTerm()">用語を説明</button>
+      <div id="explanation-text"></div>
     </div>
-    <div class="tts-controls">
-      <label>音量</label><input type="range" id="volume" min="0" max="1" step="0.1" value="1">
-      <label>速度</label><input type="range" id="rate" min="0.5" max="2" step="0.1" value="1">
+
+    <div class="control-section">
+      <label>音声速度</label>
+      <input id="voice-speed" type="range" min="0.5" max="2" step="0.1" value="1" />
+      <label>音量</label>
+      <input id="voice-volume" type="range" min="0" max="1" step="0.1" value="1" />
     </div>
+
+    <button onclick="downloadLog()">ログを保存</button>
   </div>
+
   <script src="/static/js/chatbot.js"></script>
 </body>
 </html>
