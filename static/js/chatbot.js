@@ -14,7 +14,7 @@ function appendLine(role, text) {
 // API呼び出し
 async function callChat(message, role) {
   console.log('▶️ callChat:', { message, role });
-  const res = await fetch('/chat', {
+  const res = await fetch('chat', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ message, role })
