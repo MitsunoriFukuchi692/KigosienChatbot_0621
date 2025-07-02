@@ -3,12 +3,12 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>AIみまくん - 多言語介護チャット</title>
+  <title>AI介護支援ボット</title>
   <link rel="stylesheet" href="/static/css/styles.css" />
 </head>
 <body>
   <header>
-    <h1>AIみまくん 介護支援チャット</h1>
+    <h1>AI介護支援ボット</h1>
   </header>
 
   <main>
@@ -19,7 +19,7 @@
         <h3>介護士</h3>
         <input type="text" id="caregiver-input" placeholder="介護士の入力..." />
         <button onclick="startCaregiverRecognition()">🎤</button>
-        <button onclick="sendMessage('caregiver')">送信</button>
+        <button onclick="sendCaregiverMessage()">送信</button>
         <div class="template-buttons" id="caregiver-templates"></div>
       </div>
 
@@ -27,7 +27,7 @@
         <h3>被介護者</h3>
         <input type="text" id="patient-input" placeholder="被介護者の入力..." />
         <button onclick="startPatientRecognition()">🎤</button>
-        <button onclick="sendMessage('patient')">送信</button>
+        <button onclick="sendPatientMessage()">送信</button>
         <div class="template-buttons" id="patient-templates"></div>
       </div>
 
