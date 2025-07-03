@@ -1,11 +1,11 @@
 // chatbot.js
 
 // DOM Elements
-const chatWindow      = document.getElementById("chat-window");
+const chatWindow      = document.getElementById("chat-container");
 const caregiverInput  = document.getElementById("caregiver-input");
 const patientInput    = document.getElementById("patient-input");
-const volumeControl   = document.getElementById("volume-control");
-const speedControl    = document.getElementById("speed-control");
+const volumeControl   = document.getElementById("volume-slider");
+const speedControl    = document.getElementById("rate-slider");
 
 // Speech Recognition Setup
 const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -65,46 +65,7 @@ function speak(text) {
   speechSynthesis.speak(utterance);
 }
 
-// Initialize template buttons
-function createTemplateButtons(role, templates, containerId) {
-  const container = document.getElementById(containerId);
-  for (const category in templates) {
-    const wrapper = document.createElement("div");
-    wrapper.className = "template-group";
-    const label = document.createElement("strong");
-    label.textContent = category;
-    wrapper.appendChild(label);
-    templates[category].forEach(phrase => {
-      const btn = document.createElement("button");
-      btn.className = "template-btn";
-      btn.textContent = phrase;
-      btn.onclick = () => {
-        if (role === "介護士") caregiverInput.value = phrase;
-        else                 patientInput.value   = phrase;
-      };
-      wrapper.appendChild(btn);
-    });
-    container.appendChild(wrapper);
-  }
-}
-
-// Template definitions
-const caregiverTemplates = {
-  "体調": ["体調はいかがですか？", "痛いところはありますか？"],
-  "薬":   ["お薬は飲みましたか？", "飲み忘れはありませんか？"],
-  "排便": ["排便はありましたか？"],
-  "睡眠": ["昨夜はよく眠れましたか？"],
-  "食事": ["食事は完了しましたか？"]
-};
-const patientTemplates = {
-  "体調": ["はい、体調は良好です。", "少し体に痛みがあります。"],
-  "薬":   ["お薬は飲みました。", "飲み忘れました。"],
-  "排便": ["排便はありました。"],
-  "睡眠": ["昨夜はよく眠れました。"],
-  "食事": ["食事を完了しました。"]
-};
-
-// Event bindings
+// Initialize template buttons and debug handlers
 document.addEventListener("DOMContentLoaded", () => {
   // Template buttons
   createTemplateButtons("介護士", caregiverTemplates, "caregiver-templates");
@@ -114,37 +75,57 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("send-caregiver").onclick = sendCaregiverMessage;
   document.getElementById("send-patient").onclick   = sendPatientMessage;
 
-  // Mic buttons
+  // Mic buttons with debug
   document.querySelectorAll('.mic-btn').forEach(btn => {
     btn.addEventListener('click', () => {
+      console.log('Mic button clicked for role:', btn.dataset.role);
       if (!recognition) {
         alert('お使いのブラウザは音声認識に対応していません');
         return;
       }
       activeRole = btn.dataset.role;
-      recognition.start();
+      try {
+        recognition.start();
+      } catch (e) {
+        console.error('Recognition start error:', e);
+      }
     });
   });
 
-  // Explain term button binding
+  // Debug speech recognition events
+  if (recognition) {
+    recognition.addEventListener('start', () => console.log('Speech recognition started'));
+    recognition.addEventListener('end', () => console.log('Speech recognition ended'));
+    recognition.addEventListener('result', (e) => console.log('Speech recognition result event', e));
+    recognition.addEventListener('error', (e) => console.error('SpeechRecognition error', e));
+  }
+
+  // Explain term button with debug
   const explainBtn = document.getElementById("explain-btn");
-  if (explainBtn) explainBtn.onclick = () => {
-    const termInput = document.getElementById("term-input");
-    const term = termInput.value.trim();
-    if (!term) {
-      alert('用語を入力してください');
-      return;
-    }
-    fetch('/explain', {
-      method: 'POST', headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({ term })
-    })
-      .then(res => res.json())
-      .then(data => {
-        const explanation = data.explanation || '';
-        appendMessage("システム", `用語説明: ${explanation}`);
-        speak(explanation);
+  if (explainBtn) {
+    explainBtn.onclick = () => {
+      const termInput = document.getElementById("term-input");
+      const term = termInput.value.trim();
+      if (!term) {
+        alert('用語を入力してください');
+        return;
+      }
+      console.log('Requesting explanation for term:', term);
+      fetch('/explain', {
+        method: 'POST', headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ term })
       })
-      .catch(err => console.error(err));
-  };
+        .then(res => {
+          console.log('Explain response status:', res.status);
+          return res.json();
+        })
+        .then(data => {
+          console.log('Explain response data:', data);
+          const explanation = data.explanation || '';
+          appendMessage("システム", `用語説明: ${explanation}`);
+          speak(explanation);
+        })
+        .catch(err => console.error('Explain fetch error:', err));
+    };
+  }
 });
