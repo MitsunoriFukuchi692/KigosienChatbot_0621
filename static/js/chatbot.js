@@ -61,10 +61,16 @@ async function sendMessage(role) {
 
 // --- テンプレート取得・表示 ---
 async function loadTemplates() {
+  console.log('▶ loadTemplates() 実行');
   const res = await fetch('/ja/templates');
+  if (!res.ok) {
+    console.error('テンプレート取得失敗', res.status);
+    return;
+  }
   const list = await res.json();
+  console.log('▶ templates:', list);
   const container = document.getElementById('template-buttons');
-  container.innerHTML = ''; // クリア
+  container.innerHTML = '';
   list.forEach(cat => {
     const btn = document.createElement('button');
     btn.textContent = cat.category;
@@ -87,6 +93,7 @@ async function loadTemplates() {
 
 // --- 用語説明／読み上げ ---
 async function explainTerm() {
+  console.log('▶ explainTerm() が呼ばれました', document.getElementById('term').value);
   const term = document.getElementById('term').value.trim();
   if (!term) return;
   const res = await fetch('/ja/explain', {
@@ -94,7 +101,9 @@ async function explainTerm() {
     headers:{ 'Content-Type':'application/json' },
     body: JSON.stringify({ term, maxLength:30 })
   });
+  console.log('▶ explain レスポンス status:', res.status);
   const { explanation } = await res.json();
+  console.log('▶ explain 返却:', explanation);
   document.getElementById('explanation').textContent = explanation;
   const u = new SpeechSynthesisUtterance(explanation);
   u.lang = 'ja-JP';
@@ -114,11 +123,6 @@ function careeTemplates()            { loadTemplates(); }
 
 // --- 初期化 ---
 window.addEventListener('DOMContentLoaded', () => {
-  // 送信／認識ボタン
-  document.getElementById('caregiver-input');  
-  document.getElementById('caree-input');
-  // 用語説明
   document.getElementById('explain-btn').addEventListener('click', explainTerm);
-  // テンプレート読み込み
   loadTemplates();
 });
