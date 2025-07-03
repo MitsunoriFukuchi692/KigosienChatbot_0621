@@ -7,6 +7,23 @@ const patientInput    = document.getElementById("patient-input");
 const volumeControl   = document.getElementById("volume-control");
 const speedControl    = document.getElementById("speed-control");
 
+// Speech Recognition Setup
+const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+let recognition = null;
+let activeRole = null;
+if (SpeechRecognition) {
+  recognition = new SpeechRecognition();
+  recognition.lang = 'ja-JP';
+  recognition.interimResults = false;
+  recognition.maxAlternatives = 1;
+  recognition.addEventListener('result', (event) => {
+    const transcript = event.results[0][0].transcript;
+    if (activeRole === '介護士') caregiverInput.value = transcript;
+    if (activeRole === '被介護者') patientInput.value = transcript;
+  });
+  recognition.addEventListener('error', (e) => console.error('SpeechRecognition error', e));
+}
+
 // Append message to chat window and speak
 function appendMessage(sender, message) {
   const msgElem = document.createElement("div");
@@ -97,12 +114,27 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("send-caregiver").onclick = sendCaregiverMessage;
   document.getElementById("send-patient").onclick   = sendPatientMessage;
 
+  // Mic buttons
+  document.querySelectorAll('.mic-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      if (!recognition) {
+        alert('お使いのブラウザは音声認識に対応していません');
+        return;
+      }
+      activeRole = btn.dataset.role;
+      recognition.start();
+    });
+  });
+
   // Explain term button binding
   const explainBtn = document.getElementById("explain-btn");
   if (explainBtn) explainBtn.onclick = () => {
     const termInput = document.getElementById("term-input");
     const term = termInput.value.trim();
-    if (!term) return;
+    if (!term) {
+      alert('用語を入力してください');
+      return;
+    }
     fetch('/explain', {
       method: 'POST', headers: {'Content-Type': 'application/json'},
       body: JSON.stringify({ term })
@@ -112,6 +144,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const explanation = data.explanation || '';
         appendMessage("システム", `用語説明: ${explanation}`);
         speak(explanation);
-      });
+      })
+      .catch(err => console.error(err));
   };
 });
