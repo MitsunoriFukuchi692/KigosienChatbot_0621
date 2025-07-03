@@ -1,11 +1,15 @@
-<!-- index.html -->
+<!-- templates/index.html -->
 <!DOCTYPE html>
 <html lang="ja">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>介護支援チャットボット</title>
-  <link rel="stylesheet" href="styles.css" />
+  <!-- url_forを使って必ず/staticから読みに行く -->
+  <link
+    rel="stylesheet"
+    href="{{ url_for('static', filename='css/styles.css') }}"
+  />
 </head>
 <body>
   <div id="chat-container">
@@ -30,71 +34,12 @@
 
     <!-- チャット表示 -->
     <div id="chat-log"></div>
+
+    <!-- テンプレートボタン用エリア -->
+    <div id="template-buttons"></div>
   </div>
 
-  <script src="chatbot.js"></script>
+  <!-- JS も必ず/static/jsから -->
+  <script src="{{ url_for('static', filename='js/chatbot.js') }}"></script>
 </body>
 </html>
-
-/* styles.css */
-#chat-container { max-width: 600px; margin: auto; padding: 1rem; }
-.input-block { display: flex; align-items: center; margin-bottom: 0.5rem; }
-.mic-btn { width: 2.5rem; height: 2.5rem; font-size: 1.5rem; margin-right: 0.5rem; }
-textarea { flex: 1; height: 3rem; }
-#glossary { margin: 1rem 0; }
-#explanation { margin-top: 0.5rem; }
-
-// chatbot.js
-const caregiverMic = document.getElementById('caregiver-mic');
-const careeMic = document.getElementById('caree-mic');
-const caregiverInput = document.getElementById('caregiver-input');
-const careeInput = document.getElementById('caree-input');
-const explainBtn = document.getElementById('explain-btn');
-const termInput = document.getElementById('term');
-const explanationP = document.getElementById('explanation');
-
-// 音声認識共通設定
-const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-if (!SpeechRecognition) {
-  alert('ブラウザが音声認識に対応していません。');
-}
-const recog = new SpeechRecognition();
-recog.lang = 'ja-JP';
-recog.interimResults = false;
-
-let activeTarget = null;
-recog.onresult = (e) => {
-  const text = e.results[0][0].transcript;
-  if (activeTarget) activeTarget.value = text;
-};
-recog.onerror = (e) => { console.error(e); };
-
-caregiverMic.addEventListener('click', () => {
-  activeTarget = caregiverInput;
-  recog.start();
-});
-careeMic.addEventListener('click', () => {
-  activeTarget = careeInput;
-  recog.start();
-});
-
-// 用語説明機能
-explainBtn.addEventListener('click', async () => {
-  const term = termInput.value.trim();
-  if (!term) return;
-  // API呼び出し例（実際のエンドポイントに合わせて修正）
-  const response = await fetch('/api/explain', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ term, maxLength: 30 })
-  });
-  const data = await response.json();
-  explanationP.textContent = data.explanation;
-  // 読み上げ
-  const utter = new SpeechSynthesisUtterance(data.explanation);
-  utter.lang = 'ja-JP';
-  // ユーザーが調整したスライダー値を取得する例
-  utter.rate = window.ttsRate || 1;
-  utter.volume = window.ttsVolume || 1;
-  speechSynthesis.speak(utter);
-});

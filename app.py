@@ -4,88 +4,38 @@ from flask_cors import CORS
 from openai import OpenAI
 from datetime import datetime
 
-# /ja/static 以下で static フォルダを配信する
-app = Flask(
-    __name__,
-    static_folder="static",
-    static_url_path="/ja/static"
-)
+# ★ static_url_path はデフォルト (/static) に戻す ★
+app = Flask(__name__, static_folder="static")  
 CORS(app)
 
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
-# ルート (/) は /ja/ へリダイレクト
+# ルート(/) と /ja/ の両方を同じページにマッピング
 @app.route("/")
-def root():
-    return redirect(url_for("index_ja"))
-
-# /ja/ でトップページを返す
 @app.route("/ja/")
-def index_ja():
+def index():
     return render_template("index.html")
 
-# チャット API
-@app.route("/ja/chat", methods=["POST"])
+# 以下、/ja/ プレフィクスは不要なので --api-- 部分はそのまま
+@app.route("/chat", methods=["POST"])
 def chat():
     data = request.get_json()
-    user_message = data.get("message", "")
-    messages = data.get("messages", [])
-    try:
-        response = client.chat.completions.create(
-            model="gpt-3.5-turbo",
-            messages=[{"role": "system", "content": "You are a helpful assistant."}]
-                     + messages
-                     + [{"role": "user", "content": user_message}]
-        )
-        ai_text = response.choices[0].message.content
-        return jsonify({"response": ai_text})
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
+    # ... (略) ...
+    return jsonify({"response": ai_text})
 
-# 用語説明 API (30文字以内)
-@app.route("/ja/explain", methods=["POST"])
+@app.route("/explain", methods=["POST"])
 def explain():
-    data = request.get_json()
-    term = data.get("term", "")
-    try:
-        messages = [
-            {"role": "system", "content": "日本語で30文字以内で簡潔に専門用語を説明してください。"},
-            {"role": "user",   "content": f"{term}とは？"}
-        ]
-        response = client.chat.completions.create(
-            model="gpt-3.5-turbo",
-            messages=messages
-        )
-        explanation = response.choices[0].message.content.strip()
-        return jsonify({"explanation": explanation})
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
+    # ... (略) ...
+    return jsonify({"explanation": explanation})
 
-# テンプレート一覧取得 API
-@app.route("/ja/templates", methods=["GET"])
+@app.route("/templates", methods=["GET"])
 def get_templates():
-    templates = [
-        {"category": "体調", "phrases": ["体調はどうですか？", "気になるところはありますか？"]},
-        {"category": "薬",   "phrases": ["薬は飲みましたか？", "飲み忘れはありませんか？"]},
-        {"category": "排便", "phrases": ["排便はありましたか？", "いつありましたか？"]},
-        {"category": "睡眠", "phrases": ["昨夜の睡眠はどうでしたか？", "よく眠れましたか？"]},
-        {"category": "食事", "phrases": ["今日の食事は何を食べましたか？", "食欲はありますか？"]}
-    ]
+    # ... (略) ...
     return jsonify(templates)
 
-# 会話ログ保存 API
-@app.route("/ja/save_log", methods=["POST"])
+@app.route("/save_log", methods=["POST"])
 def save_log():
-    data = request.get_json()
-    log_dir = "logs"
-    os.makedirs(log_dir, exist_ok=True)
-    now = datetime.now().strftime("%Y%m%d_%H%M%S")
-    file_path = os.path.join(log_dir, f"log_{now}.txt")
-    with open(file_path, "w", encoding="utf-8") as f:
-        f.write(f"ユーザー名: {data.get('username', '')}\n")
-        f.write(f"日時: {data.get('timestamp', '')}\n")
-        f.write(f"入力: {data.get('input', '')}\n")
-        f.write(f"返答: {data.get('response', '')}\n")
+    # ... (略) ...
     return jsonify({"status": "success"})
 
 if __name__ == "__main__":
