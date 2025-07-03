@@ -50,7 +50,7 @@ async function sendMessage(role) {
   input.value = '';
 
   // AI 応答
-  const res = await fetch('/chat', {
+  const res = await fetch('/ja/chat', {
     method: 'POST',
     headers:{ 'Content-Type':'application/json' },
     body: JSON.stringify({ message: text, messages: [] })
@@ -61,7 +61,7 @@ async function sendMessage(role) {
 
 // --- テンプレート取得・表示 ---
 async function loadTemplates() {
-  const res = await fetch('/templates');
+  const res = await fetch('/ja/templates');
   const list = await res.json();
   const container = document.getElementById('template-buttons');
   container.innerHTML = ''; // クリア
@@ -89,7 +89,7 @@ async function loadTemplates() {
 async function explainTerm() {
   const term = document.getElementById('term').value.trim();
   if (!term) return;
-  const res = await fetch('/explain', {
+  const res = await fetch('/ja/explain', {
     method:'POST',
     headers:{ 'Content-Type':'application/json' },
     body: JSON.stringify({ term, maxLength:30 })
