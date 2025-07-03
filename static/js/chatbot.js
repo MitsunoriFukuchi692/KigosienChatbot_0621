@@ -1,5 +1,14 @@
 // chatbot.js
 
+window.onerror = function(message, source, lineno, colno, error) {
+  alert(
+    "★JS エラー検出★\n" +
+    "メッセージ: " + message + "\n" +
+    "ファイル: " + source + "\n" +
+    "行番号: " + lineno + ", 列番号: " + colno
+  );
+};
+
 // DOM Elements
 const chatWindow      = document.getElementById("chat-container");
 const caregiverInput  = document.getElementById("caregiver-input");
