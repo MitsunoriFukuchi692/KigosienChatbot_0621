@@ -13,33 +13,29 @@
   </header>
 
   <main>
-    <!-- チャット表示エリア -->
     <div id="chat-container">
       <div id="chat-window"></div>
     </div>
 
-    <!-- 入力パネル -->
     <div class="input-panel">
       <h3>介護士</h3>
       <input type="text" id="caregiver-input" placeholder="介護士の発言を入力" />
-      <button onclick="startCaregiverRecognition()">🎤</button>
-      <button onclick="sendCaregiverMessage()">送信</button>
-      <button onclick="caregiverTemplates()">テンプレート</button>
+      <button onclick="startRecognition('caregiver-input')">🎤</button>
+      <button onclick="sendMessage('caregiver')">送信</button>
+      <button onclick="loadTemplates('caregiver')">テンプレート</button>
 
       <h3>被介護者</h3>
       <input type="text" id="caree-input" placeholder="被介護者の発言を入力" />
-      <button onclick="startCareeRecognition()">🎤</button>
-      <button onclick="sendCareeMessage()">送信</button>
-      <button onclick="careeTemplates()">テンプレート</button>
+      <button onclick="startRecognition('caree-input')">🎤</button>
+      <button onclick="sendMessage('caree')">送信</button>
+      <button onclick="loadTemplates('caree')">テンプレート</button>
     </div>
 
-    <!-- テンプレートボタン表示エリア -->
     <div id="template-buttons"></div>
 
-    <!-- 読み上げ調整と用語説明 -->
     <div class="tts-panel">
-      <label>音量: <input type="range" id="volume-slider" min="0" max="1" step="0.1" /></label>
-      <label>速度: <input type="range" id="rate-slider" min="0.5" max="2" step="0.1" /></label>
+      <label>音量: <input type="range" id="volume-slider" min="0" max="1" step="0.1" value="1" /></label>
+      <label>速度: <input type="range" id="rate-slider" min="0.5" max="2" step="0.1" value="1" /></label>
     </div>
 
     <div id="glossary">

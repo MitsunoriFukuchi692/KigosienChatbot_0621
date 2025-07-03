@@ -2,8 +2,9 @@
 
 // --- 音声認識設定 ---
 const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-const recog = SpeechRecognition ? new SpeechRecognition() : null;
-if (recog) {
+let recog = null;
+if (SpeechRecognition) {
+  recog = new SpeechRecognition();
   recog.lang = 'ja-JP';
   recog.interimResults = false;
 }
@@ -19,35 +20,33 @@ if (recog) {
   });
 }
 
-// --- メッセージ表示 ---  
+// --- メッセージ表示 ---
 function appendMessage(sender, text) {
   const log = document.getElementById('chat-window');
   const div = document.createElement('div');
-  div.className = (sender === '介護士' ? 'message-caregiver' : sender === '被介護者' ? 'message-caree' : 'message-ai');
+  div.className = sender === '介護士' ? 'message-caregiver'
+                   : sender === '被介護者' ? 'message-caree'
+                   : 'message-ai';
   div.textContent = `${sender}: ${text}`;
   log.appendChild(div);
   log.scrollTop = log.scrollHeight;
 }
 
-// --- 送信（AI呼び出しなし） ---  
+// --- 送信（AI 呼び出しなし） ---
 function sendMessage(role) {
   const inputId = role === 'caregiver' ? 'caregiver-input' : 'caree-input';
-  const senderLabel = role === 'caregiver' ? '介護士' : '被介護者';
+  const label   = role === 'caregiver' ? '介護士' : '被介護者';
   const input = document.getElementById(inputId);
-  const text = input.value.trim();
+  const text  = input.value.trim();
   if (!text) { alert('入力してください'); return; }
-  appendMessage(senderLabel, text);
+  appendMessage(label, text);
   input.value = '';
 }
 
-// 介護士・被介護者用ラッパー  
-function sendCaregiverMessage() { sendMessage('caregiver'); }
-function sendCareeMessage()      { sendMessage('caree'); }
-
-// --- テンプレート取得・表示 ---  
+// --- テンプレート取得・表示 ---
 async function loadTemplates(role) {
   const res = await fetch('/ja/templates');
-  if (!res.ok) return;
+  if (!res.ok) { console.error('templates fetch failed', res.status); return; }
   const list = await res.json();
   const container = document.getElementById('template-buttons');
   container.innerHTML = '';
@@ -55,6 +54,8 @@ async function loadTemplates(role) {
     const btn = document.createElement('button');
     btn.textContent = cat.category;
     btn.addEventListener('click', () => {
+      // 一度サブテンプレートはクリア
+      container.querySelectorAll('.sub-templates').forEach(e => e.remove());
       const sub = document.createElement('div');
       sub.className = 'sub-templates';
       cat.phrases.forEach(p => {
@@ -66,15 +67,13 @@ async function loadTemplates(role) {
         });
         sub.appendChild(sb);
       });
-      container.appendChild(sub);
+      btn.insertAdjacentElement('afterend', sub);
     });
     container.appendChild(btn);
   });
 }
-function caregiverTemplates() { loadTemplates('caregiver'); }
-function careeTemplates()    { loadTemplates('caree'); }
 
-// --- 用語説明 + 読み上げ ---  
+// --- 用語説明 + 読み上げ ---
 async function explainTerm() {
   const term = document.getElementById('term').value.trim();
   if (!term) return;
@@ -83,7 +82,7 @@ async function explainTerm() {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ term, maxLength: 30 })
   });
-  if (!res.ok) return;
+  if (!res.ok) { console.error('explain fetch failed', res.status); return; }
   const { explanation } = await res.json();
   document.getElementById('explanation').textContent = explanation;
   const u = new SpeechSynthesisUtterance(explanation);
@@ -93,7 +92,7 @@ async function explainTerm() {
   speechSynthesis.speak(u);
 }
 
-// --- 初期化 ---  
+// --- 初期化 ---
 window.addEventListener('DOMContentLoaded', () => {
-  document.querySelector('#explain-btn').addEventListener('click', explainTerm);
+  document.getElementById('explain-btn').addEventListener('click', explainTerm);
 });
