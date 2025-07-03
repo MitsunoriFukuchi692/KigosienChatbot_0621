@@ -1,5 +1,5 @@
 import os
-from flask import Flask, request, jsonify, render_template
+from flask import Flask, request, jsonify, render_template, redirect, url_for
 from flask_cors import CORS
 from openai import OpenAI
 from datetime import datetime
@@ -9,10 +9,15 @@ CORS(app)
 
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
-# トップページは「/」のみを受け付けるように変更
+# トップページ
 @app.route("/")
 def index():
     return render_template("index.html")
+
+# /ja/ へのアクセスをルートにリダイレクト
+@app.route("/ja/")
+def ja_redirect():
+    return redirect(url_for('index'))
 
 @app.route("/chat", methods=["POST"])
 def chat():
