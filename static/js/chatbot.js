@@ -9,6 +9,10 @@ window.onerror = function(message, source, lineno, colno, error) {
   );
 };
 
+function createTemplateButtons() {
+  loadTemplates();
+}
+
 // DOM Elements
 const chatWindow      = document.getElementById("chat-container");
 const caregiverInput  = document.getElementById("caregiver-input");
