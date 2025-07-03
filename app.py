@@ -4,42 +4,53 @@ from flask_cors import CORS
 from openai import OpenAI
 from datetime import datetime
 
-app = Flask(__name__)
+# /ja/static 以下で static フォルダを配信する
+app = Flask(
+    __name__,
+    static_folder="static",
+    static_url_path="/ja/static"
+)
 CORS(app)
 
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
-# トップページ
+# ルート (/) は /ja/ へリダイレクト
 @app.route("/")
-def index():
+def root():
+    return redirect(url_for("index_ja"))
+
+# /ja/ でトップページを返す
+@app.route("/ja/")
+def index_ja():
     return render_template("index.html")
 
-# /ja/ へのアクセスをルートにリダイレクト
-@app.route("/ja/")
-def ja_redirect():
-    return redirect(url_for('index'))
-
-@app.route("/chat", methods=["POST"])
+# チャット API
+@app.route("/ja/chat", methods=["POST"])
 def chat():
     data = request.get_json()
+    user_message = data.get("message", "")
     messages = data.get("messages", [])
     try:
         response = client.chat.completions.create(
             model="gpt-3.5-turbo",
-            messages=messages
+            messages=[{"role": "system", "content": "You are a helpful assistant."}]
+                     + messages
+                     + [{"role": "user", "content": user_message}]
         )
-        return jsonify({"response": response.choices[0].message.content})
+        ai_text = response.choices[0].message.content
+        return jsonify({"response": ai_text})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-@app.route("/explain", methods=["POST"])
+# 用語説明 API (30文字以内)
+@app.route("/ja/explain", methods=["POST"])
 def explain():
     data = request.get_json()
     term = data.get("term", "")
     try:
         messages = [
             {"role": "system", "content": "日本語で30文字以内で簡潔に専門用語を説明してください。"},
-            {"role": "user", "content": f"{term}とは？"}
+            {"role": "user",   "content": f"{term}とは？"}
         ]
         response = client.chat.completions.create(
             model="gpt-3.5-turbo",
@@ -50,15 +61,20 @@ def explain():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-@app.route("/templates", methods=["GET"])
+# テンプレート一覧取得 API
+@app.route("/ja/templates", methods=["GET"])
 def get_templates():
     templates = [
         {"category": "体調", "phrases": ["体調はどうですか？", "気になるところはありますか？"]},
-        {"category": "薬", "phrases": ["薬は飲みましたか？", "飲み忘れはありませんか？"]}
+        {"category": "薬",   "phrases": ["薬は飲みましたか？", "飲み忘れはありませんか？"]},
+        {"category": "排便", "phrases": ["排便はありましたか？", "いつありましたか？"]},
+        {"category": "睡眠", "phrases": ["昨夜の睡眠はどうでしたか？", "よく眠れましたか？"]},
+        {"category": "食事", "phrases": ["今日の食事は何を食べましたか？", "食欲はありますか？"]}
     ]
     return jsonify(templates)
 
-@app.route("/save_log", methods=["POST"])
+# 会話ログ保存 API
+@app.route("/ja/save_log", methods=["POST"])
 def save_log():
     data = request.get_json()
     log_dir = "logs"
