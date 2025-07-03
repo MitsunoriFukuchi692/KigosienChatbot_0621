@@ -1,45 +1,56 @@
-<!-- templates/index.html -->
 <!DOCTYPE html>
 <html lang="ja">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>介護支援チャットボット</title>
-  <!-- url_forを使って必ず/staticから読みに行く -->
   <link
     rel="stylesheet"
     href="{{ url_for('static', filename='css/styles.css') }}"
   />
 </head>
 <body>
-  <div id="chat-container">
-    <!-- 介護士と被介護者入力欄 -->
-    <div id="inputs">
-      <div class="input-block" id="caregiver-block">
-        <button class="mic-btn" id="caregiver-mic">🎤</button>
-        <textarea id="caregiver-input" placeholder="介護士の発言を入力"></textarea>
-      </div>
-      <div class="input-block" id="caree-block">
-        <button class="mic-btn" id="caree-mic">🎤</button>
-        <textarea id="caree-input" placeholder="被介護者の発言を入力"></textarea>
-      </div>
+  <header>
+    <h1>AI介護支援ボット</h1>
+  </header>
+
+  <main>
+    <!-- チャット表示エリア -->
+    <div id="chat-container">
+      <div id="chat-window"></div>
     </div>
 
-    <!-- 用語説明エリア -->
+    <!-- 入力パネル -->
+    <div class="input-panel">
+      <h3>介護士</h3>
+      <input type="text" id="caregiver-input" placeholder="介護士の発言を入力" />
+      <button onclick="startCaregiverRecognition()">🎤</button>
+      <button onclick="sendCaregiverMessage()">送信</button>
+
+      <h3>被介護者</h3>
+      <input type="text" id="caree-input" placeholder="被介護者の発言を入力" />
+      <button onclick="startCareeRecognition()">🎤</button>
+      <button onclick="sendCareeMessage()">送信</button>
+    </div>
+
+    <!-- 読み上げ調整と用語説明 -->
+    <div class="tts-panel">
+      <label>読み上げ音量：<input type="range" id="volume-slider" min="0" max="1" step="0.1" /></label>
+      <label>読み上げ速度：<input type="range" id="rate-slider" min="0.5" max="2" step="0.1" /></label>
+    </div>
+
     <div id="glossary">
       <input type="text" id="term" placeholder="用語を入力" />
       <button id="explain-btn">説明</button>
       <p id="explanation"></p>
     </div>
 
-    <!-- チャット表示 -->
-    <div id="chat-log"></div>
-
-    <!-- テンプレートボタン用エリア -->
+    <!-- テンプレートボタン表示エリア -->
     <div id="template-buttons"></div>
-  </div>
 
-  <!-- JS も必ず/static/jsから -->
+    <button id="save-log-btn">会話ログ保存</button>
+  </main>
+
   <script src="{{ url_for('static', filename='js/chatbot.js') }}"></script>
 </body>
 </html>
