@@ -13,6 +13,16 @@ function createTemplateButtons() {
   loadTemplates();
 }
 
+function createTemplateButtons() {
+  loadTemplates();
+}
+function caregiverTemplates() {
+  loadTemplates();
+}
+function careeTemplates() {
+  loadTemplates();
+}
+
 // DOM Elements
 const chatWindow      = document.getElementById("chat-container");
 const caregiverInput  = document.getElementById("caregiver-input");
