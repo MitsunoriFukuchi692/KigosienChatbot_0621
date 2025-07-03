@@ -24,75 +24,66 @@ if (recog) {
 function appendMessage(sender, text) {
   const log = document.getElementById('chat-window');
   const div = document.createElement('div');
-  div.className = sender==='介護士'? 'message-caregiver'
-                : sender==='被介護者'? 'message-caree'
-                : 'message-ai';
+  div.className = sender === '介護士'
+    ? 'message-caregiver'
+    : sender === '被介護者'
+      ? 'message-caree'
+      : 'message-ai';
   div.textContent = `${sender}: ${text}`;
   log.appendChild(div);
   log.scrollTop = log.scrollHeight;
 }
 
-// --- 送信（AI呼び出しなし） ---
+// --- 送信（AI 呼び出しなし） ---
 function sendMessage(role) {
-  const id = role==='caregiver'? 'caregiver-input' : 'caree-input';
-  const label = role==='caregiver'? '介護士' : '被介護者';
-  const txt = document.getElementById(id).value.trim();
-  if (!txt) { alert('入力してください'); return; }
-  appendMessage(label, txt);
-  document.getElementById(id).value = '';
+  const inputId = role === 'caregiver' ? 'caregiver-input' : 'caree-input';
+  const label   = role === 'caregiver' ? '介護士' : '被介護者';
+  const input   = document.getElementById(inputId);
+  const text    = input.value.trim();
+  if (!text) { alert('入力してください'); return; }
+  appendMessage(label, text);
+  input.value = '';
 }
 
-// --- テンプレート取得・表示（アラートで結果を通知） ---
+// --- テンプレート取得・表示 ---
 async function loadTemplates(role) {
+  const path = `/ja/templates/${role}`;
+  const res = await fetch(path);
+  if (!res.ok) {
+    console.error('テンプレート取得失敗', res.status);
+    return;
+  }
+  const list = await res.json();
   const areaId = role === 'caregiver' ? 'caregiver-templates' : 'caree-templates';
   const container = document.getElementById(areaId);
-  container.innerHTML = ''; // クリア
+  container.innerHTML = '';
 
-  const path = `/ja/templates/${role}`;
-  alert(`テンプレート取得を開始します： ${path}`);  // ここでURLを通知
-
-  let res;
-  try {
-    res = await fetch(path);
-  } catch (e) {
-    alert(`ネットワークエラーが発生しました： ${e}`);
-    return;
-  }
-  if (!res.ok) {
-    alert(`テンプレート取得失敗：ステータス${res.status}`);
-    return;
-  }
-  let list;
-  try {
-    list = await res.json();
-  } catch (e) {
-    alert(`JSON解析エラー：${e}`);
-    return;
-  }
-  alert(`取得したテンプレートカテゴリ数: ${list.length}`);
-
-  // ボタンを作って画面に表示
   list.forEach(cat => {
     const btn = document.createElement('button');
     btn.textContent = cat.category;
     btn.addEventListener('click', () => {
-      // サブテンプレート表示前に通知
-      alert(`サブテンプレート表示：${cat.category}`);
-      // 既存サブをクリア
+      // 既存サブテンプレートをクリア
       container.querySelectorAll('.sub-templates').forEach(e => e.remove());
       const sub = document.createElement('div');
       sub.className = 'sub-templates';
+
       cat.phrases.forEach(p => {
         const sb = document.createElement('button');
         sb.textContent = p;
         sb.addEventListener('click', () => {
+          // 入力欄にセット
           const targetId = role === 'caregiver' ? 'caregiver-input' : 'caree-input';
           document.getElementById(targetId).value = p;
-          alert(`"${p}" を入力欄にセットしました`);
+          // 被介護者用なら自動送信
+          if (role === 'caree') {
+            sendMessage('caree');
+          }
         });
         sub.appendChild(sb);
       });
-      btn.insertAdjacentElement('afterend', sub);
+
+      container.appendChild(btn);
+      container.appendChild(sub);
     });
     container.appendChild(btn);
   });
@@ -102,18 +93,16 @@ async function loadTemplates(role) {
 async function explainTerm() {
   const term = document.getElementById('term').value.trim();
   if (!term) { alert('用語を入力してください'); return; }
-  alert(`用語説明リクエスト：${term}`);
   const res = await fetch('/ja/explain', {
-    method:'POST',
-    headers:{ 'Content-Type':'application/json' },
-    body: JSON.stringify({ term, maxLength:30 })
+    method: 'POST',
+    headers: { 'Content-Type':'application/json' },
+    body: JSON.stringify({ term, maxLength: 30 })
   });
   if (!res.ok) {
-    alert(`用語説明失敗：ステータス${res.status}`);
+    console.error('用語説明取得失敗', res.status);
     return;
   }
   const { explanation } = await res.json();
-  alert(`説明結果：${explanation}`);
   document.getElementById('explanation').textContent = explanation;
   const u = new SpeechSynthesisUtterance(explanation);
   u.lang = 'ja-JP';
