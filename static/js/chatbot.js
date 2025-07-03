@@ -1,6 +1,4 @@
-// static/js/chatbot.js
-
-// --- 音声認識設定 ---
+// 音声認識設定
 const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 let recog = null;
 if (SpeechRecognition) {
@@ -10,7 +8,7 @@ if (SpeechRecognition) {
 }
 let activeTarget = null;
 function startRecognition(targetId) {
-  if (!recog) { alert('音声認識に対応していません'); return; }
+  if (!recog) return alert('音声認識に対応していません');
   activeTarget = document.getElementById(targetId);
   recog.start();
 }
@@ -20,41 +18,41 @@ if (recog) {
   });
 }
 
-// --- メッセージ表示 ---
+// メッセージ表示
 function appendMessage(sender, text) {
   const log = document.getElementById('chat-window');
   const div = document.createElement('div');
-  div.className = sender === '介護士' ? 'message-caregiver'
-                   : sender === '被介護者' ? 'message-caree'
-                   : 'message-ai';
+  div.className = sender==='介護士' ? 'message-caregiver'
+                : sender==='被介護者' ? 'message-caree'
+                : 'message-ai';
   div.textContent = `${sender}: ${text}`;
   log.appendChild(div);
   log.scrollTop = log.scrollHeight;
 }
 
-// --- 送信（AI 呼び出しなし） ---
+// 送信（AI呼び出しなし）
 function sendMessage(role) {
-  const inputId = role === 'caregiver' ? 'caregiver-input' : 'caree-input';
-  const label   = role === 'caregiver' ? '介護士' : '被介護者';
-  const input = document.getElementById(inputId);
-  const text  = input.value.trim();
-  if (!text) { alert('入力してください'); return; }
-  appendMessage(label, text);
-  input.value = '';
+  const id   = role==='caregiver' ? 'caregiver-input' : 'caree-input';
+  const label= role==='caregiver' ? '介護士' : '被介護者';
+  const txt  = document.getElementById(id).value.trim();
+  if (!txt) return alert('入力してください');
+  appendMessage(label, txt);
+  document.getElementById(id).value = '';
 }
 
-// --- テンプレート取得・表示 ---
+// テンプレート取得・表示
 async function loadTemplates(role) {
   const res = await fetch('/ja/templates');
-  if (!res.ok) { console.error('templates fetch failed', res.status); return; }
+  if (!res.ok) return;
   const list = await res.json();
-  const container = document.getElementById('template-buttons');
-  container.innerHTML = '';
+  const areaId = role==='caregiver' ? 'caregiver-templates' : 'caree-templates';
+  const container = document.getElementById(areaId);
+  container.innerHTML = '';   // まずクリア
   list.forEach(cat => {
     const btn = document.createElement('button');
     btn.textContent = cat.category;
     btn.addEventListener('click', () => {
-      // 一度サブテンプレートはクリア
+      // サブボタンを一旦消す
       container.querySelectorAll('.sub-templates').forEach(e => e.remove());
       const sub = document.createElement('div');
       sub.className = 'sub-templates';
@@ -62,7 +60,7 @@ async function loadTemplates(role) {
         const sb = document.createElement('button');
         sb.textContent = p;
         sb.addEventListener('click', () => {
-          const targetId = role === 'caregiver' ? 'caregiver-input' : 'caree-input';
+          const targetId = role==='caregiver' ? 'caregiver-input' : 'caree-input';
           document.getElementById(targetId).value = p;
         });
         sub.appendChild(sb);
@@ -73,16 +71,16 @@ async function loadTemplates(role) {
   });
 }
 
-// --- 用語説明 + 読み上げ ---
+// 用語説明 + 読み上げ
 async function explainTerm() {
   const term = document.getElementById('term').value.trim();
   if (!term) return;
   const res = await fetch('/ja/explain', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ term, maxLength: 30 })
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({ term, maxLength:30 })
   });
-  if (!res.ok) { console.error('explain fetch failed', res.status); return; }
+  if (!res.ok) return;
   const { explanation } = await res.json();
   document.getElementById('explanation').textContent = explanation;
   const u = new SpeechSynthesisUtterance(explanation);
@@ -92,7 +90,7 @@ async function explainTerm() {
   speechSynthesis.speak(u);
 }
 
-// --- 初期化 ---
+// 初期化
 window.addEventListener('DOMContentLoaded', () => {
   document.getElementById('explain-btn').addEventListener('click', explainTerm);
 });
