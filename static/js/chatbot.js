@@ -1,5 +1,6 @@
-// chatbot.js
+// static/js/chatbot.js
 
+// グローバルエラーキャッチ用
 window.onerror = function(message, source, lineno, colno, error) {
   alert(
     "★JS エラー検出★\n" +
@@ -9,146 +10,115 @@ window.onerror = function(message, source, lineno, colno, error) {
   );
 };
 
-function createTemplateButtons() {
-  loadTemplates();
-}
-
-function createTemplateButtons() {
-  loadTemplates();
-}
-function caregiverTemplates() {
-  loadTemplates();
-}
-function careeTemplates() {
-  loadTemplates();
-}
-
-// DOM Elements
-const chatWindow      = document.getElementById("chat-container");
-const caregiverInput  = document.getElementById("caregiver-input");
-const patientInput    = document.getElementById("patient-input");
-const volumeControl   = document.getElementById("volume-slider");
-const speedControl    = document.getElementById("rate-slider");
-
-// Speech Recognition Setup
+// --- 音声認識設定 ---
 const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-let recognition = null;
-let activeRole = null;
-if (SpeechRecognition) {
-  recognition = new SpeechRecognition();
-  recognition.lang = 'ja-JP';
-  recognition.interimResults = false;
-  recognition.maxAlternatives = 1;
-  recognition.addEventListener('result', (event) => {
-    const transcript = event.results[0][0].transcript;
-    if (activeRole === '介護士') caregiverInput.value = transcript;
-    if (activeRole === '被介護者') patientInput.value = transcript;
+const recog = SpeechRecognition ? new SpeechRecognition() : null;
+if (recog) {
+  recog.lang = 'ja-JP';
+  recog.interimResults = false;
+}
+
+let activeTarget = null;
+function startRecognition(targetId) {
+  if (!recog) { alert('音声認識に対応していません'); return; }
+  activeTarget = document.getElementById(targetId);
+  recog.start();
+}
+if (recog) {
+  recog.addEventListener('result', e => {
+    activeTarget.value = e.results[0][0].transcript;
   });
-  recognition.addEventListener('error', (e) => console.error('SpeechRecognition error', e));
 }
 
-// Append message to chat window and speak
-function appendMessage(sender, message) {
-  const msgElem = document.createElement("div");
-  msgElem.className = sender === "介護士" ? "message caregiver" : "message patient";
-  msgElem.textContent = `${sender}：${message}`;
-  chatWindow.appendChild(msgElem);
-  chatWindow.scrollTop = chatWindow.scrollHeight;
-  speak(message);
+// --- チャット送信 ---
+function appendMessage(sender, text) {
+  const log = document.getElementById('chat-window');
+  const div = document.createElement('div');
+  div.className = sender === '介護士' ? 'message-caregiver' : (sender==='AI'?'message-ai':'message-caree');
+  div.textContent = `${sender}: ${text}`;
+  log.appendChild(div);
+  log.scrollTop = log.scrollHeight;
 }
 
-// Send caregiver message (no AI response)
-function sendCaregiverMessage() {
-  const message = caregiverInput.value.trim();
-  if (!message) {
-    alert("入力が空です。テキストを入れてください。");
-    return;
-  }
-  appendMessage("介護士", message);
-  caregiverInput.value = "";
+async function sendMessage(role) {
+  const inputId = role === 'caregiver' ? 'caregiver-input' : 'caree-input';
+  const senderLabel = role === 'caregiver' ? '介護士' : '被介護者';
+  const input = document.getElementById(inputId);
+  const text = input.value.trim();
+  if (!text) { alert('入力してください'); return; }
+  appendMessage(senderLabel, text);
+  input.value = '';
+
+  // AI 応答
+  const res = await fetch('/chat', {
+    method: 'POST',
+    headers:{ 'Content-Type':'application/json' },
+    body: JSON.stringify({ message: text, messages: [] })
+  });
+  const json = await res.json();
+  if (json.response) appendMessage('AI', json.response);
 }
 
-// Send patient message (no AI response)
-function sendPatientMessage() {
-  const message = patientInput.value.trim();
-  if (!message) {
-    alert("入力が空です。テキストを入れてください。");
-    return;
-  }
-  appendMessage("被介護者", message);
-  patientInput.value = "";
-}
-
-// Speech synthesis
-function speak(text) {
-  const utterance = new SpeechSynthesisUtterance(text);
-  utterance.volume = parseFloat(volumeControl.value);
-  utterance.rate   = parseFloat(speedControl.value);
-  utterance.lang   = "ja-JP";
-  speechSynthesis.speak(utterance);
-}
-
-// Initialize template buttons and debug handlers
-document.addEventListener("DOMContentLoaded", () => {
-  // Template buttons
-  createTemplateButtons("介護士", caregiverTemplates, "caregiver-templates");
-  createTemplateButtons("被介護者", patientTemplates, "patient-templates");
-
-  // Send buttons
-  document.getElementById("send-caregiver").onclick = sendCaregiverMessage;
-  document.getElementById("send-patient").onclick   = sendPatientMessage;
-
-  // Mic buttons with debug
-  document.querySelectorAll('.mic-btn').forEach(btn => {
+// --- テンプレート取得・表示 ---
+async function loadTemplates() {
+  const res = await fetch('/templates');
+  const list = await res.json();
+  const container = document.getElementById('template-buttons');
+  container.innerHTML = ''; // クリア
+  list.forEach(cat => {
+    const btn = document.createElement('button');
+    btn.textContent = cat.category;
     btn.addEventListener('click', () => {
-      console.log('Mic button clicked for role:', btn.dataset.role);
-      if (!recognition) {
-        alert('お使いのブラウザは音声認識に対応していません');
-        return;
-      }
-      activeRole = btn.dataset.role;
-      try {
-        recognition.start();
-      } catch (e) {
-        console.error('Recognition start error:', e);
-      }
+      const sub = document.createElement('div');
+      sub.className = 'sub-templates';
+      cat.phrases.forEach(p => {
+        const sb = document.createElement('button');
+        sb.textContent = p;
+        sb.addEventListener('click', () => {
+          document.getElementById('caregiver-input').value = p;
+        });
+        sub.appendChild(sb);
+      });
+      container.appendChild(sub);
     });
+    container.appendChild(btn);
   });
+}
 
-  // Debug speech recognition events
-  if (recognition) {
-    recognition.addEventListener('start', () => console.log('Speech recognition started'));
-    recognition.addEventListener('end', () => console.log('Speech recognition ended'));
-    recognition.addEventListener('result', (e) => console.log('Speech recognition result event', e));
-    recognition.addEventListener('error', (e) => console.error('SpeechRecognition error', e));
-  }
+// --- 用語説明／読み上げ ---
+async function explainTerm() {
+  const term = document.getElementById('term').value.trim();
+  if (!term) return;
+  const res = await fetch('/explain', {
+    method:'POST',
+    headers:{ 'Content-Type':'application/json' },
+    body: JSON.stringify({ term, maxLength:30 })
+  });
+  const { explanation } = await res.json();
+  document.getElementById('explanation').textContent = explanation;
+  const u = new SpeechSynthesisUtterance(explanation);
+  u.lang = 'ja-JP';
+  u.rate = document.getElementById('rate-slider').value;
+  u.volume = document.getElementById('volume-slider').value;
+  speechSynthesis.speak(u);
+}
 
-  // Explain term button with debug
-  const explainBtn = document.getElementById("explain-btn");
-  if (explainBtn) {
-    explainBtn.onclick = () => {
-      const termInput = document.getElementById("term-input");
-      const term = termInput.value.trim();
-      if (!term) {
-        alert('用語を入力してください');
-        return;
-      }
-      console.log('Requesting explanation for term:', term);
-      fetch('/explain', {
-        method: 'POST', headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({ term })
-      })
-        .then(res => {
-          console.log('Explain response status:', res.status);
-          return res.json();
-        })
-        .then(data => {
-          console.log('Explain response data:', data);
-          const explanation = data.explanation || '';
-          appendMessage("システム", `用語説明: ${explanation}`);
-          speak(explanation);
-        })
-        .catch(err => console.error('Explain fetch error:', err));
-    };
-  }
+// --- HTML 側 inline onclick 用のエイリアス ---
+function startCaregiverRecognition() { startRecognition('caregiver-input'); }
+function sendCaregiverMessage()      { sendMessage('caregiver'); }
+function startCareeRecognition()     { startRecognition('caree-input'); }
+function sendCareeMessage()          { sendMessage('caree'); }
+function createTemplateButtons()     { loadTemplates(); }
+function caregiverTemplates()        { loadTemplates(); }
+function careeTemplates()            { loadTemplates(); }
+
+// --- 初期化 ---
+window.addEventListener('DOMContentLoaded', () => {
+  // 送信／認識ボタン
+  document.getElementById('caregiver-input');  
+  document.getElementById('caree-input');
+  // 用語説明
+  document.getElementById('explain-btn').addEventListener('click', explainTerm);
+  // テンプレート読み込み
+  loadTemplates();
 });
