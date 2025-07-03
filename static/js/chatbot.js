@@ -17,7 +17,7 @@ function appendMessage(sender, message) {
   speak(message);
 }
 
-// Send caregiver message
+// Send caregiver message (no AI response)
 function sendCaregiverMessage() {
   const message = caregiverInput.value.trim();
   if (!message) {
@@ -25,11 +25,10 @@ function sendCaregiverMessage() {
     return;
   }
   appendMessage("介護士", message);
-  fetchResponse(message, "介護士");
   caregiverInput.value = "";
 }
 
-// Send patient message
+// Send patient message (no AI response)
 function sendPatientMessage() {
   const message = patientInput.value.trim();
   if (!message) {
@@ -37,32 +36,7 @@ function sendPatientMessage() {
     return;
   }
   appendMessage("被介護者", message);
-  fetchResponse(message, "被介護者");
   patientInput.value = "";
-}
-
-// Fetch response from server
-function fetchResponse(message, role) {
-  // Build messages array
-  const messages = [
-    { role: "user", content: `${role}：${message}` }
-  ];
-
-  fetch("/chat", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ messages })
-  })
-    .then(res => res.json())
-    .then(data => {
-      const reply = data.response || (data.choices?.[0]?.message?.content) || "";
-      const sender = role === "介護士" ? "被介護者" : "介護士";
-      appendMessage(sender, reply);
-    })
-    .catch(err => {
-      console.error("fetchResponse error:", err);
-      appendMessage("システム", "メッセージの送信に失敗しました。");
-    });
 }
 
 // Speech synthesis
@@ -74,7 +48,7 @@ function speak(text) {
   speechSynthesis.speak(utterance);
 }
 
-// Initialize template buttons (assumes HTML has containers with these IDs)
+// Initialize template buttons
 function createTemplateButtons(role, templates, containerId) {
   const container = document.getElementById(containerId);
   for (const category in templates) {
@@ -123,7 +97,7 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("send-caregiver").onclick = sendCaregiverMessage;
   document.getElementById("send-patient").onclick   = sendPatientMessage;
 
-  // Optional: Explain term button binding
+  // Explain term button binding
   const explainBtn = document.getElementById("explain-btn");
   if (explainBtn) explainBtn.onclick = () => {
     const termInput = document.getElementById("term-input");
@@ -135,8 +109,9 @@ document.addEventListener("DOMContentLoaded", () => {
     })
       .then(res => res.json())
       .then(data => {
-        alert(`説明：${data.explanation}`);
-        speak(data.explanation);
+        const explanation = data.explanation || '';
+        appendMessage("システム", `用語説明: ${explanation}`);
+        speak(explanation);
       });
   };
 });
