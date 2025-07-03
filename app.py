@@ -1,4 +1,3 @@
-
 import os
 from flask import Flask, request, jsonify, render_template
 from flask_cors import CORS
@@ -10,8 +9,8 @@ CORS(app)
 
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
+# トップページは「/」のみを受け付けるように変更
 @app.route("/")
-@app.route("/ja/")
 def index():
     return render_template("index.html")
 
