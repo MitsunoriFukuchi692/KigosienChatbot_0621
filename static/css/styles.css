@@ -119,3 +119,29 @@ header {
     font-size: 0.8rem;
   }
 }
+
+/* 小さい画面向けレスポンシブ */
+@media (max-width: 600px) {
+  header h1 {
+    font-size: 16px;
+    padding: 8px 0;
+  }
+  .input-panel, .tts-panel, #glossary {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .input-panel input[type="text"] {
+    width: 100%;
+    box-sizing: border-box;
+  }
+  .input-panel button, #template-start-btn, #save-log-btn {
+    width: 100%;
+  }
+  #template-buttons {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 4px;
+  }
+}
+
