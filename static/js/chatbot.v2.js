@@ -3,8 +3,6 @@ window.onerror = function(message, source, lineno, colno, error) {
   console.log(`🛑 Error: ${message} at ${source}:${lineno}:${colno}`);
 };
 
-<script src="/static/js/chatbot.js?ts=20250704"></script>
-
 // --- 音声認識設定 ---
 const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 let recog = null;
