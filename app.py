@@ -1,5 +1,7 @@
 import os
-from flask import Flask, request, jsonify, render_template
+import glob
+from io import BytesIO
+from flask import Flask, request, jsonify, render_template, send_file
 from flask_cors import CORS
 from openai import OpenAI
 from datetime import datetime
@@ -12,7 +14,6 @@ client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 @app.after_request
 def add_header(response):
-    # HTMLテンプレートと静的ファイルのキャッシュを無効化
     response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
     response.headers["Pragma"] = "no-cache"
     response.headers["Expires"] = "0"
@@ -23,7 +24,6 @@ def add_header(response):
 def index():
     return render_template("index.html")
 
-# テンプレート（対話型ペア）API
 @app.route("/ja/templates", methods=["GET"])
 def get_templates():
     return jsonify([
@@ -37,7 +37,6 @@ def get_templates():
             "caregiver": ["お食事は何を召し上がりましたか？", "美味しかったですか？"],
             "caree":     ["サンドイッチを食べました。", "まだ食べていません。"]
         },
-        # ← ここから新規追加
         {
             "category": "薬",
             "caregiver": ["お薬は飲みましたか？", "飲み忘れはないですか？"],
@@ -53,14 +52,13 @@ def get_templates():
             "caregiver": ["お通じはいかがですか？", "問題ありませんか？"],
             "caree":     ["問題ありません。", "少し便秘気味です。"]
         }
-        # ← ここまで
     ])
 
 @app.route("/ja/chat", methods=["POST"])
 def chat():
     data = request.get_json()
-    message = data.get("message", "")
-    messages = data.get("messages", [])
+    message = data.get("message","")
+    messages = data.get("messages",[])
     try:
         response = client.chat.completions.create(
             model="gpt-3.5-turbo",
@@ -73,11 +71,11 @@ def chat():
 @app.route("/ja/explain", methods=["POST"])
 def explain():
     data = request.get_json()
-    term = data.get("term", "")
+    term = data.get("term","")
     try:
         msgs = [
-            {"role": "system", "content": "日本語で30文字以内で簡潔に専門用語を説明してください。"},
-            {"role": "user",   "content": f"{term}とは？"}
+            {"role":"system","content":"日本語で30文字以内で簡潔に専門用語を説明してください。"},
+            {"role":"user","content":f"{term}とは？"}
         ]
         response = client.chat.completions.create(
             model="gpt-3.5-turbo",
@@ -101,6 +99,25 @@ def save_log():
         f.write(f"入力: {data.get('input','')}\n")
         f.write(f"返答: {data.get('response','')}\n")
     return jsonify({"status": "success"})
+
+@app.route("/ja/daily_report", methods=["GET"])
+def daily_report():
+    log_files = sorted(glob.glob("logs/log_*.txt"))
+    if not log_files:
+        return jsonify({"error":"ログがありません"}), 404
+    latest = log_files[-1]
+    with open(latest, encoding="utf-8") as f:
+        content = f.read()
+    response = client.chat.completions.create(
+        model="gpt-3.5-turbo",
+        messages=[
+            {"role":"system","content":"以下の対話ログをもとに、本日の介護日報を日本語で短くまとめてください。"},
+            {"role":"user","content":content}
+        ]
+    )
+    summary = response.choices[0].message.content.strip()
+    buf = BytesIO(summary.encode("utf-8"))
+    return send_file(buf, as_attachment=True, download_name="daily_report.txt", mimetype="text/plain")
 
 if __name__ == "__main__":
     app.run(debug=True)

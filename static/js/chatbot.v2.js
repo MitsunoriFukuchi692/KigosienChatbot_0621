@@ -1,3 +1,5 @@
+// static/js/chatbot.v2.js
+
 // ─── グローバルエラーキャッチャ ───
 window.onerror = function(message, source, lineno, colno, error) {
   console.log(`🛑 Error: ${message} at ${source}:${lineno}:${colno}`);
@@ -38,9 +40,11 @@ function speak(text) {
 function appendMessage(sender, text) {
   const log = document.getElementById('chat-window');
   const div = document.createElement('div');
-  div.className = sender==='介護士' ? 'message-caregiver'
-                : sender==='被介護者' ? 'message-caree'
-                : 'message-ai';
+  div.className = sender==='介護士'
+                  ? 'message-caregiver'
+                  : sender==='被介護者'
+                    ? 'message-caree'
+                    : 'message-ai';
   div.textContent = `${sender}: ${text}`;
   log.appendChild(div);
   log.scrollTop = log.scrollHeight;
@@ -60,7 +64,7 @@ function sendMessage(role) {
   document.getElementById(inputId).value = '';
 }
 
-// --- 対話型テンプレート ---
+// --- テンプレート対話 ---
 let currentTemplates = [];
 function startTemplateDialogue() {
   console.log('🔧 startTemplateDialogue');
@@ -88,7 +92,6 @@ function showCaregiverPhrases(item) {
     const btn = document.createElement('button');
     btn.textContent = text;
     btn.addEventListener('click', () => {
-      console.log('🔧 caregiver template:', text);
       appendMessage('介護士', text);
       speak(text);
       showCareePhrases(item);
@@ -105,7 +108,6 @@ function showCareePhrases(item) {
     const btn = document.createElement('button');
     btn.textContent = text;
     btn.addEventListener('click', () => {
-      console.log('🔧 caree template:', text);
       appendMessage('被介護者', text);
       speak(text);
       startTemplateDialogue();
@@ -131,8 +133,14 @@ function explainTerm() {
     .catch(e => alert(`用語説明失敗: ${e}`));
 }
 
-// --- 初期化 ---
+// --- 初期化 & 日報生成 ---
 window.addEventListener('DOMContentLoaded', () => {
   document.getElementById('explain-btn').addEventListener('click', explainTerm);
   document.getElementById('template-start-btn').addEventListener('click', startTemplateDialogue);
+  document.getElementById('save-log-btn').addEventListener('click', () => {
+    /* 会話ログ保存の既存ハンドラをここに */
+  });
+  document.getElementById('daily-report-btn').addEventListener('click', () => {
+    window.open('/ja/daily_report', '_blank');
+  });
 });

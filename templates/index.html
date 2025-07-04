@@ -1,3 +1,4 @@
+<!-- templates/index.html -->
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -7,7 +8,7 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
 </head>
 <body>
-  <header><h1>AI介護支援ボット</h1></header>
+  <header><h1>介護支援ボット</h1></header>
   <main>
     <div id="chat-container">
       <div id="chat-window"></div>
@@ -40,9 +41,9 @@
     </div>
 
     <button id="save-log-btn">会話ログ保存</button>
+    <button id="daily-report-btn">📝 日報を生成</button>
   </main>
 
-  <!-- ここだけを残して、古い<script>は完全削除 -->
   <script src="{{ url_for('static', filename='js/chatbot.v2.js') }}"></script>
 </body>
 </html>
