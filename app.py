@@ -5,8 +5,18 @@ from openai import OpenAI
 from datetime import datetime
 
 app = Flask(__name__, static_folder="static")
+# キャッシュ無効化設定
+app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0
 CORS(app)
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+
+@app.after_request
+def add_header(response):
+    # HTMLテンプレートと静的ファイルのキャッシュを無効化
+    response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
+    response.headers["Pragma"] = "no-cache"
+    response.headers["Expires"] = "0"
+    return response
 
 @app.route("/")
 @app.route("/ja/")
@@ -26,7 +36,24 @@ def get_templates():
             "category": "食事",
             "caregiver": ["お食事は何を召し上がりましたか？", "美味しかったですか？"],
             "caree":     ["サンドイッチを食べました。", "まだ食べていません。"]
+        },
+        # ← ここから新規追加
+        {
+            "category": "薬",
+            "caregiver": ["お薬は飲みましたか？", "飲み忘れはないですか？"],
+            "caree":     ["飲みました。", "まだです。"]
+        },
+        {
+            "category": "睡眠",
+            "caregiver": ["昨夜はよく眠れましたか？", "何時にお休みになりましたか？"],
+            "caree":     ["よく眠れました。", "少し寝不足です。"]
+        },
+        {
+            "category": "排便",
+            "caregiver": ["お通じはいかがですか？", "問題ありませんか？"],
+            "caree":     ["問題ありません。", "少し便秘気味です。"]
         }
+        # ← ここまで
     ])
 
 @app.route("/ja/chat", methods=["POST"])
