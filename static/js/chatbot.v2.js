@@ -1,5 +1,3 @@
-// static/js/chatbot.v2.js
-
 // ─── グローバルエラーキャッチャ ───
 window.onerror = function(message, source, lineno, colno, error) {
   console.log(`🛑 Error: ${message} at ${source}:${lineno}:${colno}`);
@@ -133,13 +131,40 @@ function explainTerm() {
     .catch(e => alert(`用語説明失敗: ${e}`));
 }
 
+// --- 会話ログ保存 ---
+function saveLog() {
+  const lines = Array.from(document.querySelectorAll('#chat-window div'))
+    .map(div => div.textContent)
+    .join('\n');
+  fetch('/ja/save_log', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      username: '介護士',
+      timestamp: new Date().toISOString(),
+      input: lines,
+      response: ''
+    })
+  })
+  .then(res => res.json())
+  .then(json => {
+    if (json.status === 'success') {
+      alert('会話ログを保存しました');
+    } else {
+      alert('ログ保存に失敗しました');
+    }
+  })
+  .catch(err => {
+    console.error(err);
+    alert('ログ保存中にエラーが発生しました');
+  });
+}
+
 // --- 初期化 & 日報生成 ---
 window.addEventListener('DOMContentLoaded', () => {
   document.getElementById('explain-btn').addEventListener('click', explainTerm);
   document.getElementById('template-start-btn').addEventListener('click', startTemplateDialogue);
-  document.getElementById('save-log-btn').addEventListener('click', () => {
-    /* 会話ログ保存の既存ハンドラをここに */
-  });
+  document.getElementById('save-log-btn').addEventListener('click', saveLog);
   document.getElementById('daily-report-btn').addEventListener('click', () => {
     window.open('/ja/daily_report', '_blank');
   });
