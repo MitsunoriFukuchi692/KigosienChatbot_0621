@@ -197,4 +197,54 @@ header h1 {
   margin-top: 4px;
 }
 
+/* 高齢者向け大きな文字＆コンパクトボタン配置 */
+body {
+  font-size: 18px; /* 全体の文字を大きく */
+}
+
+/* 入力パネルのレイアウト調整 */
+.input-panel {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* マイク＆送信ボタンを横並びにコンパクト化 */
+.input-panel button {
+  flex: 0 0 48px;      /* 幅 48px に固定 */
+  height: 48px;        /* 高さ 48px に固定 */
+  font-size: 24px;     /* ボタン内絵文字などは大きめ */
+  padding: 0;
+}
+
+/* テキスト入力は残り幅を使う */
+.input-panel input[type="text"] {
+  flex: 1;             /* 横に伸びる */
+  font-size: 18px;     /* 大きな文字 */
+  padding: 8px;
+}
+
+/* テンプレートボタンの文字を大きく＆配置 */
+#template-buttons button {
+  font-size: 20px;     /* 大きな文字 */
+  padding: 12px;       /* 十分な余白 */
+  margin: 4px;         /* ボタン間のスペース */
+  flex: 1 1 auto;
+}
+
+/* 「テンプレート対話開始」も大きめ */
+#template-start-btn {
+  font-size: 20px;
+  padding: 12px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* 保存ボタンも同じく */
+#save-log-btn {
+  font-size: 20px;
+  padding: 12px;
+  width: 100%;
+  box-sizing: border-box;
+}
 
