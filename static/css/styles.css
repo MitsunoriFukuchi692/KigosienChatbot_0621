@@ -260,3 +260,17 @@ body {
   box-sizing: border-box;
 }
 
+/* 会話ログ保存 & 日報生成ボタンを横並びに・半分幅に */
+.action-buttons {
+  display: flex;
+  gap: 8px;
+}
+.action-buttons button {
+  flex: 1;               /* 同じ幅で並ぶ */
+  font-size: 18px;       /* 文字を大きく */
+  padding: 12px;         /* タップしやすい */
+  box-sizing: border-box;
+  text-align: center;
+}
+
+
