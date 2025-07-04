@@ -261,16 +261,15 @@ body {
 }
 
 /* 会話ログ保存 & 日報生成ボタンを横並びに・半分幅に */
+/* ────────── 横並び・半分幅を強制 ────────── */
 .action-buttons {
-  display: flex;
-  gap: 8px;
+  display: flex !important;
+  gap: 8px !important;
 }
 .action-buttons button {
-  flex: 1;               /* 同じ幅で並ぶ */
-  font-size: 18px;       /* 文字を大きく */
-  padding: 12px;         /* タップしやすい */
-  box-sizing: border-box;
-  text-align: center;
+  flex: 1 1 0 !important;     /* 横に等分 */
+  max-width: 50% !important;  /* それぞれ半分幅まで */
+  box-sizing: border-box !important;
+  display: inline-block !important;
+  text-align: center !important;
 }
-
-
