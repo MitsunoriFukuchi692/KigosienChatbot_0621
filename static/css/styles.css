@@ -145,3 +145,56 @@ header {
   }
 }
 
+/* ヘッダーを細く＆文言変更 */
+header h1 {
+  background-color: #4CAF50; /* 既存の色に合わせて */
+  color: white;
+  font-size: 16px;           /* 小さめに */
+  padding: 8px 0;            /* 上下の余白を控えめに */
+  text-align: center;
+}
+
+/* メッセージの色分け */
+.message-caregiver {
+  background-color: #e0f7fa; /* 介護士：淡い水色 */
+  color: #006064;
+  padding: 8px;
+  border-radius: 4px;
+  margin-bottom: 4px;
+}
+.message-caree {
+  background-color: #fff3e0; /* 被介護者：淡いオレンジ */
+  color: #e65100;
+  padding: 8px;
+  border-radius: 4px;
+  margin-bottom: 4px;
+}
+
+/* 送信ボタンを目立たせる */
+.input-panel button,
+#save-log-btn,
+#template-start-btn {
+  background-color: #ff9800; /* オレンジ */
+  color: white;
+  border: none;
+  font-weight: bold;
+  padding: 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color .2s;
+}
+.input-panel button:hover,
+#save-log-btn:hover,
+#template-start-btn:hover {
+  background-color: #fb8c00; /* 濃いオレンジ */
+}
+
+/* テキスト入力フィールドとボタンの幅をスマホでも広く */
+.input-panel input[type="text"],
+.input-panel button {
+  width: 100%;
+  box-sizing: border-box;
+  margin-top: 4px;
+}
+
+
