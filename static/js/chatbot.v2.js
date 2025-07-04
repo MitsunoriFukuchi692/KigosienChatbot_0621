@@ -136,7 +136,7 @@ function saveLog() {
   const lines = Array.from(document.querySelectorAll('#chat-window div'))
     .map(div => div.textContent)
     .join('\n');
-  fetch('/ja/save_log', {
+  return fetch('/ja/save_log', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
@@ -150,13 +150,10 @@ function saveLog() {
   .then(json => {
     if (json.status === 'success') {
       alert('会話ログを保存しました');
+      return Promise.resolve();
     } else {
-      alert('ログ保存に失敗しました');
+      return Promise.reject('保存失敗');
     }
-  })
-  .catch(err => {
-    console.error(err);
-    alert('ログ保存中にエラーが発生しました');
   });
 }
 
@@ -166,6 +163,8 @@ window.addEventListener('DOMContentLoaded', () => {
   document.getElementById('template-start-btn').addEventListener('click', startTemplateDialogue);
   document.getElementById('save-log-btn').addEventListener('click', saveLog);
   document.getElementById('daily-report-btn').addEventListener('click', () => {
-    window.open('/ja/daily_report', '_blank');
+    saveLog()
+      .then(() => window.open('/ja/daily_report', '_blank'))
+      .catch(() => alert('ログ保存に失敗したため、日報を生成できません'));
   });
 });
