@@ -167,7 +167,8 @@ window.addEventListener('DOMContentLoaded', () => {
     saveLog()
       .then(() => {
         // 保存完了後に日報を新しいタブで開く
-        window.open('/ja/daily_report', '_blank');
+        // 新しいタブではなく、同一ウィンドウでダウンロードを開始
+        window.location.href = '/ja/daily_report';
       })
       .catch(() => {
         alert('ログ保存に失敗したため、日報を生成できません');
