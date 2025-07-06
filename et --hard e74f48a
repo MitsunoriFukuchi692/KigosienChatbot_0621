@@ -1,0 +1,175 @@
+[33mac2caa6[m[33m ([m[1;36mHEAD -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m)[m chatbot.v2.js を添付ファイル相当の完全版に更新
+[33m19a44db[m app.py: string concatenation による日報日時追加
+[33m27d2529[m daily_report: 日付時刻をレポートに追加
+[33m6678d88[m デバッグ: バージョンログを追加
+[33mc12b84d[m 日報生成: popup→同一ウィンドウでダウンロードに変更
+[33m3cbff21[m daily-report-btn handler をログ保存後実行に修正
+[33m0e25c04[m chatbot.v2.js を完全版に書き換え
+[33m0525db7[m テンプレート：重複していた全幅ボタンを削除し action-buttons のみに統一
+[33m395e6fc[m action-buttons HTML追加 & CSS横並び強制スタイル追加
+[33m7626082[m ボタン横並びスタイルを追加
+[33mb064453[m UI調整：ボタン並び、スタイル更新 & 機能統合済みchatbot.v2.jsを反映
+[33m8d5cd93[m complete chatbot.v2.js with all features including saveLog and daily report
+[33m5050238[m 日報生成機能追加に伴い app.py, index.html, chatbot.v2.js を更新
+[33m27d40a0[m 高齢者向け：文字拡大＆ボタン配置調整
+[33m39c45f8[m ヘッダー細く＆タイトル変更、メッセージ色分け、送信ボタン強調
+[33mc16fbbd[m スマホ向けレスポンシブCSSを追加
+[33md344530[m テンプレートに薬・睡眠・排便を追加
+[33m5327be7[m Fix chatbot.v2.js syntax to JavaScript
+[33m92ab9d4[m Add chatbot.v2.js and update index.html to load it
+[33mb9ed34c[m Remove HTML from app.py and fix syntax
+[33m5b83a6e[m Implement paired dialogue template flow and update UI/layout
+[33mfe4db8e[m Auto-send caree templates on click
+[33mfcfb7a8[m Add alert-based debug outputs for template and explain flows
+[33mb2cee6d[m Remove markdown fences from app.py
+[33m9199340[m Implement separate endpoints and template areas for caregiver and caree
+[33mee46e6d[m Separate caregiver/caree template areas and restore mic
+[33md5db69f[m Separate caregiver/caree templates and restore mic recognition
+[33me74f48a[m Implement role-based templates and disable AI replies for caregiver/caree; add explainTerm functionality
+[33m887b3cd[m Fix fetch URLs and add logging in chatbot.js; add /ja/ aliases in app.py
+[33m528a41b[m Fix fetch URLs to use /ja/ prefix for templates, chat, and explain
+[33m01bfc4d[m Restore complete chatbot.js with loadTemplates and all aliases
+[33m1535ff3[m HTMLの呼び出しに合わせて createTemplateButtons を追加
+[33m3d20b40[m HTMLの呼び出しに合わせて createTemplateButtons を追加
+[33ma8c52de[m Add global error handler alert for debugging
+[33mb344803[m Restore full chat UI in index.html with all panels and buttons
+[33m431ad0b[m Fix static file paths and restore default static_url_path; update index.html with template area
+[33m0e5c931[m Configure Flask to serve under /ja/ with updated routes and static paths
+[33m08dadc9[m Update index.html with template buttons
+[33m43c3e97[m Add redirect from /ja/ to /
+[33m9a8ecce[m Remove /ja/ route from app.py
+[33mc8e61ce[m fix: HTML構造に合わせてセレクタ更新
+[33m618264b[m feat: enable speech recognition and AI-driven term explanations with speech
+[33m4417c51[m fix: disable AI responses for caregiver and patient, enable AI only for explanations
+[33mb1a5e75[m fix: update chatbot.js to use messages array, prevent empty submissions, and restore templates
+[33mf080189[m 最新版UI（スマホ対応・色分け・テンプレート分離）
+[33m3fbfb6b[m 最新UI・音声・テンプレート対応版に更新
+[33m8e33e24[m 最新安定版：テンプレート、スマホ対応、読み上げ調整を追加
+[33m9039f4d[m 最新UI修正：テンプレート追加・スマホ対応・音声読み上げ調整
+[33m8797b02[m テンプレート追加・スマホ対応・TTS調整対応
+[33m0d09975[m Fix: OpenAI API v1.0 対応版 app.py に更新
+[33mf8ea7b8[m Add /ja/ route for index page
+[33me147b58[m 完全統合版を反映：app.py, index.html, chatbot.js, styles.css
+[33m3b77494[m 改修版の index.html, chatbot.js, styles.css を反映
+[33m69dfddd[m 最新版 index.html, chatbot.js, styles.css を push
+[33ma453fc5[m Update: テンプレート選択・用語説明・CSV保存ボタン対応
+[33me0081c3[m 最新版UI・機能（テンプレートサブ選択・用語説明欄・色分け）を適用
+[33m56dca8a[m 最新版テンプレート・用語説明・音声機能・UI修正を反映
+[33m092846d[m 最新ファイル（テンプレート、音声、スマホ対応など）を反映
+[33mb3722b1[m Update: UI改善とテンプレート・用語説明機能追加
+[33m48fd701[m Revert to working version with templates and mic
+[33mbd803cd[m Fix: 最新テンプレート・音声機能・UI調整
+[33md2dc90f[m Fix port binding for Render
+[33m6476cd1[m 最新のindex.htmlを追加
+[33m74e9ec2[m[33m ([m[1;31morigin/restore-74e9ec2[m[33m, [m[1;32mrestore-74e9ec2[m[33m)[m 最新のテンプレート機能・音声調整機能を追加
+[33mf39e845[m Fix route to use index.html
+[33m7ad8812[m Update index.html with correct CSS link
+[33m3ced5bf[m Fix: 完全統合版を反映（テンプレート・音量速度・TTS）
+[33m4fae548[m update chatbot.js with TTS and control features
+[33m98b451a[m Update app.py, index.html, and styles.css with latest template and UI fixes
+[33m0c687d5[m ルート /ja を index.html に修正
+[33m4c12584[m jaルートを index.html に変更
+[33m7fd37ff[m テンプレート音声ボタンとchatbot.jsの更新
+[33mdf734f5[m Final fix: full chat UI + JS binding restored
+[33m825459d[m Deploy final chat UI and logic updates
+[33m96de020[m chatbot.js: 完全版に更新（Web Speech API TTS 再生）
+[33mccfc954[m Deploy final chat UI: index, JS, CSS updated
+[33m5827806[m playTTS を audio 要素経由の再生に変更
+[33md903993[m chatbot.js: DOMContentLoaded を外して即時初期化、ログ強化
+[33m4780875[m chatbot.js: マイク／TTSログ強化版を適用
+[33m8cc0d6a[m templates/index.html をチャットボット完全版に置き換え
+[33m035a80c[m TTSアンロック含む最終版 chatboot.js を適用
+[33m6bcb296[m 完全版チャットボット3ファイルを配置
+[33m198da01[m チャットボットUI・機能の完全版を適用
+[33m534b23f[m HTML: CSS/JS のパスを正しいディレクトリに修正
+[33m358fb75[m chatbot.js: fetch を相対パス 'chat' に変更
+[33m282063b[m 用語説明機能のみAI呼び出し＆フル機能維持版に更新
+[33m7fa6a46[m 最新版の chatbot.html, chatbot.js, styles.css を反映
+[33m813b028[m 音声設定UIとCSV文字化け対応を修正
+[33m76a6f5b[m 音声UI整理：音量・速度調整、マイク対応
+[33m3f3f81c[m chatbot.js ローカルストレージ対応：会話ログ保存と復元機能を追加
+[33m279fe30[m 会話ログのローカル保存機能とCSV出力を追加
+[33m5774524[m マイク入力対象選択UIを正しく配置・重複除去
+[33mb6d624e[m 用語説明を30秒以内に簡潔化、マイク入力対象を明示
+[33m01bba7f[m マイク音声認識ログ強化・用語説明TTS対応
+[33mde333f8[m TTS音声再生バーとマイク音声認識の強化
+[33m9acd842[m ユーザー入力をTTS読み上げし、マイク入力を有効化
+[33m3a2bfdf[m AI音声を削除し、マイク入力機能を復活
+[33m078ca51[m 完成版: 入力欄に色枠追加、JSキャッシュ対策
+[33me94864a[m Fix styles and disable AI TTS caching
+[33m5b05100[m Fix CSS path to use styles.css
+[33mcc9ad78[m AI応答を非表示にする修正
+[33m6cc4f72[m Update chatbot UI and JS: template buttons for caregiver and elder
+[33mf5cdbe1[m Fix chatbot.js: enable caregiver/elder input and TTS support
+[33m8cd4dfc[m Fix chatbot.html: show caregiver and elder inputs
+[33m9407ce9[m Force Japanese output in /explain system prompt
+[33m1c23582[m Use absolute URL for /explain fetch in script.js
+[33m4e6dac3[m Enable iOS inline audio playback and refactor TTS play flow
+[33m71d2e57[m Auto-create logs table on startup with init_db()
+[33m19dfca0[m Fix missing import time for /logs endpoint
+[33m432c26e[m Add /logs endpoint and database logging
+[33m9503825[m Implement TTS endpoint using gTTS
+[33ma50b598[m Enable audio controls for debugging and add audio error listeners
+[33m18c374f[m Add all chat, tts, templates, routes, files endpoints in app.py
+[33m74fe110[m Update chatbot layout, script.js and style adjustments
+[33m3611655[m Update chatbot.html layout and finalize script.js
+[33m9224369[m Add template-container to chatbot.html and update script.js
+[33m428b615[m Add template buttons rendering to script.js
+[33ma168ded[m Debug: show template render errors in chat() handler
+[33m47ba38f[m Migrate OpenAI SDK to v1.0 and update requirements
+[33md63d1a6[m Your commit message here
+[33m61db500[m Update script.js with TTS fix
+[33m47e98ae[m Update script.js: 音声認識＆TTS処理を追加
+[33m8bc2c48[m Fix icon paths to static/images folder
+[33m5e35fbd[m Restore templates/chatbot.html
+[33ma044de4[m Add minimal voice-input debug and element existence logs
+[33m47a4640[m Remove test prefix from chat reply
+[33m7db6901[m Fix payload keys to text/lang
+[33m64b1fe4[m Add /templates endpoint for input-support
+[33m28b23ae[m Enable detailed logging and echo reply for /chat
+[33mfc411c8[m Add /routes debug endpoint
+[33m9eb09ba[m Add /files debug route to inspect deployed structure
+[33m9e1ac89[m Rename render_template to chatbot.html for unified templates/ directory
+[33m107bcd7[m Add requirements.txt with Flask and gunicorn
+[33mf97fb7a[m Route / to /ja/ and remove index.html
+[33m20eab0c[m Add routes for /, /ja/, /en/ and /ping endpoint
+[33m81e11ae[m ルート設定を統一し、templates/en を削除
+[33m32dfc4e[m Add /ping test route
+[33m957e900[m ルートを /ja, /ja/, /en, /en/ に対応させる
+[33md19ade2[m Update English chatbot.html to unified bottom-only chat layout
+[33m2a45d8c[m Remove old Japanese chatbot template
+[33m4820d13[m Remove old chatbot.html templates
+[33m56bc19b[m ルートを一本化 + 古いテンプレート削除
+[33ma093f4f[m チャットボット一本化＆Push手順追加
+[33m524b1d9[m 下段チャット一本化＆アイコン表示機能を追加
+[33m278da7d[m 下段チャット一本化：テンプレートと script.js を移動／更新
+[33me3d30af[m Add /ja/chatbot/ route and integrated GPT+TTS
+[33m42b4d36[m Fix: add route for /ja/chatbot/
+[33m9c8e29c[m Update chatbot.html and script.js to minimal working version with TTS and templates
+[33mb498c87[m Fix /chat to return real GPT-based reply
+[33mfb4c2cc[m Connect chatbot.html with script.js
+[33m7e8b2dc[m Use PORT env var for host binding in main block
+[33m82f9145[m Complete chat_interface.js with guards, templates, TTS playback
+[33m3f610a3[m Add google-cloud-texttospeech to dependencies
+[33m4f1a8ae[m Add Google TTS integration and dynamic audioUrl via url_for
+[33m04214db[m Add audio element rendering for bot replies
+[33m022ccc7[m Complete chat_interface.js with templates and debug logs
+[33m557ad4f[m Add debug logs to chat_interface.js for fetch and response
+[33m2a32aed[m Add /api/chat endpoint to match client fetch
+[33mc20bb7e[m Restore HTML structure and IDs to match chat_interface.js
+[33mfc1bcfe[m Fix chatbot.html to HTML template
+[33m0df4469[m Update templates/ja/chatbot.html and static/js/chat_interface.js
+[33m14d8cdd[m マイクボタン追加のため chatbot.html を更新
+[33m75df55c[m Ensure viewport meta and correct CSS link for mobile layout
+[33m92f0d66[m Update chatbot.js: add mobile TTS warm-up and viewport initialization
+[33made61d5[m Add TTS bar and speechSynthesis events for audio feedback
+[33m19b355e[m Add speechSynthesis TTS feature to chatbot.js
+[33m7e82a40[m Add UI styling for template buttons and chat bubbles
+[33mbc1a1d8[m 整理：不要なテンプレート削除＋static/js/chatbot.jsへのスクリプト分割
+[33m333dcb7[m Update app.py and chatbot.html with static folder config and template sections
+[33mb16f9af[m Configure Flask static and template folders
+[33mf9e16b9[m Add chatbot images
+[33mbecd43f[m Add gunicorn to requirements
+[33m509ff44[m[33m ([m[1;31morigin/master[m[33m)[m first commit
+[33m92bd331[m Initial import of care-assistant project
+[33me17ff38[m Initialize care-assistant backend with templates, logging, and summary endpoints
