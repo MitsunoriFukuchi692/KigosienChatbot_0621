@@ -1,5 +1,5 @@
+// chatbot.v2.js
 // ─── グローバルエラーキャッチャ ───
-
 console.log('🚀 chatbot.v2.js loaded at ' + new Date().toISOString());
 
 window.onerror = function(message, source, lineno, colno, error) {
@@ -134,6 +134,39 @@ function explainTerm() {
     .catch(e => alert(`用語説明失敗: ${e}`));
 }
 
+// --- 翻訳機能追加 ---
+function initTranslation() {
+  const translateBtn = document.getElementById('translate-btn');
+  const translateTarget = document.getElementById('translate-target');
+  translateBtn.addEventListener('click', async () => {
+    const messages = document.querySelectorAll('#chat-window div');
+    let lastText = '';
+    for (let i = messages.length - 1; i >= 0; i--) {
+      if (messages[i].classList.contains('message-ai')) {
+        lastText = messages[i].textContent.replace(/^AI: /, '');
+        break;
+      }
+    }
+    if (!lastText) return alert('翻訳するAIの応答が見つかりません');
+    const target = translateTarget.value;
+    try {
+      const res = await fetch('/translate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: lastText, target })
+      });
+      const data = await res.json();
+      if (data.translated) {
+        appendMessage('AI', data.translated);
+      } else {
+        console.error('Translation failed:', data);
+      }
+    } catch (err) {
+      console.error('Error calling translate API:', err);
+    }
+  });
+}
+
 // --- 会話ログ保存 ---
 function saveLog() {
   const lines = Array.from(document.querySelectorAll('#chat-window div'))
@@ -166,15 +199,11 @@ window.addEventListener('DOMContentLoaded', () => {
   document.getElementById('template-start-btn').addEventListener('click', startTemplateDialogue);
   document.getElementById('save-log-btn').addEventListener('click', saveLog);
   document.getElementById('daily-report-btn').addEventListener('click', () => {
-    // 日報生成前に必ずログ保存を行う
     saveLog()
-      .then(() => {
-        // 保存完了後に日報を新しいタブで開く
-        // 新しいタブではなく、同一ウィンドウでダウンロードを開始
-        window.location.href = '/ja/daily_report';
-      })
-      .catch(() => {
-        alert('ログ保存に失敗したため、日報を生成できません');
-      });
+      .then(() => window.location.href = '/ja/daily_report')
+      .catch(() => alert('ログ保存に失敗したため、日報を生成できません'));
   });
+
+  // 翻訳機能初期化
+  initTranslation();
 });

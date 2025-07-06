@@ -40,6 +40,15 @@
       <p id="explanation"></p>
     </div>
 
+    <!-- 翻訳機能追加 -->
+    <div id="translation-panel">
+      <select id="translate-target">
+        <option value="ja" selected>日本語</option>
+        <option value="en">English</option>
+      </select>
+      <button id="translate-btn">翻訳</button>
+    </div>
+
     <div class="action-buttons">
       <button id="save-log-btn">会話ログ保存</button>
       <button id="daily-report-btn">📝 日報を生成</button>
@@ -48,5 +57,6 @@
   </main>
 
   <script src="{{ url_for('static', filename='js/chatbot.v2.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/chatbot_translation.js') }}"></script>
 </body>
 </html>

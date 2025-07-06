@@ -1,30 +1,59 @@
 import os
 import glob
 from io import BytesIO
-from flask import Flask, request, jsonify, render_template, send_file
+import datetime
+from flask import Flask, request, jsonify, render_template, send_file, Response
 from flask_cors import CORS
 from openai import OpenAI
-from datetime import datetime, timedelta
 
+# Flaskアプリ初期化
 app = Flask(__name__, static_folder="static")
 # キャッシュ無効化設定
 app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0
 CORS(app)
+
+# OpenAIクライアント設定
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
+# デバッグ用 version endpoint（必要に応じて削除可）
+@app.route("/version")
+def version():
+    return f"DEPLOYED_VERSION: {datetime.datetime.now().isoformat()}"
+
+# 翻訳エンドポイント（新規追加）
+@app.route("/translate", methods=["POST"])
+def translate_text():
+    data = request.get_json() or {}
+    text = data.get("text", "")
+    target = data.get("target", "ja")
+    resp = client.chat.completions.create(
+        model="gpt-3.5-turbo",
+        messages=[
+            {"role": "system", "content": f"Translate the following text to {target}. Use only the translated text."},
+            {"role": "user", "content": text}
+        ]
+    )
+    translated = resp.choices[0].message.content.strip()
+    return jsonify({"translated": translated})
+
+# キャッシュ無効化ヘッダー設定
 @app.after_request
 def add_header(response):
-    print("=== DEPLOYED VERSION: " + datetime.now().isoformat())
+    # デバッグ出力
+    print("=== DEPLOYED VERSION: " + datetime.datetime.now().isoformat())
     response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
     response.headers["Pragma"] = "no-cache"
     response.headers["Expires"] = "0"
     return response
 
+# --- 既存ルート ---
+# トップページ
 @app.route("/")
 @app.route("/ja/")
 def index():
     return render_template("index.html")
 
+# テンプレート取得
 @app.route("/ja/templates", methods=["GET"])
 def get_templates():
     return jsonify([
@@ -35,6 +64,7 @@ def get_templates():
         {"category": "排便", "caregiver": ["お通じはいかがですか？", "問題ありませんか？"],      "caree": ["問題ありません。", "少し便秘気味です。"]}
     ])
 
+# チャット
 @app.route("/ja/chat", methods=["POST"])
 def chat():
     data = request.get_json()
@@ -49,6 +79,7 @@ def chat():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+# 用語説明
 @app.route("/ja/explain", methods=["POST"])
 def explain():
     data = request.get_json()
@@ -67,13 +98,13 @@ def explain():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+# ログ保存
 @app.route("/ja/save_log", methods=["POST"])
 def save_log():
     data = request.get_json()
     log_dir = "logs"
     os.makedirs(log_dir, exist_ok=True)
-    # JST基準のファイル名タイムスタンプ
-    now_ts = (datetime.utcnow() + timedelta(hours=9)).strftime("log_%Y%m%d_%H%M%S.txt")
+    now_ts = (datetime.datetime.utcnow() + datetime.timedelta(hours=9)).strftime("log_%Y%m%d_%H%M%S.txt")
     file_path = os.path.join(log_dir, now_ts)
     with open(file_path, "w", encoding="utf-8") as f:
         f.write("ユーザー名: " + data.get('username', '') + "\n")
@@ -82,17 +113,15 @@ def save_log():
         f.write("返答: " + data.get('response', '') + "\n")
     return jsonify({"status": "success"})
 
+# 日報作成
 @app.route("/ja/daily_report", methods=["GET"])
 def daily_report():
-    # 最新ログファイルを探す
     log_files = sorted(glob.glob("logs/log_*.txt"))
     if not log_files:
         return jsonify({"error": "ログがありません"}), 404
     latest = log_files[-1]
     with open(latest, encoding="utf-8") as f:
         content = f.read()
-
-    # OpenAI で要約生成
     response = client.chat.completions.create(
         model="gpt-3.5-turbo",
         messages=[
@@ -100,18 +129,10 @@ def daily_report():
             {"role": "user",   "content": content}
         ]
     )
-
-    # JST日時取得
-    jst_now = datetime.utcnow() + timedelta(hours=9)
+    jst_now = datetime.datetime.utcnow() + datetime.timedelta(hours=9)
     now_str = jst_now.strftime("%Y-%m-%d %H:%M")
-
-    # 要約本文
     summary_body = response.choices[0].message.content.strip()
-
-    # 改行を含めて文字列連結
     summary = "日報作成日時: " + now_str + "\n" + summary_body
-
-    # テキストとして返す
     buf = BytesIO(summary.encode("utf-8"))
     return send_file(
         buf,
