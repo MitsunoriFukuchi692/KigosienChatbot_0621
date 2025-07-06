@@ -136,25 +136,35 @@ function explainTerm() {
 
 // --- 翻訳機能追加 ---
 function initTranslation() {
-  const translateBtn = document.getElementById('translate-btn');
+  const translateBtn    = document.getElementById('translate-btn');
   const translateTarget = document.getElementById('translate-target');
+
   translateBtn.addEventListener('click', async () => {
-    const messages = document.querySelectorAll('#chat-window div');
-    let lastText = '';
-    for (let i = messages.length - 1; i >= 0; i--) {
-      if (messages[i].classList.contains('message-ai')) {
-        lastText = messages[i].textContent.replace(/^AI: /, '');
-        break;
-      }
+    // #chat-window の直下にある全要素から最新メッセージを取得
+    const messages = document.querySelectorAll('#chat-window > *');
+    if (messages.length === 0) {
+      return alert('翻訳するメッセージがありません');
     }
-    if (!lastText) return alert('翻訳するAIの応答が見つかりません');
-    const target = translateTarget.value;
+    const lastText = messages[messages.length - 1].textContent.trim();
+    const target   = translateTarget.value;
+
     try {
-      const res = await fetch('/translate', {
-        method: 'POST',
+      const res  = await fetch('/translate', {
+        method:  'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: lastText, target })
+        body:    JSON.stringify({ text: lastText, target })
       });
+      const data = await res.json();
+      if (data.translated) {
+        appendMessage('AI', data.translated);
+      } else {
+        console.error('Translation failed:', data);
+      }
+    } catch (err) {
+      console.error('Error calling translate API:', err);
+    }
+  });
+}
       const data = await res.json();
       if (data.translated) {
         appendMessage('AI', data.translated);
