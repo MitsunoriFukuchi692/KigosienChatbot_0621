@@ -14,7 +14,6 @@ client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 @app.after_request
 def add_header(response):
-    print("=== DEPLOYED VERSION: " + datetime.now().isoformat())
     response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
     response.headers["Pragma"] = "no-cache"
     response.headers["Expires"] = "0"
@@ -67,14 +66,32 @@ def explain():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+@app.route("/ja/translate", methods=["POST"])
+def translate():
+    data = request.get_json()
+    text = data.get("text", "")
+    direction = data.get("direction", "ja-en")
+    if direction == "ja-en":
+        prompt = f"次の日本語を英語に翻訳してください:\n\n{text}"
+    else:
+        prompt = f"Translate the following English into Japanese:\n\n{text}"
+    try:
+        resp = client.chat.completions.create(
+            model="gpt-3.5-turbo",
+            messages=[{"role": "user", "content": prompt}]
+        )
+        translated = resp.choices[0].message.content.strip()
+        return jsonify({"translated": translated})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
 @app.route("/ja/save_log", methods=["POST"])
 def save_log():
     data = request.get_json()
     log_dir = "logs"
     os.makedirs(log_dir, exist_ok=True)
-    # JST基準のファイル名タイムスタンプ
-    now_ts = (datetime.utcnow() + timedelta(hours=9)).strftime("log_%Y%m%d_%H%M%S.txt")
-    file_path = os.path.join(log_dir, now_ts)
+    now_ts = datetime.utcnow().strftime("%Y%m%d_%H%M%S")
+    file_path = os.path.join(log_dir, f"log_{now_ts}.txt")
     with open(file_path, "w", encoding="utf-8") as f:
         f.write("ユーザー名: " + data.get('username', '') + "\n")
         f.write("日時: " + data.get('timestamp', '') + "\n")
@@ -84,15 +101,12 @@ def save_log():
 
 @app.route("/ja/daily_report", methods=["GET"])
 def daily_report():
-    # 最新ログファイルを探す
     log_files = sorted(glob.glob("logs/log_*.txt"))
     if not log_files:
         return jsonify({"error": "ログがありません"}), 404
     latest = log_files[-1]
     with open(latest, encoding="utf-8") as f:
         content = f.read()
-
-    # OpenAI で要約生成
     response = client.chat.completions.create(
         model="gpt-3.5-turbo",
         messages=[
@@ -100,25 +114,13 @@ def daily_report():
             {"role": "user",   "content": content}
         ]
     )
-
     # JST日時取得
     jst_now = datetime.utcnow() + timedelta(hours=9)
     now_str = jst_now.strftime("%Y-%m-%d %H:%M")
-
-    # 要約本文
     summary_body = response.choices[0].message.content.strip()
-
-    # 改行を含めて文字列連結
     summary = "日報作成日時: " + now_str + "\n" + summary_body
-
-    # テキストとして返す
     buf = BytesIO(summary.encode("utf-8"))
-    return send_file(
-        buf,
-        as_attachment=True,
-        download_name="daily_report.txt",
-        mimetype="text/plain"
-    )
+    return send_file(buf, as_attachment=True, download_name="daily_report.txt", mimetype="text/plain")
 
 if __name__ == "__main__":
     app.run(debug=True)
