@@ -15,12 +15,12 @@
 
     <div class="input-panel">
       <h3>介護士</h3>
-      <input type="text" id="caregiver-input" placeholder="介護士の発言を入力">
+      <input id="caregiver-input" type="text" placeholder="介護士の発言を入力">
       <button onclick="startRecognition('caregiver-input')">🎤</button>
       <button onclick="sendMessage('caregiver')">送信</button>
 
       <h3>被介護者</h3>
-      <input type="text" id="caree-input" placeholder="被介護者の発言を入力">
+      <input id="caree-input" type="text" placeholder="被介護者の発言を入力">
       <button onclick="startRecognition('caree-input')">🎤</button>
       <button onclick="sendMessage('caree')">送信</button>
     </div>
@@ -39,7 +39,6 @@
       <p id="explanation"></p>
     </div>
 
-    <!-- 翻訳機能追加 -->
     <div id="translation-panel">
       <select id="translate-direction">
         <option value="ja-en" selected>日本語→英語</option>
@@ -53,7 +52,6 @@
       <button id="save-log-btn">会話ログ保存</button>
       <button id="daily-report-btn">📝 日報を生成</button>
     </div>
-
   </main>
 
   <script src="{{ url_for('static', filename='js/chatbot.v3.js') }}"></script>
