@@ -273,3 +273,65 @@ body {
   display: inline-block !important;
   text-align: center !important;
 }
+
+/* 1. ボタン半サイズ＆横並び */
+.action-buttons {
+  display: flex;
+  gap: 0.5em;
+  justify-content: center;
+  align-items: center;
+  margin: 1em 0;
+}
+.action-buttons button {
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  font-size: 16px;
+  line-height: 1;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* 2. ヘッダー領域縮小 */
+.bot-header {
+  height: 60px;
+  padding: 0.5em 1em;
+  overflow: hidden;
+}
+
+/* 3. 配色例 */
+:root {
+  --caregiver-bg: #e0f7fa;
+  --caree-bg:     #fff3e0;
+  --btn-primary:  #0288d1;
+}
+.caregiver-area {
+  background: var(--caregiver-bg);
+}
+.caree-area {
+  background: var(--caree-bg);
+}
+.action-buttons button {
+  background: var(--btn-primary);
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+}
+.action-buttons button:active {
+  opacity: 0.8;
+}
+
+/* 4. 余白・フォント */
+.chat-bubble {
+  margin: 1em;
+  padding: 0.8em 1em;
+  border-radius: 1em;
+  font-family: "メイリオ","Yu Gothic","Segoe UI",sans-serif;
+  font-size: 18px;
+}
+.container {
+  padding: 1em;
+}
+/* ---------- ここまで ---------- */
+
