@@ -123,4 +123,5 @@ def daily_report():
     return send_file(buf, as_attachment=True, download_name="daily_report.txt", mimetype="text/plain")
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port)
