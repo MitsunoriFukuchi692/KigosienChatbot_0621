@@ -4,7 +4,7 @@ from io import BytesIO
 from flask import Flask, request, jsonify, render_template, send_file
 from flask_cors import CORS
 from openai import OpenAI
-from datetime import datetime
+from datetime import datetime, timedelta
 
 app = Flask(__name__, static_folder="static")
 # キャッシュ無効化設定
@@ -14,6 +14,7 @@ client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 @app.after_request
 def add_header(response):
+    print("=== DEPLOYED VERSION: " + datetime.now().isoformat())
     response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
     response.headers["Pragma"] = "no-cache"
     response.headers["Expires"] = "0"
@@ -27,42 +28,22 @@ def index():
 @app.route("/ja/templates", methods=["GET"])
 def get_templates():
     return jsonify([
-        {
-            "category": "体調",
-            "caregiver": ["体調はいかがですか？", "痛みはありますか？"],
-            "caree":     ["元気です。", "今日は少しだるいです。"]
-        },
-        {
-            "category": "食事",
-            "caregiver": ["お食事は何を召し上がりましたか？", "美味しかったですか？"],
-            "caree":     ["サンドイッチを食べました。", "まだ食べていません。"]
-        },
-        {
-            "category": "薬",
-            "caregiver": ["お薬は飲みましたか？", "飲み忘れはないですか？"],
-            "caree":     ["飲みました。", "まだです。"]
-        },
-        {
-            "category": "睡眠",
-            "caregiver": ["昨夜はよく眠れましたか？", "何時にお休みになりましたか？"],
-            "caree":     ["よく眠れました。", "少し寝不足です。"]
-        },
-        {
-            "category": "排便",
-            "caregiver": ["お通じはいかがですか？", "問題ありませんか？"],
-            "caree":     ["問題ありません。", "少し便秘気味です。"]
-        }
+        {"category": "体調", "caregiver": ["体調はいかがですか？", "痛みはありますか？"], "caree": ["元気です。", "今日は少しだるいです。"]},
+        {"category": "食事", "caregiver": ["お食事は何を召し上がりましたか？", "美味しかったですか？"], "caree": ["サンドイッチを食べました。", "まだ食べていません。"]},
+        {"category": "薬",   "caregiver": ["お薬は飲みましたか？", "飲み忘れはないですか？"],      "caree": ["飲みました。", "まだです。"]},
+        {"category": "睡眠", "caregiver": ["昨夜はよく眠れましたか？", "何時にお休みになりましたか？"], "caree": ["よく眠れました。", "少し寝不足です。"]},
+        {"category": "排便", "caregiver": ["お通じはいかがですか？", "問題ありませんか？"],      "caree": ["問題ありません。", "少し便秘気味です。"]}
     ])
 
 @app.route("/ja/chat", methods=["POST"])
 def chat():
     data = request.get_json()
-    message = data.get("message","")
-    messages = data.get("messages",[])
+    message = data.get("message", "")
+    messages = data.get("messages", [])
     try:
         response = client.chat.completions.create(
             model="gpt-3.5-turbo",
-            messages=[{"role":"system","content":"You are a helpful assistant."}] + messages + [{"role":"user","content":message}]
+            messages=[{"role": "system", "content": "You are a helpful assistant."}] + messages + [{"role": "user", "content": message}]
         )
         return jsonify({"response": response.choices[0].message.content})
     except Exception as e:
@@ -71,11 +52,11 @@ def chat():
 @app.route("/ja/explain", methods=["POST"])
 def explain():
     data = request.get_json()
-    term = data.get("term","")
+    term = data.get("term", "")
     try:
         msgs = [
-            {"role":"system","content":"日本語で30文字以内で簡潔に専門用語を説明してください。"},
-            {"role":"user","content":f"{term}とは？"}
+            {"role": "system", "content": "日本語で30文字以内で簡潔に専門用語を説明してください。"},
+            {"role": "user",   "content": term + "とは？"}
         ]
         response = client.chat.completions.create(
             model="gpt-3.5-turbo",
@@ -91,33 +72,53 @@ def save_log():
     data = request.get_json()
     log_dir = "logs"
     os.makedirs(log_dir, exist_ok=True)
-    now = datetime.now().strftime("%Y%m%d_%H%M%S")
-    file_path = os.path.join(log_dir, f"log_{now}.txt")
+    # JST基準のファイル名タイムスタンプ
+    now_ts = (datetime.utcnow() + timedelta(hours=9)).strftime("log_%Y%m%d_%H%M%S.txt")
+    file_path = os.path.join(log_dir, now_ts)
     with open(file_path, "w", encoding="utf-8") as f:
-        f.write(f"ユーザー名: {data.get('username','')}\n")
-        f.write(f"日時: {data.get('timestamp','')}\n")
-        f.write(f"入力: {data.get('input','')}\n")
-        f.write(f"返答: {data.get('response','')}\n")
+        f.write("ユーザー名: " + data.get('username', '') + "\n")
+        f.write("日時: " + data.get('timestamp', '') + "\n")
+        f.write("入力: " + data.get('input', '') + "\n")
+        f.write("返答: " + data.get('response', '') + "\n")
     return jsonify({"status": "success"})
 
 @app.route("/ja/daily_report", methods=["GET"])
 def daily_report():
+    # 最新ログファイルを探す
     log_files = sorted(glob.glob("logs/log_*.txt"))
     if not log_files:
-        return jsonify({"error":"ログがありません"}), 404
+        return jsonify({"error": "ログがありません"}), 404
     latest = log_files[-1]
     with open(latest, encoding="utf-8") as f:
         content = f.read()
+
+    # OpenAI で要約生成
     response = client.chat.completions.create(
         model="gpt-3.5-turbo",
         messages=[
-            {"role":"system","content":"以下の対話ログをもとに、本日の介護日報を日本語で短くまとめてください。"},
-            {"role":"user","content":content}
+            {"role": "system", "content": "以下の対話ログをもとに、本日の介護日報を日本語で短くまとめてください。"},
+            {"role": "user",   "content": content}
         ]
     )
-    summary = response.choices[0].message.content.strip()
+
+    # JST日時取得
+    jst_now = datetime.utcnow() + timedelta(hours=9)
+    now_str = jst_now.strftime("%Y-%m-%d %H:%M")
+
+    # 要約本文
+    summary_body = response.choices[0].message.content.strip()
+
+    # 改行を含めて文字列連結
+    summary = "日報作成日時: " + now_str + "\n" + summary_body
+
+    # テキストとして返す
     buf = BytesIO(summary.encode("utf-8"))
-    return send_file(buf, as_attachment=True, download_name="daily_report.txt", mimetype="text/plain")
+    return send_file(
+        buf,
+        as_attachment=True,
+        download_name="daily_report.txt",
+        mimetype="text/plain"
+    )
 
 if __name__ == "__main__":
     app.run(debug=True)

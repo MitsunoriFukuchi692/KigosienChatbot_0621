@@ -1,4 +1,7 @@
 // ─── グローバルエラーキャッチャ ───
+
+console.log('🚀 chatbot.v2.js loaded at ' + new Date().toISOString());
+
 window.onerror = function(message, source, lineno, colno, error) {
   console.log(`🛑 Error: ${message} at ${source}:${lineno}:${colno}`);
 };
@@ -163,8 +166,15 @@ window.addEventListener('DOMContentLoaded', () => {
   document.getElementById('template-start-btn').addEventListener('click', startTemplateDialogue);
   document.getElementById('save-log-btn').addEventListener('click', saveLog);
   document.getElementById('daily-report-btn').addEventListener('click', () => {
+    // 日報生成前に必ずログ保存を行う
     saveLog()
-      .then(() => window.open('/ja/daily_report', '_blank'))
-      .catch(() => alert('ログ保存に失敗したため、日報を生成できません'));
+      .then(() => {
+        // 保存完了後に日報を新しいタブで開く
+        // 新しいタブではなく、同一ウィンドウでダウンロードを開始
+        window.location.href = '/ja/daily_report';
+      })
+      .catch(() => {
+        alert('ログ保存に失敗したため、日報を生成できません');
+      });
   });
 });
