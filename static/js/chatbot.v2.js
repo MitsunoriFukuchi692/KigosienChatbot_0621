@@ -1,7 +1,7 @@
 // ─── グローバルエラーキャッチャ ───
 console.log('🚀 chatbot.v2.js loaded at ' + new Date().toISOString());
 
-window\.onerror = function(message, source, lineno, colno, error) {
+window.onerror = function(message, source, lineno, colno, error) {
 console.log(`🛑 Error: ${message} at ${source}:${lineno}:${colno}`);
 };
 
