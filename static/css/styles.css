@@ -81,3 +81,74 @@
   padding-bottom: 72px; /* 送信エリア分の余白確保 */
 }
 
+/* 基本リセット */
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+}
+
+/* チャット全体コンテナを画面幅いっぱいに */
+#chat-container {
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+/* 入力パネルも幅いっぱいに */
+.input-panel {
+  display: flex;
+  flex-wrap: wrap;
+  width: 100%;
+  padding: 8px 0;
+  gap: 4px;
+  box-sizing: border-box;
+}
+
+/* 各要素を均等に並べる */
+.input-panel h3,
+.input-panel input,
+.input-panel button {
+  flex: 1 1 auto;
+  min-width: 0; /* はみ出し防止 */
+}
+
+/* テンプレートパネル等も幅いっぱい */
+#template-buttons,
+.tts-panel,
+#glossary,
+#translation-panel,
+.action-buttons {
+  width: 100%;
+  padding: 8px 0;
+  box-sizing: border-box;
+}
+
+/* スマホ向けメディアクエリ */
+@media screen and (max-width: 600px) {
+  /* メインコンテナに余白 */
+  main {
+    padding: 0 8px;
+  }
+  /* 入力パネルは縦並びに */
+  .input-panel {
+    flex-direction: column;
+  }
+  /* テンプレート・各パネルは縦積み */
+  #template-buttons,
+  .tts-panel,
+  #glossary,
+  #translation-panel,
+  .action-buttons {
+    display: block;
+    margin-top: 12px;
+  }
+  /* ボタン類を大きく、全幅 */
+  button, input[type="text"], select {
+    width: 100%;
+    margin-bottom: 8px;
+  }
+}
+
