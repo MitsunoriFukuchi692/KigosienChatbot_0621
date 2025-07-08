@@ -1,138 +1,54 @@
-/* styles.css - 介護支援ボット デザイン修正 完全版 */
+/* 急ぎ：元のレイアウト＋半サイズボタンだけ復活 */
+* { box-sizing: border-box; margin: 0; padding: 0; }
 
-/* リセット */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-/* 全体コンテナ */
 #chat-container {
   display: flex;
   flex-direction: column;
   height: 100vh;
-  max-height: 100vh;
-  background-color: #f5f5f5;
   padding: 8px;
-  font-family: "Noto Sans JP", sans-serif;
+  background: #f5f5f5;
 }
 
-/* ヘッダー */
-#chat-header {
-  flex: 0 0 auto;
-  text-align: center;
-  font-size: 1.25rem;
-  font-weight: bold;
-  padding: 8px 0;
-  border-bottom: 1px solid #ddd;
+#chat-window {
+  flex: 1;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background: #fff;
+  margin-bottom: 8px;
+  overflow-y: auto;
+}
+
+.input-panel {
+  display: flex;
+  gap: 8px;
   margin-bottom: 8px;
 }
 
-/* メッセージ領域（chat-window） */
-#chat-window {
-  flex: 1 1 auto;
-  overflow-y: auto;
-  padding-right: 4px;
-  background-color: #fff;
-  border: 1px solid #ddd;
+.input-panel input {
+  flex: 1;
+  padding: 8px;
+  border: 1px solid #ccc;
   border-radius: 8px;
 }
 
-/* メッセージバブル */
-.message {
-  max-width: 80%;
-  margin: 8px;
-  padding: 8px 12px;
-  border-radius: 12px;
-  line-height: 1.4;
-}
-.message.user {
-  align-self: flex-end;
-  background-color: #dcf8c6;
-}
-.message.bot {
-  align-self: flex-start;
-  background-color: #ffffff;
-}
-
-/* コントロール領域 */
-.input-panel,
-#controls {
-  flex: 0 0 auto;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding-top: 8px;
-  border-top: 1px solid #ddd;
-}
-
-/* マイク＆送信ボタン */
-.input-panel button,
-#controls button {
-  width: 48px;
-  height: 48px;
-  font-size: 24px;
-  background-color: #007bff;
+.input-panel button {
+  width: 32px;   /* 元の半分サイズ */
+  height: 32px;  /* 元の半分サイズ */
+  font-size: 18px;
+  background: #007bff;
   color: #fff;
   border: none;
   border-radius: 8px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: background-color 0.2s;
-}
-.input-panel button:hover,
-#controls button:hover {
-  background-color: #0056b3;
 }
 
-/* テキスト入力欄 */
-.input-panel input,
-#input-field input {
-  flex: 1;
-  padding: 12px;
-  font-size: 1rem;
-  border: 1px solid #ccc;
-  border-radius: 8px;
-  margin: 0 8px;
-}
-
-/* スクロールバー調整 */
-#chat-window::-webkit-scrollbar {
-  width: 6px;
-}
-#chat-window::-webkit-scrollbar-thumb {
-  background-color: rgba(0,0,0,0.2);
-  border-radius: 3px;
-}
-
-/* スマホ対応メディアクエリ */
+/* スマホも同じレイアウトで */
 @media only screen and (max-width: 600px) {
-  /* コンテナ内側 */
-  #chat-container {
-    padding: 4px;
+  .input-panel {
+    flex-direction: row;  /* 縦積みをやめる */
   }
-  /* ヘッダー */
-  #chat-header {
-    font-size: 1rem;
-  }
-  /* 入力欄ボタン */
-  .input-panel button,
-  #controls button {
-    width: 36px;
-    height: 36px;
+  .input-panel button {
+    width: 32px;
+    height: 32px;
     font-size: 18px;
-  }
-  /* テキスト入力 */
-  .input-panel input,
-  #input-field input {
-    padding: 10px;
-    font-size: 0.9rem;
-  }
-  /* メッセージ幅 */
-  .message {
-    max-width: 90%;
   }
 }
