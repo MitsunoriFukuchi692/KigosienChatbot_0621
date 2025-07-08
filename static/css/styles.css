@@ -52,3 +52,32 @@
     font-size: 18px;
   }
 }
+
+/* ——— 緊急：送信エリアを枠内に固定 ——— */
+#chat-container {
+  position: relative;
+}
+.input-panel {
+  position: absolute;
+  bottom: 16px;         /* チャット枠の下から16px上に配置 */
+  left: 8px;            /* 左余白 */
+  right: 8px;           /* 右余白 */
+  background: rgba(245,245,245,0.9);
+  padding: 4px;
+  border-radius: 8px;
+  display: flex;
+  gap: 8px;
+}
+.input-panel input {
+  flex: 1;
+  padding: 8px;
+}
+.input-panel button {
+  width: 40px;
+  height: 40px;
+  font-size: 20px;
+}
+#chat-window {
+  padding-bottom: 72px; /* 送信エリア分の余白確保 */
+}
+
