@@ -1,337 +1,137 @@
-body {
-  font-family: sans-serif;
+/* styles.css - 介護支援ボット デザイン修正 完全版 */
+
+/* リセット */
+* {
   margin: 0;
   padding: 0;
-  background: #f4f4f4;
-}
-
-header {
-  background-color: #4caf50;
-  color: white;
-  padding: 1rem;
-  text-align: center;
-  font-size: 1.5rem;
-}
-
-.chat-container {
-  max-width: 800px;
-  margin: 0 auto;
-  padding: 1rem;
-  background: white;
-  border-radius: 10px;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-}
-
-#chat-window {
-  border: 1px solid #ccc;
-  border-radius: 8px;
-  padding: 1rem;
-  height: 200px;
-  overflow-y: auto;
-  background-color: #f0f0ff;
-  margin-bottom: 1rem;
-}
-
-.input-panel {
-  margin-bottom: 1rem;
-}
-
-.input-panel h3 {
-  margin: 0.5rem 0;
-}
-
-.input-panel input[type="text"] {
-  width: 60%;
-  padding: 0.5rem;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-}
-
-.input-panel button {
-  padding: 0.5rem 0.75rem;
-  margin-left: 0.25rem;
-  border: none;
-  border-radius: 5px;
-  background-color: #4caf50;
-  color: white;
-  cursor: pointer;
-}
-
-.template-buttons {
-  margin-top: 0.5rem;
-}
-
-.template-buttons button {
-  margin: 0.25rem;
-  padding: 0.4rem 0.75rem;
-  background-color: #2196f3;
-  color: white;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  font-size: 0.9rem;
-}
-
-.controls {
-  margin-bottom: 1rem;
-}
-
-.controls label {
-  display: block;
-  margin-bottom: 0.5rem;
-}
-
-.explanation {
-  margin-bottom: 1rem;
-}
-
-#explanation-text {
-  margin-top: 0.5rem;
-  font-weight: bold;
-  color: #444;
-}
-
-.log-save button {
-  background-color: #ff9800;
-  padding: 0.5rem 1rem;
-  color: white;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-}
-
-@media screen and (max-width: 600px) {
-  #chat-window {
-    height: 150px;
-  }
-
-  .input-panel input[type="text"] {
-    width: 100%;
-    margin-bottom: 0.5rem;
-  }
-
-  .input-panel button {
-    width: 100%;
-    margin-top: 0.25rem;
-  }
-
-  .template-buttons button {
-    font-size: 0.8rem;
-  }
-}
-
-/* 小さい画面向けレスポンシブ */
-@media (max-width: 600px) {
-  header h1 {
-    font-size: 16px;
-    padding: 8px 0;
-  }
-  .input-panel, .tts-panel, #glossary {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-  }
-  .input-panel input[type="text"] {
-    width: 100%;
-    box-sizing: border-box;
-  }
-  .input-panel button, #template-start-btn, #save-log-btn {
-    width: 100%;
-  }
-  #template-buttons {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 4px;
-  }
-}
-
-/* ヘッダーを細く＆文言変更 */
-header h1 {
-  background-color: #4CAF50; /* 既存の色に合わせて */
-  color: white;
-  font-size: 16px;           /* 小さめに */
-  padding: 8px 0;            /* 上下の余白を控えめに */
-  text-align: center;
-}
-
-/* メッセージの色分け */
-.message-caregiver {
-  background-color: #e0f7fa; /* 介護士：淡い水色 */
-  color: #006064;
-  padding: 8px;
-  border-radius: 4px;
-  margin-bottom: 4px;
-}
-.message-caree {
-  background-color: #fff3e0; /* 被介護者：淡いオレンジ */
-  color: #e65100;
-  padding: 8px;
-  border-radius: 4px;
-  margin-bottom: 4px;
-}
-
-/* 送信ボタンを目立たせる */
-.input-panel button,
-#save-log-btn,
-#template-start-btn {
-  background-color: #ff9800; /* オレンジ */
-  color: white;
-  border: none;
-  font-weight: bold;
-  padding: 12px;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: background-color .2s;
-}
-.input-panel button:hover,
-#save-log-btn:hover,
-#template-start-btn:hover {
-  background-color: #fb8c00; /* 濃いオレンジ */
-}
-
-/* テキスト入力フィールドとボタンの幅をスマホでも広く */
-.input-panel input[type="text"],
-.input-panel button {
-  width: 100%;
   box-sizing: border-box;
-  margin-top: 4px;
 }
 
-/* 高齢者向け大きな文字＆コンパクトボタン配置 */
-body {
-  font-size: 18px; /* 全体の文字を大きく */
-}
-
-/* 入力パネルのレイアウト調整 */
-.input-panel {
+/* 全体コンテナ */
+#chat-container {
   display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-/* マイク＆送信ボタンを横並びにコンパクト化 */
-.input-panel button {
-  flex: 0 0 48px;      /* 幅 48px に固定 */
-  height: 48px;        /* 高さ 48px に固定 */
-  font-size: 24px;     /* ボタン内絵文字などは大きめ */
-  padding: 0;
-}
-
-/* テキスト入力は残り幅を使う */
-.input-panel input[type="text"] {
-  flex: 1;             /* 横に伸びる */
-  font-size: 18px;     /* 大きな文字 */
+  flex-direction: column;
+  height: 100vh;
+  max-height: 100vh;
+  background-color: #f5f5f5;
   padding: 8px;
+  font-family: "Noto Sans JP", sans-serif;
 }
 
-/* テンプレートボタンの文字を大きく＆配置 */
-#template-buttons button {
-  font-size: 20px;     /* 大きな文字 */
-  padding: 12px;       /* 十分な余白 */
-  margin: 4px;         /* ボタン間のスペース */
+/* ヘッダー */
+#chat-header {
+  flex: 0 0 auto;
+  text-align: center;
+  font-size: 1.25rem;
+  font-weight: bold;
+  padding: 8px 0;
+  border-bottom: 1px solid #ddd;
+  margin-bottom: 8px;
+}
+
+/* メッセージ領域 */
+#messages {
   flex: 1 1 auto;
+  overflow-y: auto;
+  padding-right: 4px;
 }
 
-/* 「テンプレート対話開始」も大きめ */
-#template-start-btn {
-  font-size: 20px;
-  padding: 12px;
-  width: 100%;
-  box-sizing: border-box;
+/* メッセージバブル */
+.message {
+  max-width: 80%;
+  margin-bottom: 8px;
+  padding: 8px 12px;
+  border-radius: 12px;
+  line-height: 1.4;
+}
+.message.user {
+  align-self: flex-end;
+  background-color: #dcf8c6;
+}
+.message.bot {
+  align-self: flex-start;
+  background-color: #ffffff;
+  border: 1px solid #ddd;
 }
 
-/* 保存ボタンも同じく */
-#save-log-btn {
-  font-size: 20px;
-  padding: 12px;
-  width: 100%;
-  box-sizing: border-box;
-}
-
-/* 会話ログ保存 & 日報生成ボタンを横並びに */
-.action-buttons {
+/* コントロール領域 */
+#controls {
+  flex: 0 0 auto;
   display: flex;
-  gap: 8px;
-}
-.action-buttons button {
-  flex: 1;
-  font-size: 18px;    /* ボタン内文字も少し大きめ */
-  padding: 12px;      /* タップしやすいサイズに */
-  box-sizing: border-box;
-}
-
-/* 会話ログ保存 & 日報生成ボタンを横並びに・半分幅に */
-/* ────────── 横並び・半分幅を強制 ────────── */
-.action-buttons {
-  display: flex !important;
-  gap: 8px !important;
-}
-.action-buttons button {
-  flex: 1 1 0 !important;     /* 横に等分 */
-  max-width: 50% !important;  /* それぞれ半分幅まで */
-  box-sizing: border-box !important;
-  display: inline-block !important;
-  text-align: center !important;
-}
-
-/* 1. ボタン半サイズ＆横並び */
-.action-buttons {
-  display: flex;
-  gap: 0.5em;
-  justify-content: center;
+  justify-content: space-between;
   align-items: center;
-  margin: 1em 0;
-}
-.action-buttons button {
-  width: 20px;
-  height: 20px;
-  padding: 0;
-  font-size: 16px;
-  line-height: 1;
-  display: inline-flex;
-  justify-content: center;
-  align-items: center;
+  padding-top: 8px;
+  border-top: 1px solid #ddd;
 }
 
-/* 2. ヘッダー領域縮小 */
-.bot-header {
-  height: 60px;
-  padding: 0.5em 1em;
-  overflow: hidden;
-}
-
-/* 3. 配色例 */
-:root {
-  --caregiver-bg: #e0f7fa;
-  --caree-bg:     #fff3e0;
-  --btn-primary:  #0288d1;
-}
-.caregiver-area {
-  background: var(--caregiver-bg);
-}
-.caree-area {
-  background: var(--caree-bg);
-}
-.action-buttons button {
-  background: var(--btn-primary);
+/* マイク＆送信ボタン */
+#controls button {
+  width: 48px;
+  height: 48px;
+  font-size: 24px;
+  background-color: #007bff;
   color: #fff;
   border: none;
-  border-radius: 4px;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s;
 }
-.action-buttons button:active {
-  opacity: 0.8;
+#controls button:hover {
+  background-color: #0056b3;
 }
 
-/* 4. 余白・フォント */
-.chat-bubble {
-  margin: 1em;
-  padding: 0.8em 1em;
-  border-radius: 1em;
-  font-family: "メイリオ","Yu Gothic","Segoe UI",sans-serif;
-  font-size: 18px;
+/* テキスト入力欄 */
+#input-field {
+  flex: 1;
+  margin: 0 8px;
 }
-.container {
-  padding: 1em;
+#input-field input {
+  width: 100%;
+  padding: 12px;
+  font-size: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 8px;
 }
-/* ---------- ここまで ---------- */
 
+/* スクロールバー調整 */
+#messages::-webkit-scrollbar {
+  width: 6px;
+}
+#messages::-webkit-scrollbar-thumb {
+  background-color: rgba(0,0,0,0.2);
+  border-radius: 3px;
+}
+
+/* スマホ対応メディアクエリ */
+@media only screen and (max-width: 600px) {
+  /* コンテナ全体を少し内側に */
+  #chat-container {
+    padding: 4px;
+  }
+
+  /* ヘッダーサイズを調整 */
+  #chat-header {
+    font-size: 1rem;
+  }
+
+  /* コントロール内ボタン */
+  #controls button {
+    width: 36px;
+    height: 36px;
+    font-size: 18px;
+  }
+
+  /* テキスト入力欄 */
+  #input-field input {
+    padding: 10px;
+    font-size: 0.9rem;
+  }
+
+  /* メッセージ幅を調整 */
+  .message {
+    max-width: 90%;
+  }
+}
