@@ -29,17 +29,20 @@
   margin-bottom: 8px;
 }
 
-/* メッセージ領域 */
-#messages {
+/* メッセージ領域（chat-window） */
+#chat-window {
   flex: 1 1 auto;
   overflow-y: auto;
   padding-right: 4px;
+  background-color: #fff;
+  border: 1px solid #ddd;
+  border-radius: 8px;
 }
 
 /* メッセージバブル */
 .message {
   max-width: 80%;
-  margin-bottom: 8px;
+  margin: 8px;
   padding: 8px 12px;
   border-radius: 12px;
   line-height: 1.4;
@@ -51,10 +54,10 @@
 .message.bot {
   align-self: flex-start;
   background-color: #ffffff;
-  border: 1px solid #ddd;
 }
 
 /* コントロール領域 */
+.input-panel,
 #controls {
   flex: 0 0 auto;
   display: flex;
@@ -65,6 +68,7 @@
 }
 
 /* マイク＆送信ボタン */
+.input-panel button,
 #controls button {
   width: 48px;
   height: 48px;
@@ -79,58 +83,55 @@
   justify-content: center;
   transition: background-color 0.2s;
 }
+.input-panel button:hover,
 #controls button:hover {
   background-color: #0056b3;
 }
 
 /* テキスト入力欄 */
-#input-field {
-  flex: 1;
-  margin: 0 8px;
-}
+.input-panel input,
 #input-field input {
-  width: 100%;
+  flex: 1;
   padding: 12px;
   font-size: 1rem;
   border: 1px solid #ccc;
   border-radius: 8px;
+  margin: 0 8px;
 }
 
 /* スクロールバー調整 */
-#messages::-webkit-scrollbar {
+#chat-window::-webkit-scrollbar {
   width: 6px;
 }
-#messages::-webkit-scrollbar-thumb {
+#chat-window::-webkit-scrollbar-thumb {
   background-color: rgba(0,0,0,0.2);
   border-radius: 3px;
 }
 
 /* スマホ対応メディアクエリ */
 @media only screen and (max-width: 600px) {
-  /* コンテナ全体を少し内側に */
+  /* コンテナ内側 */
   #chat-container {
     padding: 4px;
   }
-
-  /* ヘッダーサイズを調整 */
+  /* ヘッダー */
   #chat-header {
     font-size: 1rem;
   }
-
-  /* コントロール内ボタン */
+  /* 入力欄ボタン */
+  .input-panel button,
   #controls button {
     width: 36px;
     height: 36px;
     font-size: 18px;
   }
-
-  /* テキスト入力欄 */
+  /* テキスト入力 */
+  .input-panel input,
   #input-field input {
     padding: 10px;
     font-size: 0.9rem;
   }
-
-  /* メッセージ幅を調整 */
+  /* メッセージ幅 */
   .message {
     max-width: 90%;
   }
