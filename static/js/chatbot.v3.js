@@ -4,16 +4,15 @@
 document.addEventListener("DOMContentLoaded", () => {
   console.log('🚀 chatbot.v3.js loaded');
 
-  // ─── グローバルエラーキャッチャ ───
+  // グローバルエラーキャッチ
   window.onerror = (message, source, lineno, colno) => {
     console.error(`Error: ${message} at ${source}:${lineno}:${colno}`);
   };
 
-  // --- 音声認識設定 ---
+  // 音声認識設定
   const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
   let recog = null;
   let activeInput = null;
-
   if (SpeechRecognition) {
     recog = new SpeechRecognition();
     recog.lang = 'ja-JP';
@@ -27,6 +26,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  // マイク開始関数
   window.startRecognition = (inputId) => {
     if (!recog) {
       alert('音声認識に対応していません');
@@ -37,7 +37,7 @@ document.addEventListener("DOMContentLoaded", () => {
     recog.start();
   };
 
-  // --- テキスト読み上げ ---
+  // テキスト読み上げ
   function speak(text, lang = 'ja-JP') {
     const utter = new SpeechSynthesisUtterance(text);
     utter.lang = lang;
@@ -46,9 +46,8 @@ document.addEventListener("DOMContentLoaded", () => {
     window.speechSynthesis.speak(utter);
   }
 
-  // --- メッセージ追加 ---
+  // メッセージ追加
   const chatWindow = document.getElementById('chat-window');
-
   function appendMessage(role, text) {
     const div = document.createElement('div');
     div.classList.add('message', role === 'caregiver' ? 'caregiver' : 'caree');
@@ -57,7 +56,7 @@ document.addEventListener("DOMContentLoaded", () => {
     chatWindow.scrollTop = chatWindow.scrollHeight;
   }
 
-  // --- 送信ハンドラ ---
+  // 送信ボタンハンドラ
   document.getElementById('send-caregiver').addEventListener('click', () => {
     const input = document.getElementById('caregiver-input');
     const txt = input.value.trim();
@@ -66,7 +65,6 @@ document.addEventListener("DOMContentLoaded", () => {
     speak(txt);
     input.value = '';
   });
-
   document.getElementById('send-caree').addEventListener('click', () => {
     const input = document.getElementById('caree-input');
     const txt = input.value.trim();
@@ -76,7 +74,7 @@ document.addEventListener("DOMContentLoaded", () => {
     input.value = '';
   });
 
-  // --- テンプレート対話 ---
+  // テンプレート対話開始
   document.getElementById('template-start-btn').addEventListener('click', () => {
     fetch('/ja/templates')
       .then(res => res.json())
@@ -94,8 +92,7 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   function showTemplateOptions(item) {
-    const panel = document.getElementById('template-buttons');
-    panel.innerHTML = '';
+    const panel = document.getElementById('template-buttons'); panel.innerHTML = '';
     item.caregiver.forEach(text => {
       const b = document.createElement('button'); b.textContent = text;
       b.addEventListener('click', () => {
@@ -107,8 +104,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function showCareeOptions(item) {
-    const panel = document.getElementById('template-buttons');
-    panel.innerHTML = '';
+    const panel = document.getElementById('template-buttons'); panel.innerHTML = '';
     item.caree.forEach(text => {
       const b = document.createElement('button'); b.textContent = text;
       b.addEventListener('click', () => {
@@ -119,7 +115,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // --- 用語説明 ---
+  // 用語説明
   document.getElementById('explain-btn').addEventListener('click', () => {
     const term = document.getElementById('term').value.trim();
     if (!term) return alert('用語を入力してください');
@@ -135,7 +131,7 @@ document.addEventListener("DOMContentLoaded", () => {
       .catch(() => alert('用語説明失敗'));
   });
 
-  // --- 翻訳 ---
+  // 翻訳
   document.getElementById('translate-btn').addEventListener('click', () => {
     const txt = document.getElementById('translation-result').textContent || '';
     if (!txt) return alert('まず用語説明を実行');
@@ -145,11 +141,14 @@ document.addEventListener("DOMContentLoaded", () => {
       body: JSON.stringify({text: txt, direction: dir})
     })
       .then(res => res.json())
-      .then(j => { document.getElementById('translation-result').textContent = j.translated; speak(j.translated, dir==='ja-en'?'en-US':'ja-JP'); })
+      .then(j => {
+        document.getElementById('translation-result').textContent = j.translated;
+        speak(j.translated, dir==='ja-en'?'en-US':'ja-JP');
+      })
       .catch(() => alert('翻訳失敗'));
   });
 
-  // --- 会話ログ保存 ---
+  // 会話ログ保存
   document.getElementById('save-log-btn').addEventListener('click', () => {
     const lines = Array.from(chatWindow.children).map(d => d.textContent).join('\n');
     fetch('/ja/save_log', {
@@ -161,7 +160,7 @@ document.addEventListener("DOMContentLoaded", () => {
       .catch(() => alert('ログ保存失敗'));
   });
 
-  // --- 日報生成 ---
+  // 日報生成
   document.getElementById('daily-report-btn').addEventListener('click', () => {
     document.getElementById('save-log-btn').click();
     setTimeout(() => location.href='/ja/daily_report', 500);
