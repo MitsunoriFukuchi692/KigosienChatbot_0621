@@ -1,4 +1,3 @@
-<!DOCTYPE html>
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
@@ -8,25 +7,30 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
 </head>
 <body>
-  <header><h1>介護支援ボット</h1></header>
+  <header>
+    <h1 id="chat-header">介護支援ボット</h1>
+  </header>
+
   <main>
     <div id="chat-container">
-      <div id="chat-window"></div>
+      <div id="chat-window">
+        <!-- チャットメッセージがここに追加される -->
+      </div>
     </div>
 
     <div class="input-panel">
-      <h3>介護士</h3>
+      <label class="role-label caregiver" for="caregiver-input">介護士</label>
       <input id="caregiver-input" type="text" placeholder="介護士の発言を入力">
-      <button onclick="startRecognition('caregiver-input')">🎤</button>
-      <button onclick="sendMessage('caregiver')">送信</button>
+      <button id="mic-caregiver" onclick="startRecognition('caregiver-input')">🎤</button>
+      <button id="send-caregiver" onclick="sendMessage('caregiver')">送信</button>
 
-      <h3>被介護者</h3>
+      <label class="role-label caree" for="caree-input">被介護者</label>
       <input id="caree-input" type="text" placeholder="被介護者の発言を入力">
-      <button onclick="startRecognition('caree-input')">🎤</button>
-      <button onclick="sendMessage('caree')">送信</button>
+      <button id="mic-caree" onclick="startRecognition('caree-input')">🎤</button>
+      <button id="send-caree" onclick="sendMessage('caree')">送信</button>
     </div>
 
-    <button id="template-start-btn">テンプレート対話開始</button>
+    <button id="template-start-btn" class="template-start">テンプレート対話開始</button>
     <div id="template-buttons"></div>
 
     <div class="tts-panel">
@@ -46,7 +50,7 @@
         <option value="en-ja">英語→日本語</option>
       </select>
       <button id="translate-btn">翻訳</button>
-      <p id="translation-result" style="margin-top:8px; font-weight:bold;"></p>
+      <p id="translation-result"></p>
     </div>
 
     <div class="action-buttons">
