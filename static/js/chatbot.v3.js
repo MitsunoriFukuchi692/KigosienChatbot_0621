@@ -131,19 +131,25 @@ document.addEventListener("DOMContentLoaded", () => {
       .catch(() => alert('用語説明失敗'));
   });
 
-  // 翻訳
+    // 翻訳
   document.getElementById('translate-btn').addEventListener('click', () => {
-    const txt = document.getElementById('translation-result').textContent || '';
-    if (!txt) return alert('まず用語説明を実行');
+    // 用語説明結果を参照
+    const explanation = document.getElementById('explanation').textContent.trim();
+    if (!explanation) {
+      alert('まず用語説明を実行');
+      return;
+    }
     const dir = document.getElementById('translate-direction').value;
     fetch('/ja/translate', {
-      method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({text: txt, direction: dir})
+      method: 'POST',
+      headers: { 'Content-Type':'application/json' },
+      body: JSON.stringify({ text: explanation, direction: dir })
     })
       .then(res => res.json())
       .then(j => {
         document.getElementById('translation-result').textContent = j.translated;
-        speak(j.translated, dir==='ja-en'?'en-US':'ja-JP');
+        // 翻訳結果読み上げ
+        speak(j.translated, dir === 'ja-en' ? 'en-US' : 'ja-JP');
       })
       .catch(() => alert('翻訳失敗'));
   });
