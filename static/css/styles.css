@@ -22,6 +22,8 @@ body, html {
 /* ヘッダー（固定） */
 #chat-header {
   flex: 0 0 auto;
+  width: 100%;            /* 幅いっぱい */
+  margin: 0 auto;         /* 中央寄せ */
   background-color: #007bff;
   color: #fff;
   text-align: center;
@@ -98,201 +100,28 @@ body, html {
     font-size: 18px;
   }
 }
-/* 急ぎ：元のレイアウト＋半サイズボタンだけ復活 */
-* { box-sizing: border-box; margin: 0; padding: 0; }
 
-#chat-container {
-  display: flex;
-  flex-direction: column;
-  height: 100vh;
-  padding: 8px;
-  background: #f5f5f5;
-}
-
-#chat-window {
-  flex: 1;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  background: #fff;
-  margin-bottom: 8px;
-  overflow-y: auto;
-}
-
-.input-panel {
-  display: flex;
-  gap: 8px;
-  margin-bottom: 8px;
-}
-
-.input-panel input {
-  flex: 1;
-  padding: 8px;
-  border: 1px solid #ccc;
-  border-radius: 8px;
-}
-
-.input-panel button {
-  width: 32px;   /* 元の半分サイズ */
-  height: 32px;  /* 元の半分サイズ */
-  font-size: 18px;
-  background: #007bff;
+/* ——— 追加要望 ——— */
+/* ページトップのタイトル */
+#chat-header {
+  background-color: #007bff;  /* 青背景 */
   color: #fff;
-  border: none;
-  border-radius: 8px;
-}
-
-/* スマホも同じレイアウトで */
-@media only screen and (max-width: 600px) {
-  .input-panel {
-    flex-direction: row;  /* 縦積みをやめる */
-  }
-  .input-panel button {
-    width: 32px;
-    height: 32px;
-    font-size: 18px;
-  }
-}
-
-/* ——— 緊急：送信エリアを枠内に固定 ——— */
-#chat-container {
-  position: relative;
-}
-.input-panel {
-  position: absolute;
-  bottom: 16px;         /* チャット枠の下から16px上に配置 */
-  left: 8px;            /* 左余白 */
-  right: 8px;           /* 右余白 */
-  background: rgba(245,245,245,0.9);
-  padding: 4px;
-  border-radius: 8px;
-  display: flex;
-  gap: 8px;
-}
-.input-panel input {
-  flex: 1;
-  padding: 8px;
-}
-.input-panel button {
-  width: 40px;
-  height: 40px;
-  font-size: 20px;
-}
-#chat-window {
-  padding-bottom: 72px; /* 送信エリア分の余白確保 */
-}
-
-/* 基本リセット */
-html, body {
-  margin: 0;
-  padding: 0;
+  text-align: center;
   width: 100%;
-  height: 100%;
-  box-sizing: border-box;
+  margin: 0 auto;
 }
-
-/* チャット全体コンテナを画面幅いっぱいに */
-#chat-container {
-  width: 100%;
-  max-width: 100%;
-  overflow: hidden;
+/* 介護士ラベルを青色に */
+.input-panel label:nth-of-type(1) {
+  color: #007bff;
+  font-weight: bold;
 }
-
-/* 入力パネルも幅いっぱいに */
-.input-panel {
-  display: flex;
-  flex-wrap: wrap;
-  width: 100%;
-  padding: 8px 0;
-  gap: 4px;
-  box-sizing: border-box;
+/* 被介護者ラベルを緑色に */
+.input-panel label:nth-of-type(2) {
+  color: #28a745;
+  font-weight: bold;
 }
-
-/* 各要素を均等に並べる */
-.input-panel h3,
-.input-panel input,
-.input-panel button {
-  flex: 1 1 auto;
-  min-width: 0; /* はみ出し防止 */
+/* テンプレート開始ボタン周りの余白を削除 */
+button.template-start,
+#chat-window + button {
+  margin-top: 0 !important;
 }
-
-/* テンプレートパネル等も幅いっぱい */
-#template-buttons,
-.tts-panel,
-#glossary,
-#translation-panel,
-.action-buttons {
-  width: 100%;
-  padding: 8px 0;
-  box-sizing: border-box;
-}
-
-/* スマホ向けメディアクエリ */
-@media screen and (max-width: 600px) {
-  /* メインコンテナに余白 */
-  main {
-    padding: 0 8px;
-  }
-  /* 入力パネルは縦並びに */
-  .input-panel {
-    flex-direction: column;
-  }
-  /* テンプレート・各パネルは縦積み */
-  #template-buttons,
-  .tts-panel,
-  #glossary,
-  #translation-panel,
-  .action-buttons {
-    display: block;
-    margin-top: 12px;
-  }
-  /* ボタン類を大きく、全幅 */
-  button, input[type="text"], select {
-    width: 100%;
-    margin-bottom: 8px;
-  }
-}
-
-/* ── 入力パネル：ラベル・入力欄・マイク・送信ボタンを横並びに ── */
-.input-panel {
-  display: grid;
-  grid-template-columns: auto 1fr 48px 48px;
-  align-items: center;
-  gap: 8px;
-  flex-wrap: unset;
-  width: 100%;
-  padding: 8px 0;
-  box-sizing: border-box;
-}
-
-/* もし既存の .input-panel の flex 設定が残っていれば無効化 */
-// .input-panel { display: flex; /* ← コメントアウト or 削除 */ }
-
-/* ── チャットバブルに色分け ── */
-/* 介護士 */
-.message.caregiver {
-  background-color: #e0f7fa;
-  color: #006064;
-  padding: 8px;
-  border-radius: 8px;
-  margin: 4px 0;
-  max-width: 80%;
-}
-
-/* 被介護者 */
-.message.caree {
-  background-color: #ffe0b2;
-  color: #e65100;
-  padding: 8px;
-  border-radius: 8px;
-  margin: 4px 0;
-  max-width: 80%;
-  justify-self: end; /* 右寄せにしたい場合 */
-}
-
-/* ※JS側で挿入するHTMLが  
-   <div class="message caregiver">...</div>  
-   または  
-   <div class="message caree">...</div>  
-   になっていることを確認してください。 */
-
-
