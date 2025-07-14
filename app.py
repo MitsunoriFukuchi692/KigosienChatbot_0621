@@ -1,70 +1,127 @@
 import os
-import sqlite3
-from datetime import datetime
-from flask import Flask, request, jsonify
+import glob
+from io import BytesIO
+from flask import Flask, request, jsonify, render_template, send_file
 from flask_cors import CORS
-import openai
+from openai import OpenAI
+from datetime import datetime, timedelta
 
-# --- Configuration ---
-openai.api_key = os.getenv('OPENAI_API_KEY')
-app = Flask(__name__)
+app = Flask(__name__, static_folder="static")
+# キャッシュ無効化設定
+app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0
 CORS(app)
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
-# --- SQLite setup ---
-DB_PATH = os.path.join(app.root_path, 'care_logs.db')
-conn = sqlite3.connect(DB_PATH, check_same_thread=False)
-cursor = conn.cursor()
-cursor.execute(
-    '''
-    CREATE TABLE IF NOT EXISTS care_logs (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        timestamp TEXT,
-        category TEXT,
-        phrase TEXT
-    )
-    '''
-)
-conn.commit()
+@app.after_request
+def add_header(response):
+    response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
+    response.headers["Pragma"] = "no-cache"
+    response.headers["Expires"] = "0"
+    return response
 
-# --- Templates data (static) ---
-TEMPLATES = [
-    {"category": "体調", "phrases": ["今日の調子はいかがですか？", "痛みはありますか？"]},
-    {"category": "服薬", "phrases": ["お薬はもう飲みましたか？", "飲み忘れはありませんか？"]},
-    {"category": "排泄", "phrases": ["トイレに行きましょうか？", "お手伝いが必要ですか？"]}
-]
+@app.route("/")
+@app.route("/ja/")
+def index():
+    return render_template("index.html")
 
-@app.route('/templates', methods=['GET'])
+@app.route("/ja/templates", methods=["GET"])
 def get_templates():
-    return jsonify(TEMPLATES)
+    return jsonify([
+        {"category": "体調", "caregiver": ["体調はいかがですか？", "痛みはありますか？"], "caree": ["元気です。", "今日は少しだるいです。"]},
+        {"category": "食事", "caregiver": ["お食事は何を召し上がりましたか？", "美味しかったですか？"], "caree": ["サンドイッチを食べました。", "まだ食べていません。"]},
+        {"category": "薬",   "caregiver": ["お薬は飲みましたか？", "飲み忘れはないですか？"],      "caree": ["飲みました。", "まだです。"]},
+        {"category": "睡眠", "caregiver": ["昨夜はよく眠れましたか？", "何時にお休みになりましたか？"], "caree": ["よく眠れました。", "少し寝不足です。"]},
+        {"category": "排便", "caregiver": ["お通じはいかがですか？", "問題ありませんか？"],      "caree": ["問題ありません。", "少し便秘気味です。"]}
+    ])
 
-@app.route('/log', methods=['POST'])
-def log_phrase():
-    data = request.get_json(force=True)
-    category = data.get('category')
-    phrase = data.get('phrase')
-    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    cursor.execute(
-        'INSERT INTO care_logs (timestamp, category, phrase) VALUES (?, ?, ?)',
-        (timestamp, category, phrase)
+@app.route("/ja/chat", methods=["POST"])
+def chat():
+    data = request.get_json()
+    message = data.get("message", "")
+    messages = data.get("messages", [])
+    try:
+        response = client.chat.completions.create(
+            model="gpt-3.5-turbo",
+            messages=[{"role": "system", "content": "You are a helpful assistant."}] + messages + [{"role": "user", "content": message}]
+        )
+        return jsonify({"response": response.choices[0].message.content})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/ja/explain", methods=["POST"])
+def explain():
+    data = request.get_json()
+    term = data.get("term", "")
+    try:
+        msgs = [
+            {"role": "system", "content": "日本語で30文字以内で簡潔に専門用語を説明してください。"},
+            {"role": "user",   "content": term + "とは？"}
+        ]
+        response = client.chat.completions.create(
+            model="gpt-3.5-turbo",
+            messages=msgs
+        )
+        explanation = response.choices[0].message.content.strip()
+        return jsonify({"explanation": explanation})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/ja/translate", methods=["POST"])
+def translate():
+    data = request.get_json()
+    text = data.get("text", "")
+    direction = data.get("direction", "ja-en")
+    if direction == "ja-en":
+        prompt = f"次の日本語を英語に翻訳してください:\n\n{text}"
+    else:
+        prompt = f"Translate the following English into Japanese:\n\n{text}"
+    try:
+        resp = client.chat.completions.create(
+            model="gpt-3.5-turbo",
+            messages=[{"role": "user", "content": prompt}]
+        )
+        translated = resp.choices[0].message.content.strip()
+        return jsonify({"translated": translated})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/ja/save_log", methods=["POST"])
+def save_log():
+    data = request.get_json()
+    log_dir = "logs"
+    os.makedirs(log_dir, exist_ok=True)
+    now_ts = datetime.utcnow().strftime("%Y%m%d_%H%M%S")
+    file_path = os.path.join(log_dir, f"log_{now_ts}.txt")
+    with open(file_path, "w", encoding="utf-8") as f:
+        f.write("ユーザー名: " + data.get('username', '') + "\n")
+        f.write("日時: " + data.get('timestamp', '') + "\n")
+        f.write("入力: " + data.get('input', '') + "\n")
+        f.write("返答: " + data.get('response', '') + "\n")
+    return jsonify({"status": "success"})
+
+@app.route("/ja/daily_report", methods=["GET"])
+def daily_report():
+    log_files = sorted(glob.glob("logs/log_*.txt"))
+    if not log_files:
+        return jsonify({"error": "ログがありません"}), 404
+    latest = log_files[-1]
+    with open(latest, encoding="utf-8") as f:
+        content = f.read()
+    response = client.chat.completions.create(
+        model="gpt-3.5-turbo",
+        messages=[
+            {"role": "system", "content": "以下の対話ログをもとに、本日の介護日報を日本語で短くまとめてください。"},
+            {"role": "user",   "content": content}
+        ]
     )
-    conn.commit()
-    return jsonify({'status': 'ok', 'timestamp': timestamp})
+    # JST日時取得
+    jst_now = datetime.utcnow() + timedelta(hours=9)
+    now_str = jst_now.strftime("%Y-%m-%d %H:%M")
+    summary_body = response.choices[0].message.content.strip()
+    summary = "日報作成日時: " + now_str + "\n" + summary_body
+    buf = BytesIO(summary.encode("utf-8"))
+    return send_file(buf, as_attachment=True, download_name="daily_report.txt", mimetype="text/plain")
 
-@app.route('/summary', methods=['GET'])
-def generate_summary():
-    # get today's logs
-    rows = cursor.execute(
-        "SELECT timestamp, category, phrase FROM care_logs WHERE date(timestamp)=date('now','localtime')"
-    ).fetchall()
-    text = "\n".join([f"[{r[1]}]{r[2]}" for r in rows])
-    prompt = f"以下の介護ログを要約してください。\n{text}"
-    resp = openai.ChatCompletion.create(
-        model='gpt-3.5-turbo',
-        messages=[{'role':'user','content': prompt}],
-        temperature=0.2
-    )
-    summary = resp.choices[0].message.content.strip()
-    return jsonify({'summary': summary})
-
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=int(os.getenv('PORT', 5000)))
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port)

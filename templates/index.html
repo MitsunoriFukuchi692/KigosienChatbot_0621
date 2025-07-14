@@ -2,93 +2,61 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>AIみまくんチャット</title>
-  <style>
-    body {
-      font-family: sans-serif;
-      margin: 0;
-      padding: 0;
-    }
-    #chatbox {
-      height: 400px;
-      overflow-y: auto;
-      border: 1px solid #ccc;
-      margin: 1rem;
-      padding: 1rem;
-      background-color: #f9f9f9;
-    }
-    .message {
-      margin-bottom: 1rem;
-    }
-    .user {
-      color: blue;
-    }
-    .bot {
-      color: green;
-    }
-    #controls {
-      display: flex;
-      margin: 1rem;
-    }
-    #inputText {
-      flex: 1;
-      padding: 0.5rem;
-      font-size: 1rem;
-    }
-    button {
-      padding: 0.5rem 1rem;
-      margin-left: 0.5rem;
-    }
-  </style>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>介護支援チャットボット</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
 </head>
 <body>
-  <h1 style="text-align:center;">AIみまくんチャット</h1>
-  <div id="chatbox"></div>
-  <div id="controls">
-    <input type="text" id="inputText" placeholder="話しかけてください">
-    <button onclick="sendMessage()">送信</button>
-    <button onclick="startListening()">🎤</button>
-  </div>
+  <header>
+    <h1 id="chat-header">介護支援ボット</h1>
+  </header>
+  <main>
+    <div id="chat-container">
+      <div id="chat-window">
+        <!-- メッセージが追加されます -->
+      </div>
 
-  <script>
-    const chatbox = document.getElementById("chatbox");
-    const inputText = document.getElementById("inputText");
+      <div class="input-panel">
+        <label class="role-label caregiver" for="caregiver-input">介護士</label>
+        <input id="caregiver-input" type="text" placeholder="介護士の発言を入力">
+        <button id="mic-caregiver" onclick="startRecognition('caregiver-input')">🎤</button>
+        <button id="send-caregiver" onclick="appendMessage('caregiver', caregiverInput.value)">送信</button>
 
-    function appendMessage(sender, text) {
-      const msg = document.createElement("div");
-      msg.className = "message " + sender;
-      msg.textContent = `${sender === "user" ? "あなた" : "みまくん"}: ${text}`;
-      chatbox.appendChild(msg);
-      chatbox.scrollTop = chatbox.scrollHeight;
-    }
+        <label class="role-label caree" for="caree-input">被介護者</label>
+        <input id="caree-input" type="text" placeholder="被介護者の発言を入力">
+        <button id="mic-caree" onclick="startRecognition('caree-input')">🎤</button>
+        <button id="send-caree" onclick="appendMessage('caree', careeInput.value)">送信</button>
+      </div>
 
-    async function sendMessage() {
-      const text = inputText.value;
-      if (!text) return;
-      appendMessage("user", text);
-      inputText.value = "";
+      <button id="template-start-btn" class="template-start">テンプレート対話開始</button>
+      <div id="template-buttons"></div>
 
-      const response = await fetch("/chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: text })
-      });
-      const data = await response.json();
-      appendMessage("bot", data.response);
+      <div class="tts-panel">
+        <label>音量:<input type="range" id="volume-slider" min="0" max="1" step="0.1" value="1"></label>
+        <label>速度:<input type="range" id="rate-slider" min="0.5" max="2" step="0.1" value="1"></label>
+      </div>
 
-      // 音声読み上げ
-      const audio = new Audio("data:audio/mp3;base64," + data.audioContent);
-      audio.play();
-    }
+      <div id="glossary">
+        <input type="text" id="term" placeholder="用語を入力">
+        <button id="explain-btn">説明</button>
+        <p id="explanation"></p>
+      </div>
 
-    function startListening() {
-      const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-      recognition.lang = "ja-JP";
-      recognition.start();
-      recognition.onresult = function (event) {
-        inputText.value = event.results[0][0].transcript;
-      };
-    }
-  </script>
+      <div id="translation-panel">
+        <select id="translate-direction">
+          <option value="ja-en" selected>日本語→英語</option>
+          <option value="en-ja">英語→日本語</option>
+        </select>
+        <button id="translate-btn">翻訳</button>
+        <p id="translation-result"></p>
+      </div>
+
+      <div class="action-buttons">
+        <button id="save-log-btn">会話ログ保存</button>
+        <button id="daily-report-btn">📝 日報を生成</button>
+      </div>
+    </div>
+  </main>
+  <script src="{{ url_for('static', filename='js/chatbot.v3.js') }}"></script>
 </body>
 </html>
