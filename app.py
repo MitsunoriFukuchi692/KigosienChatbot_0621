@@ -5,12 +5,15 @@ from flask import Flask, request, jsonify, render_template, send_file
 from flask_cors import CORS
 from openai import OpenAI
 from datetime import datetime, timedelta
+import stripe
 
 app = Flask(__name__, static_folder="static")
 # キャッシュ無効化設定
 app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0
 CORS(app)
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+# Stripe APIキー読み込み
+stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
 
 @app.after_request
 def add_header(response):
@@ -19,11 +22,12 @@ def add_header(response):
     response.headers["Expires"] = "0"
     return response
 
+# トップページ（チャット＋インボイス統合版）
 @app.route("/")
-@app.route("/ja/")
 def index():
     return render_template("index.html")
 
+# テンプレート取得
 @app.route("/ja/templates", methods=["GET"])
 def get_templates():
     return jsonify([
@@ -34,6 +38,7 @@ def get_templates():
         {"category": "排便", "caregiver": ["お通じはいかがですか？", "問題ありませんか？"],      "caree": ["問題ありません。", "少し便秘気味です。"]}
     ])
 
+# チャット
 @app.route("/ja/chat", methods=["POST"])
 def chat():
     data = request.get_json()
@@ -48,6 +53,7 @@ def chat():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+# 用語説明
 @app.route("/ja/explain", methods=["POST"])
 def explain():
     data = request.get_json()
@@ -66,6 +72,7 @@ def explain():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+# 翻訳
 @app.route("/ja/translate", methods=["POST"])
 def translate():
     data = request.get_json()
@@ -85,6 +92,7 @@ def translate():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+# ログ保存
 @app.route("/ja/save_log", methods=["POST"])
 def save_log():
     data = request.get_json()
@@ -99,6 +107,7 @@ def save_log():
         f.write("返答: " + data.get('response', '') + "\n")
     return jsonify({"status": "success"})
 
+# 日報作成
 @app.route("/ja/daily_report", methods=["GET"])
 def daily_report():
     log_files = sorted(glob.glob("logs/log_*.txt"))
@@ -114,13 +123,25 @@ def daily_report():
             {"role": "user",   "content": content}
         ]
     )
-    # JST日時取得
     jst_now = datetime.utcnow() + timedelta(hours=9)
     now_str = jst_now.strftime("%Y-%m-%d %H:%M")
     summary_body = response.choices[0].message.content.strip()
     summary = "日報作成日時: " + now_str + "\n" + summary_body
     buf = BytesIO(summary.encode("utf-8"))
     return send_file(buf, as_attachment=True, download_name="daily_report.txt", mimetype="text/plain")
+
+# — 追加: インボイス発行 —
+@app.route("/create_invoice", methods=["POST"])
+def create_invoice():
+    # 顧客作成
+    customer = stripe.Customer.create(email="test@example.com", name="テスト顧客")
+    # 請求アイテム登録
+    stripe.InvoiceItem.create(customer=customer.id, amount=1300, currency='jpy', description='デモ請求')
+    # インボイス作成・確定
+    invoice = stripe.Invoice.create(customer=customer.id)
+    invoice = stripe.Invoice.finalize_invoice(invoice.id)
+    # 支払いページにリダイレクト
+    return redirect(invoice.hosted_invoice_url)
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
