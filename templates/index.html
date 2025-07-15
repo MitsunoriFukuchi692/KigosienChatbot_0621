@@ -60,3 +60,29 @@
   <script src="{{ url_for('static', filename='js/chatbot.v3.js') }}"></script>
 </body>
 </html>
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AIみまくん＋インボイスデモ</title>
+  <!-- CSSやスクリプトは既存のものを引き継いでください -->
+</head>
+<body>
+  <h1>介護支援ボット</h1>
+
+  <!-- 既存のチャットUI -->
+  <div id="chat-ui">
+    <!-- ...ここに元々のチャットHTMLが入ります... -->
+  </div>
+
+  <!-- 追加：インボイス発行 -->
+  <section id="invoice-area" style="margin:40px 0; padding:20px; border:1px solid #ccc;">
+    <h2>インボイス発行デモ</h2>
+    <p>以下をクリックするとテストモードで請求を発行し、支払いページへ飛びます。</p>
+    <form action="/create_invoice" method="post">
+      <button type="submit">インボイス発行</button>
+    </form>
+  </section>
+</body>
+</html>
