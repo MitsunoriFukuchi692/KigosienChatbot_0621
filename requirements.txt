@@ -6,4 +6,12 @@ python-dotenv
 google-cloud-texttospeech
 Flask
 gunicorn
+flask
+flask-cors
+openai>=1.0.0
+gTTS
+python-dotenv
+google-cloud-texttospeech
+Flask
+gunicorn
 stripe
