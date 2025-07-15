@@ -1,147 +1,172 @@
-document.addEventListener("DOMContentLoaded", () => {
-  console.log('🚀 chatbot.v3.js loaded at ' + new Date().toISOString());
+// static/js/chatbot.v3.js - 完全版
 
-  // ─── グローバルエラーキャッチャ ───
-  window.onerror = function(message, source, lineno, colno, error) {
-    console.log(`🛑 Error: ${message} at ${source}:${lineno}:${colno}`);
+// DOM読み込み後に初期化
+document.addEventListener("DOMContentLoaded", () => {
+  console.log('🚀 chatbot.v3.js loaded');
+
+  // グローバルエラーキャッチ
+  window.onerror = (message, source, lineno, colno) => {
+    console.error(`Error: ${message} at ${source}:${lineno}:${colno}`);
   };
 
-  // --- 音声認識設定 ---
+  // 音声認識設定
   const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
   let recog = null;
-  let activeTarget = null;
-
+  let activeInput = null;
   if (SpeechRecognition) {
     recog = new SpeechRecognition();
     recog.lang = 'ja-JP';
     recog.interimResults = false;
-    recog.onstart = () => console.log('🔴 認識開始');
-    recog.onend   = () => console.log('⚪ 認識終了');
-    recog.onerror = e => console.error('SpeechRec Error:', e);
-    recog.addEventListener('result', e => {
-      if (activeTarget) activeTarget.value = e.results[0][0].transcript;
+    recog.addEventListener('start', () => console.log('🔴 Recognition started'));
+    recog.addEventListener('end', () => console.log('⚪ Recognition ended'));
+    recog.addEventListener('error', e => console.error('SpeechRec Error:', e));
+    recog.addEventListener('result', event => {
+      const transcript = event.results[0][0].transcript;
+      if (activeInput) activeInput.value = transcript;
     });
   }
 
-  // グローバル関数として登録
-  window.startRecognition = function(targetId) {
+  // マイク開始関数
+  window.startRecognition = (inputId) => {
     if (!recog) {
-      alert('▶ 音声認識に対応していません');
+      alert('音声認識に対応していません');
       return;
     }
-    activeTarget = document.getElementById(targetId);
-    if (!activeTarget) {
-      console.error('対象要素が見つかりません:', targetId);
-      return;
-    }
+    activeInput = document.getElementById(inputId);
+    if (!activeInput) return console.error('Input not found:', inputId);
     recog.start();
   };
 
-  // --- TTS 関数 ---
-  function speak(text, lang='ja-JP') {
-    const ut = new SpeechSynthesisUtterance(text);
-    ut.lang   = lang;
-    ut.volume = parseFloat(document.getElementById('volume-slider')?.value) || 1.0;
-    ut.rate   = parseFloat(document.getElementById('rate-slider')?.value)   || 1.0;
-    ut.pitch  = 1.0;
-    window.speechSynthesis.speak(ut);
+  // テキスト読み上げ
+  function speak(text, lang = 'ja-JP') {
+    const utter = new SpeechSynthesisUtterance(text);
+    utter.lang = lang;
+    utter.volume = parseFloat(document.getElementById('volume-slider').value) || 1;
+    utter.rate = parseFloat(document.getElementById('rate-slider').value) || 1;
+    window.speechSynthesis.speak(utter);
   }
 
-  // --- メッセージ表示 ---
-  function appendMessage(sender, text) {
-    const log = document.getElementById('chat-window');
+  // メッセージ追加
+  const chatWindow = document.getElementById('chat-window');
+  function appendMessage(role, text) {
     const div = document.createElement('div');
-    div.className = sender==='介護士'
-      ? 'message-caregiver'
-      : sender==='被介護者'
-      ? 'message-caree'
-      : 'message-ai';
-    div.textContent = `${sender}: ${text}`;
-    log.appendChild(div);
-    log.scrollTop = log.scrollHeight;
+    div.classList.add('message', role === 'caregiver' ? 'caregiver' : 'caree');
+    div.textContent = (role === 'caregiver' ? '介護士: ' : '被介護者: ') + text;
+    chatWindow.appendChild(div);
+    chatWindow.scrollTop = chatWindow.scrollHeight;
   }
 
-  // --- 送信 ---
-  window.sendMessage = function(role) {
-    const inputId = role==='caregiver' ? 'caregiver-input' : 'caree-input';
-    const label   = role==='caregiver' ? '介護士' : '被介護者';
-    const txt     = document.getElementById(inputId).value.trim();
-    if (!txt) return alert('入力してください');
-    appendMessage(label, txt);
+  // 送信ボタンハンドラ
+  document.getElementById('send-caregiver').addEventListener('click', () => {
+    const input = document.getElementById('caregiver-input');
+    const txt = input.value.trim();
+    if (!txt) return;
+    appendMessage('caregiver', txt);
     speak(txt);
-    document.getElementById(inputId).value = '';
-  };
+    input.value = '';
+  });
+  document.getElementById('send-caree').addEventListener('click', () => {
+    const input = document.getElementById('caree-input');
+    const txt = input.value.trim();
+    if (!txt) return;
+    appendMessage('caree', txt);
+    speak(txt);
+    input.value = '';
+  });
 
-  // --- テンプレート対話 ---
-  let currentTemplates = [];
+  // テンプレート対話開始
   document.getElementById('template-start-btn').addEventListener('click', () => {
     fetch('/ja/templates')
-      .then(r => r.ok ? r.json() : Promise.reject(r.status))
+      .then(res => res.json())
       .then(list => {
-        currentTemplates = list;
         const panel = document.getElementById('template-buttons');
         panel.innerHTML = '';
         list.forEach(item => {
           const btn = document.createElement('button');
           btn.textContent = item.category;
-          btn.addEventListener('click', () => showCaregiverPhrases(item));
+          btn.addEventListener('click', () => showTemplateOptions(item));
           panel.appendChild(btn);
         });
       })
-      .catch(e => alert(`テンプレート取得失敗: ${e}`));
+      .catch(e => alert('テンプレート取得失敗'));
   });
-  function showCaregiverPhrases(item) {
-    const panel = document.getElementById('template-buttons');
-    panel.innerHTML = '';
+
+  function showTemplateOptions(item) {
+    const panel = document.getElementById('template-buttons'); panel.innerHTML = '';
     item.caregiver.forEach(text => {
-      const btn = document.createElement('button'); btn.textContent = text;
-      btn.addEventListener('click', () => {
-        appendMessage('介護士', text); speak(text);
-        showCareePhrases(item);
-      }); panel.appendChild(btn);
-    });
-  }
-  function showCareePhrases(item) {
-    const panel = document.getElementById('template-buttons');
-    panel.innerHTML = '';
-    item.caree.forEach(text => {
-      const btn = document.createElement('button'); btn.textContent = text;
-      btn.addEventListener('click', () => {
-        appendMessage('被介護者', text); speak(text);
-        document.getElementById('template-buttons').innerHTML = '';
-      }); panel.appendChild(btn);
+      const b = document.createElement('button'); b.textContent = text;
+      b.addEventListener('click', () => {
+        appendMessage('caregiver', text);
+        speak(text);
+        showCareeOptions(item);
+      }); panel.appendChild(b);
     });
   }
 
-  // --- 用語説明 ---
+  function showCareeOptions(item) {
+    const panel = document.getElementById('template-buttons'); panel.innerHTML = '';
+    item.caree.forEach(text => {
+      const b = document.createElement('button'); b.textContent = text;
+      b.addEventListener('click', () => {
+        appendMessage('caree', text);
+        speak(text);
+        panel.innerHTML = '';
+      }); panel.appendChild(b);
+    });
+  }
+
+  // 用語説明
   document.getElementById('explain-btn').addEventListener('click', () => {
     const term = document.getElementById('term').value.trim();
     if (!term) return alert('用語を入力してください');
-    fetch('/ja/explain', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ term, maxLength:30 }) })
-      .then(r => r.ok? r.json(): Promise.reject(r.status))
-      .then(({explanation}) => { document.getElementById('explanation').textContent = explanation; speak(explanation); })
-      .catch(e => alert(`用語説明失敗: ${e}`));
+    fetch('/ja/explain', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({term, maxLength:30})
+    })
+      .then(res => res.json())
+      .then(j => {
+        document.getElementById('explanation').textContent = j.explanation;
+        speak(j.explanation);
+      })
+      .catch(() => alert('用語説明失敗'));
   });
 
-  // --- 翻訳 ---
+    // 翻訳
   document.getElementById('translate-btn').addEventListener('click', () => {
-    const orig = document.getElementById('explanation').textContent.trim();
-    if (!orig) return alert('まず用語説明を行ってください');
+    // 用語説明結果を参照
+    const explanation = document.getElementById('explanation').textContent.trim();
+    if (!explanation) {
+      alert('まず用語説明を実行');
+      return;
+    }
     const dir = document.getElementById('translate-direction').value;
-    fetch('/ja/translate', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ text: orig, direction: dir }) })
-      .then(r=>r.ok?r.json():Promise.reject(r.status))
-      .then(({translated}) => { document.getElementById('translation-result').textContent = translated; speak(translated, dir==='ja-en'?'en-US':'ja-JP'); })
-      .catch(e => alert(`翻訳失敗: ${e}`));
+    fetch('/ja/translate', {
+      method: 'POST',
+      headers: { 'Content-Type':'application/json' },
+      body: JSON.stringify({ text: explanation, direction: dir })
+    })
+      .then(res => res.json())
+      .then(j => {
+        document.getElementById('translation-result').textContent = j.translated;
+        // 翻訳結果読み上げ
+        speak(j.translated, dir === 'ja-en' ? 'en-US' : 'ja-JP');
+      })
+      .catch(() => alert('翻訳失敗'));
   });
 
-  // --- ログ保存 & 日報生成 ---
+  // 会話ログ保存
   document.getElementById('save-log-btn').addEventListener('click', () => {
-    const lines = Array.from(document.querySelectorAll('#chat-window div')).map(div=>div.textContent).join('\n');
-    fetch('/ja/save_log', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ username:'介護士', timestamp:new Date().toISOString(), input:lines, response:'' }) })
-      .then(r=>r.json())
-      .then(j=> j.status==='success'? alert('会話ログを保存しました') : Promise.reject('保存失敗'))
-      .catch(()=> alert('会話ログ保存に失敗しました'));
+    const lines = Array.from(chatWindow.children).map(d => d.textContent).join('\n');
+    fetch('/ja/save_log', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({username:'介護士', timestamp:new Date().toISOString(), input:lines, response:''})
+    })
+      .then(res => res.json())
+      .then(j => { if (j.status==='success') alert('保存成功'); else throw j; })
+      .catch(() => alert('ログ保存失敗'));
   });
+
+  // 日報生成
   document.getElementById('daily-report-btn').addEventListener('click', () => {
     document.getElementById('save-log-btn').click();
     setTimeout(() => location.href='/ja/daily_report', 500);

@@ -1,275 +1,172 @@
-body {
-  font-family: sans-serif;
-  margin: 0;
-  padding: 0;
-  background: #f4f4f4;
-}
+/* styles.css - 介護支援ボット 完全版 */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { height: 100%; font-family: "Noto Sans JP", sans-serif; background-color: #f5f5f5; }
 
-header {
-  background-color: #4caf50;
-  color: white;
-  padding: 1rem;
+/* ヘッダー */
+#chat-header {
+  background-color: #007bff;
+  color: #fff;
   text-align: center;
+  padding: 12px 0;
   font-size: 1.5rem;
 }
 
-.chat-container {
-  max-width: 800px;
-  margin: 0 auto;
-  padding: 1rem;
-  background: white;
-  border-radius: 10px;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+/* チャットウィンドウ */
+#chat-window {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px;
+  background-color: #fff;
+  margin: 8px;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  max-height: 40vh;
 }
 
-#chat-window {
+.message {
+  margin-bottom: 8px;
+  padding: 8px 12px;
+  border-radius: 12px;
+  line-height: 1.4;
+}
+
+.message.caregiver {
+  background-color: #e0f7fa;
+  color: #006064;
+  align-self: flex-end;
+}
+
+.message.caree {
+  background-color: #fff3e0;
+  color: #e65100;
+  align-self: flex-start;
+}
+
+/* 入力パネル */
+.input-panel {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  padding: 8px;
+  background-color: #fff;
+  border-top: 1px solid #ddd;
+}
+.role-label.caregiver {
+  color: #007bff;
+  font-weight: bold;
+  margin-right: 8px;
+}
+.role-label.caree {
+  color: #28a745;
+  font-weight: bold;
+  margin-right: 8px;
+}
+.input-panel input {
+  flex: 1;
+  min-width: 120px;
+  padding: 8px;
+  font-size: 1rem;
   border: 1px solid #ccc;
   border-radius: 8px;
-  padding: 1rem;
-  height: 200px;
-  overflow-y: auto;
-  background-color: #f0f0ff;
-  margin-bottom: 1rem;
+  margin: 4px 8px 4px 0;
 }
-
-.input-panel {
-  margin-bottom: 1rem;
-}
-
-.input-panel h3 {
-  margin: 0.5rem 0;
-}
-
-.input-panel input[type="text"] {
-  width: 60%;
-  padding: 0.5rem;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-}
-
 .input-panel button {
-  padding: 0.5rem 0.75rem;
-  margin-left: 0.25rem;
+  width: 40px;
+  height: 40px;
+  font-size: 20px;
+  background-color: #007bff;
+  color: #fff;
   border: none;
-  border-radius: 5px;
-  background-color: #4caf50;
-  color: white;
+  border-radius: 8px;
   cursor: pointer;
+  margin: 4px 8px 4px 0;
+}
+.input-panel button:hover {
+  background-color: #0056b3;
 }
 
-.template-buttons {
-  margin-top: 0.5rem;
-}
-
-.template-buttons button {
-  margin: 0.25rem;
-  padding: 0.4rem 0.75rem;
-  background-color: #2196f3;
-  color: white;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  font-size: 0.9rem;
-}
-
-.controls {
-  margin-bottom: 1rem;
-}
-
-.controls label {
+/* テンプレート開始ボタン */
+.template-start {
   display: block;
-  margin-bottom: 0.5rem;
-}
-
-.explanation {
-  margin-bottom: 1rem;
-}
-
-#explanation-text {
-  margin-top: 0.5rem;
-  font-weight: bold;
-  color: #444;
-}
-
-.log-save button {
-  background-color: #ff9800;
-  padding: 0.5rem 1rem;
-  color: white;
+  width: calc(100% - 16px);
+  margin: 0 auto 8px;
+  padding: 8px;
+  background-color: #28a745;
+  color: #fff;
   border: none;
-  border-radius: 5px;
+  border-radius: 4px;
   cursor: pointer;
 }
-
-@media screen and (max-width: 600px) {
-  #chat-window {
-    height: 150px;
-  }
-
-  .input-panel input[type="text"] {
-    width: 100%;
-    margin-bottom: 0.5rem;
-  }
-
-  .input-panel button {
-    width: 100%;
-    margin-top: 0.25rem;
-  }
-
-  .template-buttons button {
-    font-size: 0.8rem;
-  }
+.template-start:hover {
+  background-color: #218838;
 }
 
-/* 小さい画面向けレスポンシブ */
-@media (max-width: 600px) {
-  header h1 {
-    font-size: 16px;
-    padding: 8px 0;
-  }
-  .input-panel, .tts-panel, #glossary {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-  }
-  .input-panel input[type="text"] {
-    width: 100%;
-    box-sizing: border-box;
-  }
-  .input-panel button, #template-start-btn, #save-log-btn {
-    width: 100%;
-  }
-  #template-buttons {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 4px;
-  }
-}
-
-/* ヘッダーを細く＆文言変更 */
-header h1 {
-  background-color: #4CAF50; /* 既存の色に合わせて */
-  color: white;
-  font-size: 16px;           /* 小さめに */
-  padding: 8px 0;            /* 上下の余白を控えめに */
-  text-align: center;
-}
-
-/* メッセージの色分け */
-.message-caregiver {
-  background-color: #e0f7fa; /* 介護士：淡い水色 */
-  color: #006064;
-  padding: 8px;
-  border-radius: 4px;
-  margin-bottom: 4px;
-}
-.message-caree {
-  background-color: #fff3e0; /* 被介護者：淡いオレンジ */
-  color: #e65100;
-  padding: 8px;
-  border-radius: 4px;
-  margin-bottom: 4px;
-}
-
-/* 送信ボタンを目立たせる */
-.input-panel button,
-#save-log-btn,
-#template-start-btn {
-  background-color: #ff9800; /* オレンジ */
-  color: white;
-  border: none;
-  font-weight: bold;
-  padding: 12px;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: background-color .2s;
-}
-.input-panel button:hover,
-#save-log-btn:hover,
-#template-start-btn:hover {
-  background-color: #fb8c00; /* 濃いオレンジ */
-}
-
-/* テキスト入力フィールドとボタンの幅をスマホでも広く */
-.input-panel input[type="text"],
-.input-panel button {
-  width: 100%;
-  box-sizing: border-box;
-  margin-top: 4px;
-}
-
-/* 高齢者向け大きな文字＆コンパクトボタン配置 */
-body {
-  font-size: 18px; /* 全体の文字を大きく */
-}
-
-/* 入力パネルのレイアウト調整 */
-.input-panel {
+/* TTS パネル、用語説明、翻訳パネル、アクションボタン */
+.tts-panel, #glossary, #translation-panel, .action-buttons {
   display: flex;
   align-items: center;
-  gap: 8px;
-}
-
-/* マイク＆送信ボタンを横並びにコンパクト化 */
-.input-panel button {
-  flex: 0 0 48px;      /* 幅 48px に固定 */
-  height: 48px;        /* 高さ 48px に固定 */
-  font-size: 24px;     /* ボタン内絵文字などは大きめ */
-  padding: 0;
-}
-
-/* テキスト入力は残り幅を使う */
-.input-panel input[type="text"] {
-  flex: 1;             /* 横に伸びる */
-  font-size: 18px;     /* 大きな文字 */
   padding: 8px;
-}
-
-/* テンプレートボタンの文字を大きく＆配置 */
-#template-buttons button {
-  font-size: 20px;     /* 大きな文字 */
-  padding: 12px;       /* 十分な余白 */
-  margin: 4px;         /* ボタン間のスペース */
-  flex: 1 1 auto;
-}
-
-/* 「テンプレート対話開始」も大きめ */
-#template-start-btn {
-  font-size: 20px;
-  padding: 12px;
-  width: 100%;
-  box-sizing: border-box;
-}
-
-/* 保存ボタンも同じく */
-#save-log-btn {
-  font-size: 20px;
-  padding: 12px;
-  width: 100%;
-  box-sizing: border-box;
-}
-
-/* 会話ログ保存 & 日報生成ボタンを横並びに */
-.action-buttons {
-  display: flex;
+  background-color: #fff;
+  border-top: 1px solid #ddd;
   gap: 8px;
 }
+.tts-panel label, #translation-panel select {
+  margin-right: 8px;
+}
+#glossary input, #translation-panel select {
+  padding: 6px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+#glossary button, #translation-panel button, .action-buttons button {
+  padding: 6px 12px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+#glossary button {
+  background-color: #17a2b8;
+  color: #fff;
+}
+#glossary button:hover {
+  background-color: #138496;
+}
+#translation-panel button {
+  background-color: #6c757d;
+  color: #fff;
+}
+#translation-panel button:hover {
+  background-color: #5a6268;
+}
 .action-buttons button {
-  flex: 1;
-  font-size: 18px;    /* ボタン内文字も少し大きめ */
-  padding: 12px;      /* タップしやすいサイズに */
-  box-sizing: border-box;
+  background-color: #343a40;
+  color: #fff;
+}
+.action-buttons button:hover {
+  background-color: #23272b;
 }
 
-/* 会話ログ保存 & 日報生成ボタンを横並びに・半分幅に */
-/* ────────── 横並び・半分幅を強制 ────────── */
-.action-buttons {
-  display: flex !important;
-  gap: 8px !important;
-}
-.action-buttons button {
-  flex: 1 1 0 !important;     /* 横に等分 */
-  max-width: 50% !important;  /* それぞれ半分幅まで */
-  box-sizing: border-box !important;
-  display: inline-block !important;
-  text-align: center !important;
+/* レスポンシブ */
+@media only screen and (max-width: 600px) {
+  #chat-header {
+    font-size: 1.25rem;
+    padding: 10px 0;
+  }
+  #chat-window {
+    margin: 4px;
+    padding: 8px;
+    max-height: 30vh;
+  }
+  .input-panel, .tts-panel, #glossary, #translation-panel, .action-buttons {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 4px;
+  }
+  .input-panel input, .input-panel button, .template-start {
+    width: 100%;
+    margin: 4px 0;
+  }
+  .template-start {
+    margin-bottom: 8px;
+  }
 }
